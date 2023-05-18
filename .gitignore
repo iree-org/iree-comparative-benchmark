@@ -1,0 +1,39 @@
+# Copyright 2023 The OpenXLA Authors
+#
+# Licensed under the Apache License v2.0 with LLVM Exceptions.
+# See https://llvm.org/LICENSE.txt for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+# Yes it's silly to have a license header in a gitignore. This is mostly because
+# people generally copy-paste license headers and it's good to start them off
+# with the right one.
+
+# Python
+.env
+*.pyc
+**/.ipynb_checkpoints/
+.pytype/
+**/__pycache__/**
+.python-version
+*.venv
+.venv
+
+# Archive files
+*.tar
+*.tar.*
+
+# Emacs autosaves
+*~
+\#*\#
+
+# Vim swap files
+[._]*.sw[a-p]
+
+# Visual Studio files
+.vs/
+.vscode/
+*.sdf
+*.opensdf
+*.VC.opendb
+*.suo
+*.user
