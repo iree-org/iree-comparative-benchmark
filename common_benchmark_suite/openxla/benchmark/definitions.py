@@ -4,33 +4,20 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import dataclasses
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional, Sequence
+from typing import Any, Dict, List, Optional
 
 
 class ModelFrameworkType(Enum):
   """Type of framework a model is implemented in."""
-  TENSORFLOW_V1 = "tensorflow_v1"
-  TENSORFLOW_V2 = "tensorflow_v2"
-  PYTORCH = "framework_pt"
-  JAX = "framework_jax"
+  TF_V1 = "tensorflow_v1"
+  TF_V2 = "tensorflow_v2"
+  PYTORCH = "pytorch"
+  JAX = "jax"
 
 
-class ModelArtifactType(Enum):
-  """Type of model artifact."""
-  TF_SAVEDMODEL_V1 = "tf_savedmodel_v1"
-  TF_SAVEDMODEL_V2 = "tf_savedmodel_v2"
-  TF_HLO_DUMP = "tf_hlo_dump"
-  JAX_HLO_DUMP = "jax_hlo_dump"
-  MLIR_STABLEHLO = "mlir_stablehlo"
-  MLIR_MHLO = "mlir_mhlo"
-  MLIR_LINALG = "mlir_linalg"
-  MLIR_TOSA = "mlir_tosa"
-
-
-class DataType(Enum):
+class ModelDataType(Enum):
   """Model data type used in the model."""
   FP32 = "fp32"
   FP16 = "fp16"
@@ -39,77 +26,105 @@ class DataType(Enum):
   UINT8 = "uint8"
 
 
-class DataFormat(Enum):
-  """Model input data format."""
-  ZEROS = "zeros"
-  NUMPY_NPY = "numpy_npy"
+@dataclass(frozen=True)
+class ModelImplementation:
+  """Source model implementation."""
+  id: str
+  name: str
+  tags: List[str]
+  framework_type: ModelFrameworkType
+  data_type: ModelDataType
+  # Source of the model.
+  source_info: str
+
+  def __str__(self):
+    return self.name
+
+
+class ModelArtifactType(Enum):
+  """Type of derived model artifact."""
+  TF_SAVEDMODEL_V1 = "tf_savedmodel_v1"
+  TF_SAVEDMODEL_V2 = "tf_savedmodel_v2"
+  XLA_HLO_DUMP = "xla_hlo_dump"
+  STABLEHLO = "stablehlo"
 
 
 @dataclass(frozen=True)
-class ModelData(object):
+class ModelInstance:
+  """A model instance with concrete model parameters."""
+  id: str
+  # Friendly unique name.
+  name: str
+  # Tags that describe the model characteristics.
+  tags: List[str]
+  # Source model implementation.
+  model_implementation: ModelImplementation
+  # Model parameters, e.g., input batch size, input sequence length.
+  model_parameters: Dict[str, Any]
+  # URLs to download the derived models.
+  artifact_sources: Dict[ModelArtifactType, str]
+
+  def __str__(self):
+    return self.name
+
+
+class ModelTestDataFormat(Enum):
+  """Model input/output data format."""
+  # Pack of tensors in npy format.
+  NUMPY_TENSORS = "npy_tensors"
+
+
+@dataclass(frozen=True)
+class ModelTestData:
   """Input or output data to benchmark the model."""
   id: str
   # Friendly name.
   name: str
   # Tags that describe the data characteristics.
   tags: List[str]
-  # Data format.
-  data_format: DataFormat
-  # If applicable, the model id that generated the data.
-  model_id: str
   # Information on where the data was originally sourced.
   source_info: str
-  # The name of the tensors.
-  tensor_names: List[str]
-  # The dimensions of the data e.g. "1x224x224x3xf32".
-  tensor_dimensions: List[str]
-  # Where to download the input data.
-  source_url: List[str]
+  # URLs to download the data in multiple formats.
+  data_sources: Dict[ModelTestDataFormat, str]
+  # Parameters for output verifiers if applicable.
+  output_verify_params: Dict[ModelTestDataFormat, Dict[str, Any]]
 
   def __str__(self):
     return self.name
 
 
 @dataclass(frozen=True)
-class ModelArtifact(object):
-  """An artifact derived from a model"""
-  artifact_type: ModelArtifactType
-  # Where to download the model artifact.
-  source_url: str
-
-
-@dataclass(frozen=True)
-class MetaModel(object):
-  """ A model implementation without concrete inputs."""
-  id: str
-  name: str
-  tags: List[str]
-  framework_type: ModelFrameworkType
-  # Source of the model implementation.
-  source_info: str
-  data_type: DataType
-
-
-@dataclass(frozen=True)
-class Model(object):
-  """A Model implementation"""
+class DeviceSpec:
+  """Device specification to run benchmarks."""
   id: str
   # Friendly unique name.
   name: str
-  # Tags that describe the model characteristics.
-  tags: List[str]
-  meta_model: MetaModel
-  input_batch_size: int
-  inputs: ModelData
-  outputs: ModelData
-  # A list of artifacts derived from this model.
-  artifacts: List[ModelArtifact]
+  # Describes the host that runs the runtime and talks to the accelerator.
+  # E.g., GCP
+  host_type: str
+  # E.g., c2-standard-60
+  host_model: str
+  # E.g., linux-x86_64
+  host_environment: str
+
+  # Describes the target accelerator (can be the same as the host for CPU
+  # benchmarks).
+  # E.g., cpu, gpu, my-custom-accelerator
+  accelerator_type: str
+  # E.g., nvidia-a100-40g
+  accelerator_model: str
+  # E.g., intel-cascadelake, nvidia-ampere
+  accelerator_architecture: str
+  # E.g., "num_of_gpus": 4, "cpu_mask": "0-3"
+  accelerator_attributes: Dict[str, Any]
 
   def __str__(self):
     return self.name
 
-  def get_artifact(self, artifact_type: ModelFrameworkType) -> ModelArtifact:
-    for artifact in self.artifacts:
-      if artifact.artifact_type == artifact_type:
-        return artifact
-    return None
+
+@dataclass(frozen=True)
+class BenchmarkInstance:
+  model: ModelInstance
+  input_data: ModelTestData
+  expected_output: ModelTestData
+  target_device: DeviceSpec
