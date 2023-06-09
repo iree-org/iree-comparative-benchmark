@@ -8,11 +8,11 @@
 # Uses git diff to run pytype on changed files.
 # Example Usage:
 #   Defaults to comparing against 'main'.
-#     ./build_tools/pytype/check_diff.sh
+#     ./build_tools/scripts/check_pytype.sh
 #   A specific branch can be specified.
-#     ./build_tools/pytype/check_diff.sh  some-other-branch
+#     ./build_tools/scripts/check_pytype.sh  some-other-branch
 #   Or all python files outside of './third_party/' can be checked.
-#     ./build_tools/pytype/check_diff.sh  all
+#     ./build_tools/scripts/check_pytype.sh all
 
 DIFF_TARGET="${1:-main}"
 echo "Running pycheck against '${DIFF_TARGET?}'"
@@ -33,10 +33,7 @@ fi
 # We seperate the python files into multiple pytype calls because otherwise
 # Ninja gets confused. See https://github.com/google/pytype/issues/198
 BASE=$(echo "${FILES?}" | \
-       grep -vP '^(\./)?integrations/*$' | \
        grep -vP '(\./)?setup\.py$')
-INTEGRATIONS=$(echo "${FILES?}" | \
-               grep -P '^(\./)?integrations/.*')
 
 function check_files() {
   # $1: previous return code
@@ -67,18 +64,13 @@ function check_files() {
 
 MAX_CODE=0
 
-echo "Checking .py files outside of integrations/"
+echo "Checking .py files except for setup.py"
 check_files "${MAX_CODE?}" "${BASE?}"
 MAX_CODE="$?"
-
-echo "Checking .py files in integrations/.*"
-check_files "${MAX_CODE?}" "${INTEGRATIONS?}"
-MAX_CODE="$?"
-
 
 if [[ "${MAX_CODE?}" -ne "0" ]]; then
   echo "One or more pytype checks failed."
   echo "You can view these errors locally by running"
-  echo "  ./build_tools/pytype/check_diff.sh ${DIFF_TARGET?}"
+  echo "  ./build_tools/scripts/check_pytype.sh ${DIFF_TARGET?}"
   exit "${MAX_CODE?}"
 fi

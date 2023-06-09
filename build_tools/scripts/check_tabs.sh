@@ -18,8 +18,6 @@ declare -a excluded_files_patterns=(
   "/third_party/"
   "^third_party/"
   "*Makefile*"
-  # Symlinks make grep upset
-  "^integrations/tensorflow/iree-dialects$"
   # Generated / Binary files
   ".svg"
 )
