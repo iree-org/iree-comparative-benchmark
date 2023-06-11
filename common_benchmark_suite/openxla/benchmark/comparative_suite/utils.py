@@ -160,3 +160,23 @@ def build_batch_model_test_data(
     batch_test_data[batch_size] = test_data
 
   return batch_test_data
+
+
+def build_batch_benchmark_cases(
+    batch_models: Dict[int, def_types.Model],
+    batch_input_data: Dict[int, def_types.ModelTestData],
+    batch_output_data: Dict[int, def_types.ModelTestData],
+    target_device: def_types.DeviceSpec,
+    batch_sizes: Sequence[int]) -> Dict[int, def_types.BenchmarkCase]:
+  """Build benchmark cases for multiple batch sizes."""
+  benchmark_cases = {}
+  for batch_size in batch_sizes:
+    benchmark_case = def_types.BenchmarkCase.build(
+        model=batch_models[batch_size],
+        input_data=batch_input_data[batch_size],
+        expected_output=batch_output_data[batch_size],
+        target_device=target_device,
+    )
+    benchmark_cases[batch_size] = benchmark_case
+
+  return benchmark_cases

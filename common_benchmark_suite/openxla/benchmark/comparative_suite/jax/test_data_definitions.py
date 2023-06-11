@@ -58,6 +58,6 @@ T5_LARGE_FP32_JAX_512X1024XF32_OUTPUT_BATCH_TEMPLATE = utils.ModelTestDataTempla
                     "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/T5_LARGE/batch_${batch_size}/output_npy.tgz"
                 ))
     })
-T5_LARGE_FP32_JAX_512X1024XF32_BATCHES = utils.build_batch_model_test_data(
+T5_LARGE_FP32_JAX_512X1024XF32_OUTPUT_BATCHES = utils.build_batch_model_test_data(
     template=T5_LARGE_FP32_JAX_512X1024XF32_OUTPUT_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512])
