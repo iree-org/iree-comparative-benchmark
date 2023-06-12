@@ -1,0 +1,267 @@
+---
+snippets:
+  extract_model_name: |
+    function(full_model_name) std.split(std.split(full_model_name, 'TF')[0], 'PT')[0]
+  extract_batch_size: |
+    function(full_model_name) local parts = std.split(full_model_name, 'Batch'); if std.length(parts) == 2 then parts[1] else null
+  extract_framework: |
+    function(full_model_name) if 0 < std.length(std.findSubstr('TF', full_model_name)) then 'TF' else if 0 < std.length(std.findSubstr('PT', full_model_name)) then 'PT' else null
+  loadJson: |
+    function(filename) std.parseJson(std.native('readFile')(filename))
+  loadJsonFromFirstFoundFile: |
+    function(filepaths) std.parseJson(std.native('tryReadingFilesUntilSuccess')(filepaths))
+  loadCsv: |
+    function(filename) std.native('parseCsv')(std.native('readFile')(filename))
+  wrapInResultRowForDbImport: |
+    function(rows) [{ results: std.toString(row) } for row in rows]
+  parseNumber: |
+    function(str) std.native('parseNumber')(str)
+  getFilepathCapture: |
+    function(name) std.parseJson(std.extVar('filepath_captures'))[name]
+  getAllFilepathCaptures: |
+    function() std.parseJson(std.extVar('filepath_captures'))
+  timestampToIso8601: |
+    function(timestamp) std.native('timestampToIso8601')(timestamp)
+
+common:
+  common_sql_condition: &common_sql_condition |
+    SELECT 1
+    FROM `{dataset}.{table}`
+    WHERE JSON_VALUE(results.trigger.bucket_name) = @bucket_name
+    AND   JSON_VALUE(results.trigger.config)      = @config
+    AND   JSON_VALUE(results.trigger.prefix)      = @prefix
+    LIMIT 1;
+
+  # We use this query to delete all the data from a given source bucket
+  common_sql_delete: &common_sql_delete |
+    DELETE FROM `{dataset}.{table}`
+    WHERE JSON_VALUE(results.trigger.bucket_name) = @bucket_name
+
+  # We use this query to determine if there is already any data from a given bucket in the DB
+  common_sql_data_present: &common_sql_data_present |
+    SELECT 1
+    FROM `{dataset}.{table}`
+    WHERE JSON_VALUE(results.trigger.bucket_name) = @bucket_name
+    LIMIT 1;
+
+table_schemas:
+  benchmarking_experiments.oobi_v7: results:JSON
+  
+cloud_functions:
+  postsubmit: &postsubmit
+    bucket_name: iree-github-actions-postsubmit-artifacts
+    cloud_function_name: oobi-postsubmit-importer-v7
+    table_name: benchmarking_experiments.oobi_v7
+    sql_delete: *common_sql_delete
+    sql_data_present: *common_sql_data_present
+    service_account: oobi-db-import
+    rules:
+    - filepath_regex: "^(?P<fullpath>(?P<prefix>(?P<github_action_run_id>[0-9]+)/(?P<github_action_run_attempt>[0-9]+))/benchmark-results/benchmark-results-(?P<config>.*)\\.json)$"
+      sql_condition: *common_sql_condition
+      result: |
+        // Import helper functions
+        local extract_model_name = import 'extract_model_name';
+        local extract_batch_size = import 'extract_batch_size';
+        local extract_framework = import 'extract_framework';
+        local loadJson = import 'loadJson';
+        local getFilepathCapture = import 'getFilepathCapture';
+        local loadJsonFromFirstFoundFile = import 'loadJsonFromFirstFoundFile';
+        local wrapInResultRowForDbImport = import 'wrapInResultRowForDbImport';
+
+        // Very old runs are not supported, so we skip them as early as possible.
+        // This speeds up the batch import quite a bit because we avoid downloading the JSON files from GCS.
+        local minimumSupportedGitHubActionsRunId = 4823525383;
+        local currentGitHubActionsRunId = std.parseInt(std.split(getFilepathCapture('prefix'), '/')[0]);
+        assert currentGitHubActionsRunId >= minimumSupportedGitHubActionsRunId : 'This run is too old. Import not supported.';
+        
+        // Import the source JSON structs
+        local benchmark_results = loadJson(getFilepathCapture('fullpath'));
+
+        // This array contains all run attempts starting with the latest one. It's basically a descending range.
+        local all_run_attempts_descending = std.reverse(std.range(1, std.parseInt(getFilepathCapture('github_action_run_attempt'))));
+        
+        // Import compilation stats.
+        // Sometimes benchmark execution fails on the first attempt, but compilation succeeded. Then the compile stats can be found in one of the previous
+        // run attempts. So here we check if run attempt starting with the latest:
+        local compile_stats_candidates = [
+          std.format("%(id)s/%(attempt)d/benchmark-results/compile-stats-results.json", { id : getFilepathCapture('github_action_run_id'), attempt: attempt})
+          for attempt in all_run_attempts_descending
+        ];
+        local compile_stats = loadJsonFromFirstFoundFile(compile_stats_candidates);
+
+        // Import execution config.
+        // Sometimes benchmark execution fails on the first attempt, but the execution config has been written before. Then the config file can be found in one of the previous
+        // run attempts. So here we check if run attempt starting with the latest:
+        local execution_config_candidates = std.flattenArrays([
+           // There is a new and an old file location for the benchmark execution config. We are checking both.
+           [std.format("%(id)s/%(attempt)d/e2e-test-artifacts/execution-benchmark-config.json", {id: getFilepathCapture('github_action_run_id'), attempt: attempt}),
+            std.format("%(id)s/%(attempt)d/benchmark-config.json", {id: getFilepathCapture('github_action_run_id'), attempt: attempt})]
+           for attempt in all_run_attempts_descending
+        ]);
+        local execution_config = loadJsonFromFirstFoundFile(execution_config_candidates);
+        
+        // Some integrity checking
+        local commits_equal = std.assertEqual(benchmark_results.commit, compile_stats.commit);
+        
+        // Some helper functions
+        local resolve_config = function(key) execution_config[getFilepathCapture('config')].run_configs.keyed_obj_map[key];
+        local find_module_gen_config = function(run_config_id) resolve_config('iree_module_generation_configs:' + resolve_config('iree_e2e_model_run_configs:' + run_config_id).module_generation_config);
+        local find_model = function(module_gen_config) resolve_config('models:' + resolve_config('iree_imported_models:' + module_gen_config.imported_model).model);
+        local find_compile_stats = function(module_gen_config) (
+          local matches_by_id = std.filter(function(x) x.compilation_info.gen_config_id == module_gen_config.composite_id, compile_stats.compilation_statistics);
+          if std.length(matches_by_id) > 0 then matches_by_id[0] else
+          std.filter(function(x) std.strReplace(std.get(x.compilation_info, 'name', default=''), ',compile-stats', '') == module_gen_config.name, compile_stats.compilation_statistics)[0]
+        );
+        
+        // Some fields moved around over time. These functions handle backwards compatibility
+        local get_run_config_id = function(benchmark) if std.objectHas(benchmark, 'info') then benchmark.info.run_config_id else benchmark.benchmark_info.run_config_id;
+        local get_metrics_raw_data = function(benchmark) if std.objectHas(benchmark, 'metrics') then benchmark.metrics.raw_data.benchmarks else benchmark.results;
+        local get_benchmark_context = function(benchmark) if std.objectHas(benchmark, 'metrics') then benchmark.metrics.raw_data.context else benchmark.context;
+
+        local benchmarks = [
+          local current_run_config_id = get_run_config_id(benchmark);
+          local current_module_gen_config = find_module_gen_config(current_run_config_id);
+          {
+            trigger: {
+              bucket_name: std.extVar('config.bucket_name'),
+              repo: 'https://github.com/openxla/iree.git',
+              commit: compile_stats.commit,
+              config: getFilepathCapture('config'),
+              date: get_benchmark_context(benchmark).date,
+              prefix: getFilepathCapture('prefix')
+            },
+            definition: {
+              full_model_name: find_model(current_module_gen_config).name,
+              model_name: extract_model_name(self.full_model_name),
+              batch_size: extract_batch_size(self.full_model_name),
+              framework: extract_framework(self.full_model_name),
+              config: getFilepathCapture('config'),
+              run_config_id: get_run_config_id(benchmark),
+              benchmark_name: benchmark.info.name
+            },
+            metrics: {
+              compilation: {
+                local current_compile_stats = find_compile_stats(current_module_gen_config),
+                compilation_time_ms: current_compile_stats.compilation_time_ms,
+                module_component_sizes: current_compile_stats.module_component_sizes,
+              },
+              execution: {
+                real_time: {
+                  median: std.filter(function(x) std.endsWith(x.name, 'real_time_median'), get_metrics_raw_data(benchmark))[0].real_time,
+                  mean: std.filter(function(x) std.endsWith(x.name, 'real_time_mean'), get_metrics_raw_data(benchmark))[0].real_time,
+                  stddev: std.filter(function(x) std.endsWith(x.name, 'real_time_stddev'), get_metrics_raw_data(benchmark))[0].real_time,
+                },
+                device_memory: std.get(benchmark.metrics, "device_memory")
+              }
+            }
+          }
+          for benchmark in benchmark_results.benchmarks
+        ];
+
+        wrapInResultRowForDbImport(benchmarks)
+  presubmit:
+    <<: *postsubmit
+    bucket_name: iree-github-actions-presubmit-artifacts
+    cloud_function_name: oobi-presubmit-importer-v7
+  comparative:
+    bucket_name: comparative-benchmark-artifacts
+    cloud_function_name: oobi-comparative-importer-v7
+    table_name: benchmarking_experiments.oobi_v7
+    sql_delete: *common_sql_delete
+    sql_data_present: *common_sql_data_present
+    service_account: oobi-db-import
+    rules:
+    # This is the old style file format
+    - filepath_regex: ^(?P<fullpath>(?P<prefix>xla/(?P<xla_version>[^_]+)_(?P<date>[0-9]{4}-[0-9]{2}-[0-9]{2})\.(?P<timestamp>[0-9]+))/(?P<config>[^.]+)\.json)$
+      sql_condition: *common_sql_condition
+      result: |
+        local loadJson = import "loadJson";
+        local extract_model_name = import "extract_model_name";
+        local getFilepathCapture = import "getFilepathCapture";
+        local wrapInResultRowForDbImport = import "wrapInResultRowForDbImport";
+        local timestampToIso8601 = import "timestampToIso8601";
+
+        local results = loadJson(getFilepathCapture("fullpath"));
+        local benchmarks = [
+          {
+            trigger: {
+              bucket_name: std.extVar('config.bucket_name'),
+              date: timestampToIso8601(getFilepathCapture('timestamp')),
+              prefix: getFilepathCapture('prefix'),
+              config: getFilepathCapture('config'),
+              compiler_version: getFilepathCapture('xla_version'),
+            },
+            definition: benchmark.definition,
+            metrics: benchmark.metrics,
+          }
+        for benchmark in results.benchmarks];
+
+        wrapInResultRowForDbImport(benchmarks)
+    # This is the new style file format
+    - filepath_regex: ^(?P<fullpath>(?P<prefix>(?P<device>cpu|gpu)_(?P<date>[0-9]{4}-[0-9]{2}-[0-9]{2})\.(?P<timestamp>[0-9]+))/(?P<config>(?P<framework>[^-]+)-(?P<compiler>[^.]+))\.json)$
+      sql_condition: *common_sql_condition
+      result: |
+        local loadJson = import "loadJson";
+        local getAllFilepathCaptures = import "getAllFilepathCaptures";
+        local wrapInResultRowForDbImport = import "wrapInResultRowForDbImport";
+        local timestampToIso8601 = import "timestampToIso8601";
+
+        local filepath_captures = getAllFilepathCaptures();
+        local results = loadJson(filepath_captures.fullpath);
+        local benchmarks = [
+          {
+            trigger: {
+              bucket_name: std.extVar('config.bucket_name'),
+              date: timestampToIso8601(filepath_captures.timestamp),
+              prefix: filepath_captures.prefix,
+              config: filepath_captures.config,
+            },
+            definition: benchmark.definition,
+            metrics: benchmark.metrics,
+          }
+        for benchmark in results.benchmarks];
+
+        wrapInResultRowForDbImport(benchmarks)
+
+  dispatch_profiler:
+    bucket_name: dispatch-profiler-artifacts
+    cloud_function_name: oobi-dispatch-profiler-importer-v7
+    table_name: benchmarking_experiments.oobi_v7
+    sql_delete: *common_sql_delete
+    sql_data_present: *common_sql_data_present
+    service_account: oobi-db-import
+    rules:
+    - filepath_regex: ^(?P<fullpath>(?P<prefix>cuda/(?P<date>[0-9]{4}-[0-9]{2}-[0-9]{2})\.sha_(?P<commit>[^.]+)\.timestamp_(?P<timestamp>[0-9]+))/matmul_perf_(?P<config>[^.]+)\.csv)$
+      sql_condition: *common_sql_condition
+      result: |
+        local loadCsv = import "loadCsv";
+        local parseNumber = import "parseNumber";
+        local getFilepathCapture = import "getFilepathCapture";
+        local wrapInResultRowForDbImport = import "wrapInResultRowForDbImport";
+        local timestampToIso8601 = import "timestampToIso8601";
+
+        local data = loadCsv(getFilepathCapture("fullpath"));
+        local benchmarks = [
+          {
+            trigger: {
+              bucket_name: std.extVar('config.bucket_name'),
+              prefix: getFilepathCapture('prefix'),
+              repo: 'https://github.com/openxla/iree.git',
+              commit: getFilepathCapture('commit'),
+              date: timestampToIso8601(getFilepathCapture('timestamp')),
+              config: getFilepathCapture('config'),
+            },
+            fields: benchmark + {
+              GFLOPs: parseNumber(benchmark.GFLOPs),
+              'Runtime(ms)': parseNumber(std.get(benchmark, 'Runtime(ms)')),
+              bytes: parseNumber(benchmark.bytes),
+              flops: parseNumber(benchmark.flops),
+              k: parseNumber(benchmark.k),
+              m: parseNumber(benchmark.m),
+              n: parseNumber(benchmark.n),
+              batch_count: parseNumber(benchmark.batch_count),
+            },
+          }
+        for benchmark in data];
+
+        wrapInResultRowForDbImport(benchmarks)
