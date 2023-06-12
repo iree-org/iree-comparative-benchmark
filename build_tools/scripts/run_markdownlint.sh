@@ -12,11 +12,8 @@
 set -euo pipefail
 
 declare -a included_files_patterns=(
-  # All .md files (disabled while we decide how rigorously to apply lint checks)
-  # "./**/*.md"
-
-  # Just .md files for the user-facing website.
-  "./docs/website/**/*.md"
+  # All .md files.
+  "./**/*.md"
 )
 
 declare -a excluded_files_patterns=(
@@ -25,5 +22,5 @@ declare -a excluded_files_patterns=(
 )
 
 markdownlint "${included_files_patterns[*]}" \
-    --config ./docs/.markdownlint.yml \
+    --config ./.markdownlint.yml \
     --ignore "${excluded_files_patterns[*]}"
