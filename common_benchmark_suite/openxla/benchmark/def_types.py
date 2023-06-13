@@ -55,8 +55,8 @@ class ModelArtifactType(Enum):
 
 
 @dataclass(frozen=True)
-class ModelInstance:
-  """A model instance with concrete parameters to initialize the model."""
+class Model:
+  """A model with concrete parameters to initialize."""
   id: str
   # Friendly unique name.
   name: str
@@ -128,9 +128,9 @@ class DeviceSpec:
 
 
 @dataclass(frozen=True)
-class BenchmarkInstance:
-  """A benchmark instance."""
-  model: ModelInstance
+class BenchmarkCase:
+  """A benchmark case."""
+  model: Model
   input_data: ModelTestData
   expected_output: ModelTestData
   target_device: DeviceSpec
