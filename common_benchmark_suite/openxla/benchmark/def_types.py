@@ -55,19 +55,26 @@ class ModelArtifactType(Enum):
 
 
 @dataclass(frozen=True)
+class ModelArtifact:
+  """A specific derived model."""
+  artifact_type: ModelArtifactType
+  source_url: str
+
+
+@dataclass(frozen=True)
 class Model:
   """A model with concrete parameters to initialize."""
   id: str
   # Friendly unique name.
   name: str
-  # Tags that describe the characteristics additional to model_impl.tags.
+  # Tags that describe the characteristics additional to `model_impl.tags`.
   tags: List[str]
   # Source model implementation.
   model_impl: ModelImplementation
   # Parameters to initialize the model, e.g., input batch size, sequence length.
   model_parameters: Dict[str, Any]
   # URLs to download the derived models of the initialized model.
-  artifact_sources: Dict[ModelArtifactType, str]
+  artifacts: Dict[ModelArtifactType, ModelArtifact]
 
   def __str__(self):
     return self.name
@@ -75,8 +82,22 @@ class Model:
 
 class ModelTestDataFormat(Enum):
   """Model input or output data format."""
-  # Pack of npy tensor files.
+  # Pack of numpy tensor files in `.tar.gz`.
   NUMPY_TENSORS = "npy_tensors"
+
+
+@dataclass(frozen=True)
+class ModelTestDataArtifact:
+  """Model test data in a specific format."""
+  # Test data format.
+  data_format: ModelTestDataFormat
+  # TODO(pzread): We should include the raw data to generate this test data.
+  # Parameters to generate the test data.
+  data_parameters: Dict[str, Any]
+  # Parameters for output verifiers if applicable.
+  verify_parameters: Dict[str, Any]
+  # URL to download the test data.
+  source_url: str
 
 
 @dataclass(frozen=True)
@@ -85,14 +106,12 @@ class ModelTestData:
   id: str
   # Friendly name.
   name: str
-  # Tags that describe the data characteristics.
+  # Tags that describe characteristics additional to `data_source.tags`.
   tags: List[str]
-  # Information on where the data was originally sourced.
+  # Source information.
   source_info: str
-  # URLs to download the data in multiple formats.
-  data_sources: Dict[ModelTestDataFormat, str]
-  # Parameters for output verifiers if applicable.
-  output_verify_params: Dict[ModelTestDataFormat, Dict[str, Any]]
+  # Test data in multiple formats.
+  artifacts: Dict[ModelTestDataFormat, ModelTestDataArtifact]
 
   def __str__(self):
     return self.name
