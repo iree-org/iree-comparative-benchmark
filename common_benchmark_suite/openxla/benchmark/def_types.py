@@ -41,6 +41,8 @@ class ModelImplementation:
   data_type: ModelDataType
   # Source of the model.
   source_info: str
+  # Model module path
+  module_path: str
 
   def __str__(self):
     return self.name
