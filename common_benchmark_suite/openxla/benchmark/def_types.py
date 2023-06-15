@@ -18,15 +18,6 @@ class ModelFrameworkType(Enum):
   JAX = "jax"
 
 
-class ModelDataType(Enum):
-  """Model data type used in the model."""
-  FP32 = "fp32"
-  FP16 = "fp16"
-  BF16 = "bf16"
-  INT8 = "int8"
-  UINT8 = "uint8"
-
-
 @dataclass(frozen=True)
 class ModelImplementation:
   """Model implementation with configurable parameters."""
@@ -37,8 +28,6 @@ class ModelImplementation:
   tags: List[str]
   # Framework the model is implemented in.
   framework_type: ModelFrameworkType
-  # Data type used in the model.
-  data_type: ModelDataType
   # Source of the model.
   source_info: str
   # Model module path

@@ -16,7 +16,6 @@ T5_LARGE_FP32_JAX_IMPL = def_types.ModelImplementation(
     name="T5_LARGE_FP32_JAX",
     tags=["fp32", "transformer-encoder", "transformer-decoder", "t5"],
     framework_type=def_types.ModelFrameworkType.JAX,
-    data_type=def_types.ModelDataType.FP32,
     module_path=f"{utils.MODELS_MODULE_PATH}.jax_models.t5_large.model",
     source_info=
     "https://huggingface.co/docs/transformers/model_doc/t5#transformers.FlaxT5Model",
@@ -27,7 +26,10 @@ T5_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
     name=utils.BATCH_NAME("T5_LARGE_FP32_JAX_512XI32"),
     tags=[utils.BATCH_TAG],
     model_impl=T5_LARGE_FP32_JAX_IMPL,
-    model_parameters={"batch_size": utils.BATCH_SIZE_PARAM},
+    model_parameters={
+        "batch_size": utils.BATCH_SIZE_PARAM,
+        "data_type": "fp32",
+    },
     artifacts={
         def_types.ModelArtifactType.STABLEHLO:
             utils.ModelArtifactTemplate(
