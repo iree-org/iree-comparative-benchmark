@@ -91,7 +91,7 @@ class ModelTestDataArtifact:
   """Model test data in a specific format."""
   # Test data format.
   data_format: ModelTestDataFormat
-  # TODO(pzread): We should include the raw data to generate this test data.
+  # TODO(#12): We should include the raw data to generate this test data.
   # Parameters to generate the test data.
   data_parameters: Dict[str, Any]
   # Parameters for output verifiers if applicable.
