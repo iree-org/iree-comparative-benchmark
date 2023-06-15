@@ -52,7 +52,9 @@ class T5Large(model_interfaces.InferenceModel):
     )[0]
 
 
-def create_model(batch_size: int = 1, seq_len: int = 512) -> T5Large:
+def create_model(batch_size: int = 1,
+                 seq_len: int = 512,
+                 **_unused_params) -> T5Large:
   """Configure and create a JAX T5 large model instance.
   
   Args:
