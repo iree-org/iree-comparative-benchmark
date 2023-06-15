@@ -11,12 +11,6 @@ from openxla.benchmark.comparative_suite import utils
 
 PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752"
 
-# Constants and functions help build batch templates.
-BATCH_ID = lambda model_id: string.Template(model_id + "-batch${batch_size}")
-BATCH_NAME = lambda name: string.Template(name + "_BATCH${batch_size}")
-BATCH_TAG = string.Template("batch-${batch_size}")
-BATCH_SIZE_PARAM = string.Template("${batch_size}")
-
 T5_LARGE_FP32_JAX_IMPL = def_types.ModelImplementation(
     id=unique_ids.MODEL_T5_LARGE_FP32_JAX,
     name="T5_LARGE_FP32_JAX",
@@ -29,11 +23,11 @@ T5_LARGE_FP32_JAX_IMPL = def_types.ModelImplementation(
 )
 
 T5_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
-    id=BATCH_ID(unique_ids.MODEL_T5_LARGE_FP32_JAX),
-    name=BATCH_NAME("T5_LARGE_FP32_JAX_512XI32"),
-    tags=["batch-1"],
+    id=utils.BATCH_ID(unique_ids.MODEL_T5_LARGE_FP32_JAX),
+    name=utils.BATCH_NAME("T5_LARGE_FP32_JAX_512XI32"),
+    tags=[utils.BATCH_TAG],
     model_impl=T5_LARGE_FP32_JAX_IMPL,
-    model_parameters={"batch_size": BATCH_SIZE_PARAM},
+    model_parameters={"batch_size": utils.BATCH_SIZE_PARAM},
     artifacts={
         def_types.ModelArtifactType.STABLEHLO:
             utils.ModelArtifactTemplate(

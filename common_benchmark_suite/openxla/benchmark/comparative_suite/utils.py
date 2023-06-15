@@ -14,6 +14,13 @@ from openxla.benchmark import def_types
 # Module path to find all model implementations.
 MODELS_MODULE_PATH = "openxla.benchmark.models"
 
+# Constants and functions help build batch templates.
+BATCH_ID = lambda model_id: string.Template(model_id + "-batch${batch_size}")
+BATCH_NAME = lambda name: string.Template(name + "_BATCH${batch_size}")
+BATCH_TAG = string.Template("batch-${batch_size}")
+BATCH_SIZE_PARAM = string.Template("${batch_size}")
+BATCH_TENSOR_DIMS = lambda dims: string.Template("${batch_size}x" + dims)
+
 
 @dataclass(frozen=True)
 class ModelArtifactTemplate:

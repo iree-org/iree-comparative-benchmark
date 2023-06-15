@@ -9,19 +9,11 @@ import string
 from openxla.benchmark.comparative_suite import utils
 from openxla.benchmark import def_types, unique_ids
 
-# Constants and functions help build batch templates.
-BATCH_ID = lambda data_id: string.Template(data_id + "-batch${batch_size}")
-BATCH_NAME = lambda name: string.Template(name + "_BATCH${batch_size}")
-BATCH_TAG = string.Template("batch-${batch_size}")
-BATCH_MODEL_ID = lambda model_id: string.Template(model_id +
-                                                  "-batch${batch_size}")
-BATCH_TENSOR_DIMS = lambda dims: string.Template("${batch_size}x" + dims)
-
 # T5 large inputs.
 T5_LARGE_JAX_SEQLEN512_I32_INPUT_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=BATCH_ID(unique_ids.INPUT_DATA_T5_LARGE_JAX_SEQLEN512_I32),
-    name=BATCH_NAME("T5_LARGE_JAX_SEQLEN512_I32_INPUT"),
-    tags=["input-data", "seqlen512", BATCH_TAG],
+    id=utils.BATCH_ID(unique_ids.INPUT_DATA_T5_LARGE_JAX_SEQLEN512_I32),
+    name=utils.BATCH_NAME("T5_LARGE_JAX_SEQLEN512_I32_INPUT"),
+    tags=["input-data", "seqlen512", utils.BATCH_TAG],
     source_info=
     "Original text: 'Studies have been shown that owning a dog is good for you'",
     artifacts={
@@ -31,8 +23,8 @@ T5_LARGE_JAX_SEQLEN512_I32_INPUT_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
                 data_parameters={
                     "tensor_names": ["input_ids", "decoder_input_ids"],
                     "tensor_dimensions": [
-                        BATCH_TENSOR_DIMS("512xi32"),
-                        BATCH_TENSOR_DIMS("512xi32"),
+                        utils.BATCH_TENSOR_DIMS("512xi32"),
+                        utils.BATCH_TENSOR_DIMS("512xi32"),
                     ]
                 },
                 verify_parameters={},
@@ -46,9 +38,9 @@ T5_LARGE_JAX_SEQLEN512_I32_INPUT_BATCHES = utils.build_batch_model_test_data(
 
 # T5 large outputs.
 T5_LARGE_FP32_JAX_512X1024XF32_OUTPUT_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=BATCH_ID(unique_ids.OUTPUT_DATA_T5_LARGE_FP32_JAX_512X1024XF32),
-    name=BATCH_NAME("T5_LARGE_FP32_JAX_512X1024XF32_OUTPUT"),
-    tags=["output-data", BATCH_TAG],
+    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_T5_LARGE_FP32_JAX_512X1024XF32),
+    name=utils.BATCH_NAME("T5_LARGE_FP32_JAX_512X1024XF32_OUTPUT"),
+    tags=["output-data", utils.BATCH_TAG],
     source_info="",
     artifacts={
         def_types.ModelTestDataFormat.NUMPY_TENSORS:
@@ -56,7 +48,9 @@ T5_LARGE_FP32_JAX_512X1024XF32_OUTPUT_BATCH_TEMPLATE = utils.ModelTestDataTempla
                 data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
                 data_parameters={
                     "tensor_names": ["output_0"],
-                    "tensor_dimensions": [BATCH_TENSOR_DIMS("512x1024xi32"),]
+                    "tensor_dimensions": [
+                        utils.BATCH_TENSOR_DIMS("512x1024xi32"),
+                    ]
                 },
                 # TODO(#11): Add verification tolerance.
                 verify_parameters={},
