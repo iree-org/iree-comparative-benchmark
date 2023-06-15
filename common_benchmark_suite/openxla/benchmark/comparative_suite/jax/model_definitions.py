@@ -16,7 +16,7 @@ T5_LARGE_FP32_JAX_IMPL = def_types.ModelImplementation(
     name="T5_LARGE_FP32_JAX",
     tags=["fp32", "transformer-encoder", "transformer-decoder", "t5"],
     framework_type=def_types.ModelFrameworkType.JAX,
-    module_path=f"{utils.MODELS_MODULE_PATH}.jax_models.t5_large.model",
+    module_path=f"{utils.MODELS_MODULE_PATH}.jax.t5_large.model",
     source_info=
     "https://huggingface.co/docs/transformers/model_doc/t5#transformers.FlaxT5Model",
 )
