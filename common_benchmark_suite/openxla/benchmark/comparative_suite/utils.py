@@ -7,9 +7,16 @@
 
 import string
 from dataclasses import dataclass
-from typing import Any, Dict, List, Union, Sequence
+from typing import Any, Callable, Dict, List, Union, Sequence
 
 from openxla.benchmark import def_types
+
+
+@dataclass(frozen=True)
+class TemplateFunc:
+  """Function to return an arbitrary object with substitutions."""
+  func: Callable[..., Any]
+
 
 # Module path to find all model implementations.
 MODELS_MODULE_PATH = "openxla.benchmark.models"
@@ -18,7 +25,7 @@ MODELS_MODULE_PATH = "openxla.benchmark.models"
 BATCH_ID = lambda model_id: string.Template(model_id + "-batch${batch_size}")
 BATCH_NAME = lambda name: string.Template(name + "_BATCH${batch_size}")
 BATCH_TAG = string.Template("batch-${batch_size}")
-BATCH_SIZE_PARAM = string.Template("${batch_size}")
+BATCH_SIZE_PARAM = TemplateFunc(func=lambda batch_size: batch_size)
 BATCH_TENSOR_DIMS = lambda dims: string.Template("${batch_size}x" + dims)
 
 
@@ -45,16 +52,20 @@ def _substitute_template(obj: Any, **substitutions) -> Any:
 
   Supports traversing in list and dictionary.
   """
+
+  if isinstance(obj, TemplateFunc):
+    return obj.func(**substitutions)
+
   if obj is None or any(
       isinstance(obj, primitive_type) for primitive_type in [int, str, bool]):
     return obj
   if isinstance(obj, string.Template):
     return obj.substitute(**substitutions)
   if isinstance(obj, list):
-    return [value.substitute(**substitutions) for value in obj]
+    return [_substitute_template(value, **substitutions) for value in obj]
   if isinstance(obj, dict):
-    return dict(
-        (key, value.substitute(**substitutions)) for key, value in obj.items())
+    return dict((key, _substitute_template(value, **substitutions))
+                for key, value in obj.items())
 
   raise ValueError(f"Unsupported object type: {type(obj)} of {obj}.")
 
