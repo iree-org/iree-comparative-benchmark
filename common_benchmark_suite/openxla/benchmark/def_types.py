@@ -159,21 +159,21 @@ class BenchmarkCase:
     benchmark_id = "/".join([
         "models",
         model.id,
-        "input_data",
+        "inputs",
         input_data.id,
-        "expected_output",
+        "expected_outputs",
         expected_output.id,
-        "target_device",
+        "target_devices",
         target_device.id,
     ])
     name = "/".join([
         "models",
         model.name,
-        "input_data",
+        "inputs",
         input_data.name,
-        "expected_output",
+        "expected_outputs",
         expected_output.name,
-        "target_device",
+        "target_devices",
         target_device.name,
     ])
     return cls(id=benchmark_id,

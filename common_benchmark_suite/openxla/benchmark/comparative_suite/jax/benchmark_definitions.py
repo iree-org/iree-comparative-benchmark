@@ -30,7 +30,8 @@ T5_LARGE_JAX_C2_STANDARD_16 = utils.build_batch_benchmark_cases(
     batch_sizes=[1, 16, 24, 32, 48, 64, 512],
 )
 
-BENCHMARK_NAME_MAP = dict((case.name, case) for case in itertools.chain(
-    T5_LARGE_JAX_A2_HIGHGPU_1G.values(),
-    T5_LARGE_JAX_C2_STANDARD_16.values(),
-))
+BENCHMARKS = list(
+    itertools.chain(
+        T5_LARGE_JAX_A2_HIGHGPU_1G.values(),
+        T5_LARGE_JAX_C2_STANDARD_16.values(),
+    ))
