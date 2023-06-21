@@ -6,7 +6,8 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import unittest
-from db_import.utils import first_no_except
+
+from utils import first_no_except
 
 
 class TestFirstNoExcept(unittest.TestCase):

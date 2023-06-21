@@ -5,8 +5,13 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import unittest, io, json, tempfile, pathlib
-from db_import.rules import apply_rule_to_file, BenchmarkRunAlreadyPresentError
+import io
+import json
+import pathlib
+import tempfile
+import unittest
+
+from rules import apply_rule_to_file, BenchmarkRunAlreadyPresentError
 
 
 # This class mocks a Blob from the google-cloud-storage package.
@@ -144,14 +149,15 @@ class TestApplyRuleToFile(unittest.TestCase):
     }
 
     with tempfile.TemporaryDirectory() as dir:
+      temp_dir = pathlib.Path(dir)
       apply_rule_to_file(rule, file1_with_content, EMPTY_CONFIG, dict(), None,
-                         dir)
+                         temp_dir)
 
-      path1 = pathlib.Path(dir) / EMPTY_CONFIG["bucket_name"] / "hello.json"
+      path1 = temp_dir / EMPTY_CONFIG["bucket_name"] / "hello.json"
       self.assertTrue(path1.is_file())
       self.assertEqual(path1.read_text(), file1_with_content.contents)
 
-      path2 = pathlib.Path(dir) / EMPTY_CONFIG["bucket_name"] / "world.json"
+      path2 = temp_dir / EMPTY_CONFIG["bucket_name"] / "world.json"
       self.assertTrue(path2.is_file())
       self.assertEqual(path2.read_text(), file2_with_content.contents)
 

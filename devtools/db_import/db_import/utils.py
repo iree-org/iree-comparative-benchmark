@@ -10,10 +10,12 @@ T = TypeVar("T")
 R = TypeVar("R")
 
 
-# Returns `function(item)` for the first `item` from `iterable` that didn't raise an exception.
-# If all items raise an exception the exception raised by `function(last_item)` is raised.
-# If the iterable yields no items, `None` is returned.
 def first_no_except(function: Callable[[T], R], iterable: Iterable[T]) -> R:
+  """ Returns `function(item)` for the first `item` from `iterable` that didn't raise an exception.
+
+  - If all items raise an exception the exception raised by `function(last_item)` is raised.
+  - If the iterable yields no items, `None` is returned.
+  """
   last_exception = None
 
   for el in iterable:

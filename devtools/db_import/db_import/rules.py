@@ -4,28 +4,37 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import csv, datetime, io, json, re, os
-from typing import Any, Optional, Callable
+import csv
+import datetime
+import io
+import json
+import pathlib
+import re
 import rjsonnet
+
 from google.cloud import storage
-from db_import.utils import first_no_except
+from typing import Any, Callable, Dict, Optional
+
+from utils import first_no_except
 
 
 class BenchmarkRunAlreadyPresentError(Exception):
   pass
 
 
-# Applies the given `rule`` to `file`.
-# - Returns False if `rule[filepath_regex]` does not match the filepath of `file`.
-# - If it matches, it evaluates the JSONNet expression `rule[result]` and returns its result (parsed as JSON).
 def apply_rule_to_file(
-    rule: dict,
+    rule: Dict,
     file: storage.Blob,
-    config: dict,
-    snippets: dict[str, str],
+    config: Dict,
+    snippets: Dict[str, str],
     presence_check: Optional[Callable[[Any, Any], bool]],
-    dump_files_to: Optional[str],
+    dump_files_to: Optional[pathlib.Path],
 ):
+  """Applies the given `rule`` to `file`.
+
+  - Returns False if `rule[filepath_regex]` does not match the filepath of `file`.
+  - If it matches, it evaluates the JSONNet expression `rule[result]` and returns its result (parsed as JSON).
+  """
   regex = re.compile(rule["filepath_regex"])
   match = regex.match(file.name)
 
@@ -62,11 +71,9 @@ def apply_rule_to_file(
       contents = fd.read()
 
     if dump_files_to:
-      dump_filepath = os.path.join(dump_files_to, config["bucket_name"],
-                                   filepath)
-      os.makedirs(os.path.dirname(dump_filepath), exist_ok=True)
-      with open(dump_filepath, "w") as fd:
-        fd.write(contents)
+      dump_directory = dump_files_to / config["bucket_name"]
+      dump_directory.mkdir(parents=True, exist_ok=True)
+      (dump_directory / filepath).write_text(contents)
 
     return contents
 
@@ -88,13 +95,13 @@ def apply_rule_to_file(
       "config.bucket_name": config["bucket_name"],
       "config.cloud_function_name": config["cloud_function_name"],
   }
+  additional_config_params["filepath_captures"] = json.dumps(match.groupdict())
 
   return json.loads(
       rjsonnet.evaluate_snippet(
           file.name,
           rule["result"],
-          ext_vars=additional_config_params |
-          {"filepath_captures": json.dumps(match.groupdict())},
+          ext_vars=additional_config_params,
           import_callback=import_callback,
           native_callbacks=native_callbacks,
       ))
