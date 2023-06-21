@@ -192,14 +192,11 @@ def _run(benchmark: def_types.BenchmarkCase, run_in_process: bool,
 def _parse_arguments() -> argparse.Namespace:
   parser = argparse.ArgumentParser(
       description="Run JAX benchmarks with XLA backend.")
-  parser.add_argument(
-      "-o",
-      "--output_path",
-      type=pathlib.Path,
-      required=True,
-      help=
-      "Path to results json file. Expects this file to have been pre-populated."
-  )
+  parser.add_argument("-o",
+                      "--output",
+                      type=pathlib.Path,
+                      required=True,
+                      help="JSON file path to merge the results.")
   parser.add_argument("-name",
                       "--benchmark_name",
                       type=str,
@@ -232,17 +229,20 @@ def main(
     run_in_process: bool,
     warmup_iterations: int,
     iterations: int,
-    output_path: pathlib.Path,
+    output: pathlib.Path,
     verbose: bool,
 ):
   name_pattern = re.compile(f"^{benchmark_name}$")
   benchmarks = [
-      benchmark for benchmark in benchmark_definitions.BENCHMARKS
+      benchmark for benchmark in benchmark_definitions.ALL_BENCHMARKS
       if name_pattern.match(benchmark.name)
   ]
 
   if not benchmarks:
-    raise ValueError(f'No benchmark matches "{benchmark_name}".')
+    all_benchmark_list = "\n".join(
+        benchmark.name for benchmark in benchmark_definitions.ALL_BENCHMARKS)
+    raise ValueError(f'No benchmark matches "{benchmark_name}".'
+                     f' Available benchmarks:\n{all_benchmark_list}')
 
   for benchmark in benchmarks:
     result = _run(benchmark,
@@ -252,7 +252,7 @@ def main(
     if verbose:
       print(json.dumps(dataclasses.asdict(result), indent=2))
 
-    _append_result(output_path, result)
+    _append_result(output, result)
 
 
 if __name__ == "__main__":
