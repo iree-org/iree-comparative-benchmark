@@ -37,7 +37,7 @@ class Bucket:
   def blob(self, name: str) -> Blob:
     return Blob(name, self, self.contents[name])
 
-  def registerBlob(self, name: str, contents: str):
+  def register_blob(self, name: str, contents: str):
     self.contents[name] = contents
     return self.blob(name)
 
@@ -51,7 +51,7 @@ EMPTY_CONFIG = {
 class TestApplyRuleToFile(unittest.TestCase):
 
   def test_no_match(self):
-    empty_file = Bucket().registerBlob("hello.json", "")
+    empty_file = Bucket().register_blob("hello.json", "")
 
     rule = {"filepath_regex": "unknown\.json", "result": "{}"}
 
@@ -60,7 +60,7 @@ class TestApplyRuleToFile(unittest.TestCase):
     self.assertEqual(result, False)
 
   def test_matches_filepath(self):
-    empty_file = Bucket().registerBlob("hello.json", "")
+    empty_file = Bucket().register_blob("hello.json", "")
 
     rule = {"filepath_regex": "hello\.json", "result": "{}"}
 
@@ -69,7 +69,7 @@ class TestApplyRuleToFile(unittest.TestCase):
     self.assertEqual(result, dict())
 
   def test_already_present(self):
-    empty_file = Bucket().registerBlob("hello.json", "")
+    empty_file = Bucket().register_blob("hello.json", "")
 
     rule = {"filepath_regex": "hello\.json", "result": "{}"}
 
@@ -82,7 +82,7 @@ class TestApplyRuleToFile(unittest.TestCase):
                          None)
 
   def test_filepath_capture(self):
-    empty_file = Bucket().registerBlob("hello.json", "")
+    empty_file = Bucket().register_blob("hello.json", "")
 
     rule = {
         "filepath_regex": "(?P<capture>hello)\.json",
@@ -94,7 +94,7 @@ class TestApplyRuleToFile(unittest.TestCase):
     self.assertEqual(result, {"capture": "hello"})
 
   def test_import_snippet(self):
-    empty_file = Bucket().registerBlob("hello.json", "")
+    empty_file = Bucket().register_blob("hello.json", "")
 
     rule = {
         "filepath_regex": "hello\.json",
@@ -107,8 +107,8 @@ class TestApplyRuleToFile(unittest.TestCase):
 
   def test_load_json(self):
     contents = {"hello": 42, "world": 43}
-    file_with_contents = Bucket().registerBlob("hello.json",
-                                               json.dumps(contents))
+    file_with_contents = Bucket().register_blob("hello.json",
+                                                json.dumps(contents))
 
     rule = {
         "filepath_regex": "(?P<filepath>.*\.json)",
@@ -123,7 +123,7 @@ class TestApplyRuleToFile(unittest.TestCase):
     csv_contents = """"col1", "col2"
 "hello", "world"
 """
-    file_with_contents = Bucket().registerBlob("hello.json", csv_contents)
+    file_with_contents = Bucket().register_blob("hello.json", csv_contents)
 
     rule = {
         "filepath_regex":
@@ -138,8 +138,10 @@ class TestApplyRuleToFile(unittest.TestCase):
 
   def test_dump_files(self):
     bucket = Bucket()
-    file1_with_content = bucket.registerBlob("hello.json", "hello.json content")
-    file2_with_content = bucket.registerBlob("world.json", "world.json content")
+    file1_with_content = bucket.register_blob("hello.json",
+                                              "hello.json content")
+    file2_with_content = bucket.register_blob("world.json",
+                                              "world.json content")
 
     rule = {
         "filepath_regex":
@@ -162,7 +164,7 @@ class TestApplyRuleToFile(unittest.TestCase):
       self.assertEqual(path2.read_text(), file2_with_content.contents)
 
   def test_timestamp_to_iso8601(self):
-    empty_file = Bucket().registerBlob("hello.json", "")
+    empty_file = Bucket().register_blob("hello.json", "")
 
     rule = {
         "filepath_regex":
@@ -187,7 +189,7 @@ class TestApplyRuleToFile(unittest.TestCase):
     )
 
   def test_parse_numbers(self):
-    empty_file = Bucket().registerBlob("hello.json", "")
+    empty_file = Bucket().register_blob("hello.json", "")
 
     rule = {
         "filepath_regex":
@@ -217,8 +219,9 @@ class TestApplyRuleToFile(unittest.TestCase):
 
   def test_try_reading_files_until_success(self):
     bucket = Bucket()
-    file1_with_content = bucket.registerBlob("hello.json", "hello.json content")
-    bucket.registerBlob("world.json", "world.json content")
+    file1_with_content = bucket.register_blob("hello.json",
+                                              "hello.json content")
+    bucket.register_blob("world.json", "world.json content")
 
     rule = {
         "filepath_regex":

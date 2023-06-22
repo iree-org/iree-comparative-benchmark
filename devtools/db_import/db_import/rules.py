@@ -30,7 +30,7 @@ def apply_rule_to_file(
     presence_check: Optional[Callable[[Any, Any], bool]],
     dump_files_to: Optional[pathlib.Path],
 ):
-  """Applies the given `rule`` to `file`.
+  """Applies the given `rule` to `file`.
 
   - Returns False if `rule[filepath_regex]` does not match the filepath of `file`.
   - If it matches, it evaluates the JSONNet expression `rule[result]` and returns its result (parsed as JSON).
