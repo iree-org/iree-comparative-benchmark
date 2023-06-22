@@ -8,11 +8,11 @@
 # Uses git diff to run pytype on changed files.
 # Example Usage:
 #   Defaults to comparing against 'main'.
-#     ./build_tools/scripts/check_pytype.sh
+#     ./devtools/scripts/check_pytype.sh
 #   A specific branch can be specified.
-#     ./build_tools/scripts/check_pytype.sh  some-other-branch
+#     ./devtools/scripts/check_pytype.sh  some-other-branch
 #   Or all python files outside of './third_party/' can be checked.
-#     ./build_tools/scripts/check_pytype.sh all
+#     ./devtools/scripts/check_pytype.sh all
 
 DIFF_TARGET="${1:-main}"
 echo "Running pycheck against '${DIFF_TARGET?}'"
@@ -71,6 +71,6 @@ MAX_CODE="$?"
 if [[ "${MAX_CODE?}" -ne "0" ]]; then
   echo "One or more pytype checks failed."
   echo "You can view these errors locally by running"
-  echo "  ./build_tools/scripts/check_pytype.sh ${DIFF_TARGET?}"
+  echo "  ./devtools/scripts/check_pytype.sh ${DIFF_TARGET?}"
   exit "${MAX_CODE?}"
 fi
