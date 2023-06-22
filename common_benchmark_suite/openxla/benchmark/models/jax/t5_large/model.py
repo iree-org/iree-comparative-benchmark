@@ -7,7 +7,7 @@
 from transformers import AutoTokenizer, FlaxT5Model
 from typing import Any, Tuple
 
-from openxla.benchmark.models.jax_models import model_interfaces
+from openxla.benchmark.models.jax import model_interfaces
 
 
 class T5Large(model_interfaces.InferenceModel):

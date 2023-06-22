@@ -17,3 +17,9 @@ MODEL_T5_LARGE_FP32 = f"{MODEL_T5_LARGE}-fp32"
 MODEL_T5_LARGE_FP32_JAX = f"{MODEL_T5_LARGE_FP32}-JAX"
 INPUT_DATA_T5_LARGE_JAX_SEQLEN512_I32 = "4552b15b-8d90-498c-9282-f6553ae4db38"
 OUTPUT_DATA_T5_LARGE_FP32_JAX_512X1024XF32 = "e245bd97-a1fa-4f35-b04b-92664c4f49db"
+
+################################################################################
+# Device IDs                                                                   #
+################################################################################
+DEVICE_SPEC_GCP_C2_STANDARD_16 = "9a4804f1-b1b9-46cd-b251-7f16a655f782"
+DEVICE_SPEC_GCP_A2_HIGHGPU_1G = "78c56b95-2d7d-44b5-b5fd-8e47aa961108"

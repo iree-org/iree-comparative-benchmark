@@ -10,9 +10,9 @@ from openxla.benchmark.comparative_suite import utils
 from openxla.benchmark import def_types, unique_ids
 
 # T5 large inputs.
-T5_LARGE_JAX_SEQLEN512_I32_INPUT_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
+INPUT_DATA_T5_LARGE_JAX_SEQLEN512_I32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
     id=utils.BATCH_ID(unique_ids.INPUT_DATA_T5_LARGE_JAX_SEQLEN512_I32),
-    name=utils.BATCH_NAME("T5_LARGE_JAX_SEQLEN512_I32_INPUT"),
+    name=utils.BATCH_NAME("INPUT_DATA_T5_LARGE_JAX_SEQLEN512_I32"),
     tags=["input-data", "seqlen512", utils.BATCH_TAG],
     source_info=
     "Original text: 'Studies have been shown that owning a dog is good for you'",
@@ -32,14 +32,14 @@ T5_LARGE_JAX_SEQLEN512_I32_INPUT_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
                     "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/T5_LARGE/batch_${batch_size}/input_npy.tgz"
                 ))
     })
-T5_LARGE_JAX_SEQLEN512_I32_INPUT_BATCHES = utils.build_batch_model_test_data(
-    template=T5_LARGE_JAX_SEQLEN512_I32_INPUT_BATCH_TEMPLATE,
+INPUT_DATA_T5_LARGE_JAX_SEQLEN512_I32_BATCHES = utils.build_batch_model_test_data(
+    template=INPUT_DATA_T5_LARGE_JAX_SEQLEN512_I32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512])
 
 # T5 large outputs.
-T5_LARGE_FP32_JAX_512X1024XF32_OUTPUT_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
+OUTPUT_DATA_T5_LARGE_FP32_JAX_512X1024XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
     id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_T5_LARGE_FP32_JAX_512X1024XF32),
-    name=utils.BATCH_NAME("T5_LARGE_FP32_JAX_512X1024XF32_OUTPUT"),
+    name=utils.BATCH_NAME("OUTPUT_DATA_T5_LARGE_FP32_JAX_512X1024XF32"),
     tags=["output-data", utils.BATCH_TAG],
     source_info="",
     artifacts={
@@ -58,6 +58,6 @@ T5_LARGE_FP32_JAX_512X1024XF32_OUTPUT_BATCH_TEMPLATE = utils.ModelTestDataTempla
                     "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/T5_LARGE/batch_${batch_size}/output_npy.tgz"
                 ))
     })
-T5_LARGE_FP32_JAX_512X1024XF32_BATCHES = utils.build_batch_model_test_data(
-    template=T5_LARGE_FP32_JAX_512X1024XF32_OUTPUT_BATCH_TEMPLATE,
+OUTPUT_DATA_T5_LARGE_FP32_JAX_512X1024XF32_BATCHES = utils.build_batch_model_test_data(
+    template=OUTPUT_DATA_T5_LARGE_FP32_JAX_512X1024XF32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512])
