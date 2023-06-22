@@ -49,7 +49,7 @@ echo "***** yapf *****"
 git diff -U0 main | ./third_party/format_diff/format_diff.py yapf -i
 
 echo "***** pytype *****"
-./build_tools/scripts/check_pytype.sh
+./devtools/scripts/check_pytype.sh
 
 echo "***** tabs *****"
 "${scripts_dir}/check_tabs.sh"

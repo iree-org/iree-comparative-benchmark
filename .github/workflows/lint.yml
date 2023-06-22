@@ -4,7 +4,7 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# Keep this in sync with build_tools/scripts/lint.sh
+# Keep this in sync with devtools/scripts/lint.sh
 
 name: Lint
 
@@ -47,7 +47,7 @@ jobs:
       - name: Install pytype
         run: python3 -m pip install pytype
       - name: Run pytype on changed files
-        run: ./build_tools/scripts/check_pytype.sh "${GITHUB_BASE_REF?}"
+        run: ./devtools/scripts/check_pytype.sh "${GITHUB_BASE_REF?}"
 
   tabs:
     runs-on: ubuntu-20.04
@@ -58,7 +58,7 @@ jobs:
         # We have to explicitly fetch the base branch as well
         run: git fetch --no-tags --prune --depth=1 origin "${GITHUB_BASE_REF?}:${GITHUB_BASE_REF?}"
       - name: Checking tabs
-        run: ./build_tools/scripts/check_tabs.sh "${GITHUB_BASE_REF?}"
+        run: ./devtools/scripts/check_tabs.sh "${GITHUB_BASE_REF?}"
 
   yamllint:
     runs-on: ubuntu-20.04
@@ -69,7 +69,7 @@ jobs:
         # We have to explicitly fetch the base branch as well
         run: git fetch --no-tags --prune --depth=1 origin "${GITHUB_BASE_REF?}:${GITHUB_BASE_REF?}"
       - name: yamllint
-        run: ./build_tools/scripts/run_yamllint.sh "${GITHUB_BASE_REF?}"
+        run: ./devtools/scripts/run_yamllint.sh "${GITHUB_BASE_REF?}"
 
   markdownlint:
     runs-on: ubuntu-20.04
@@ -79,4 +79,4 @@ jobs:
       - name: Downloading markdownlint
         run: npm install -g markdownlint-cli
       - name: Running markdownlint
-        run: ./build_tools/scripts/run_markdownlint.sh
+        run: ./devtools/scripts/run_markdownlint.sh
