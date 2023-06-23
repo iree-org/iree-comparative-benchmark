@@ -1,0 +1,50 @@
+# Copyright 2023 The OpenXLA Authors
+#
+# Licensed under the Apache License v2.0 with LLVM Exceptions.
+# See https://llvm.org/LICENSE.txt for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# Comparative Benchmarks Workflow.
+
+name: Comparative Benchmarks
+
+on:
+  schedule:
+    # Scheduled to run at 09:00 UTC and 21:00 UTC.
+    - cron: '0 09,21 * * *'
+  workflow_dispatch:
+
+env:
+  # TODO(#20): Upload reuslts to "gs://comparative-benchmark-artifacts"
+  GCS_DIR: gs://openxla-github-actions-${{ github.event_name == 'pull_request' && 'presubmit' || 'postsubmit' }}-artifacts/${{ github.run_id }}/${{ github.run_attempt }}
+
+jobs:
+  benchmark_on_a2-highgpu-1g:
+    runs-on:
+      - self-hosted  # must come first
+      - runner-group=presubmit
+      - environment=prod
+      - machine-type=a2-highgpu-1g
+    env:
+      RESULTS_DIR: results-dir
+      TARGET_DEVICE: a2-highgpu-1g
+    steps:
+      - name: "Checking out PR repository"
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
+      - name: "Setup"
+        id: setup
+        run: |
+          echo "results-gcs-dir=${GCS_DIR}/${TARGET_DEVICE}_$(date +'%Y-%m-%d').$(date +'%s')" >> "${GITHUB_OUTPUT}"
+          mkdir "${RESULTS_DIR}"
+      - name: "Benchmarking JAX/XLA:GPU"
+        env:
+          JAX_XLA_RESULTS_JSON: jax-xla.json
+          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+        run: |
+          RESULTS_PATH="${RESULTS_DIR}/${JAX_XLA_RESULTS_JSON}"
+          docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:c39107c4160e749b7c4bac18862c6c1b6d56e1aa60644a4fe323e315ffba0a0b" \
+            ./comparative_benchmark/jax_xla/benchmark_all.sh \
+              "${TARGET_DEVICE}"\
+              "${RESULTS_PATH}"
+          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"

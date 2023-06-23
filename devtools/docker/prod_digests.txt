@@ -1,0 +1,2 @@
+gcr.io/iree-oss/openxla-benchmark/base@sha256:692bb3ca648c474e89bad21ef89f4b33a9741e3d1cc477fa61844caddd798ba0
+gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:c39107c4160e749b7c4bac18862c6c1b6d56e1aa60644a4fe323e315ffba0a0b
