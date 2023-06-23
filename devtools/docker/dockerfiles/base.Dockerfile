@@ -24,7 +24,7 @@ WORKDIR /install-python
 
 ARG PYTHON_VERSION=3.10
 
-COPY comparative_benchmark/docker/context/python_build_requirements.txt comparative_benchmark/docker/context/install_python_deps.sh ./
+COPY devtools/docker/context/python_build_requirements.txt devtools/docker/context/install_python_deps.sh ./
 RUN ./install_python_deps.sh "${PYTHON_VERSION}" \
   && apt-get -y install python-is-python3 \
   && rm -rf /install-python
@@ -35,6 +35,6 @@ WORKDIR /
 
 ######## Bazel ########
 WORKDIR /install-bazel
-COPY comparative_benchmark/docker/context/install_bazel.sh comparative_benchmark/docker/context/.bazelversion ./
+COPY devtools/docker/context/install_bazel.sh devtools/docker/context/.bazelversion ./
 RUN ./install_bazel.sh && rm -rf /install-bazel
 WORKDIR /

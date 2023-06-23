@@ -1,4 +1,0 @@
-{
-  "openxla-benchmark/base": [],
-  "openxla-benchmark/cuda11.8-cudnn8.9": ["openxla-benchmark/base"]
-}
