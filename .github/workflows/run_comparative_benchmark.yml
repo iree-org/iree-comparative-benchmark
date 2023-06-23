@@ -16,8 +16,8 @@ on:
   pull_request:
 
 env:
+  # TODO(#20): Upload reuslts to "gs://comparative-benchmark-artifacts"
   GCS_DIR: gs://openxla-github-actions-${{ github.event_name == 'pull_request' && 'presubmit' || 'postsubmit' }}-artifacts/${{ github.run_id }}/${{ github.run_attempt }}
-  # RESULT_GCS_ROOT_DIR: "gs://comparative-benchmark-artifacts"
 
 jobs:
   benchmark_on_a2-highgpu-1g:
