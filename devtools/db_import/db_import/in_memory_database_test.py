@@ -16,11 +16,11 @@ class TestInMemoryDatabase(unittest.TestCase):
     client = in_memory_database.Client()
     self.assertTrue(isinstance(client, db.Client))
 
-    table = client.get_table('dataset_id.table_name')
+    table = client.get_table("dataset_id.table_name")
     self.assertTrue(isinstance(table, db.Table))
 
-    self.assertEqual(table.table_id, 'table_name')
-    self.assertEqual(table.dataset_id, 'dataset_id')
+    self.assertEqual(table.table_id, "table_name")
+    self.assertEqual(table.dataset_id, "dataset_id")
     self.assertEqual([], table.get_rows())
 
     rows = [{"col1": "hello", "col2": "world"}]

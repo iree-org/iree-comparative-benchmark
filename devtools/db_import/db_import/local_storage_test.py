@@ -23,13 +23,13 @@ class TestLocalStorage(unittest.TestCase):
     client = local_storage.Client(pathlib.Path(self.directory_path))
     self.assertTrue(isinstance(client, storage.Client))
 
-    bucket_name = 'bucket'
+    bucket_name = "bucket"
     (self.directory_path / bucket_name).mkdir()
     bucket = client.get_bucket(bucket_name)
     self.assertTrue(isinstance(bucket, storage.Bucket))
 
-    content = 'blibablub'
-    filename = 'filename.txt'
+    content = "blibablub"
+    filename = "filename.txt"
     (self.directory_path / bucket_name / filename).write_text(content)
     blob = bucket.blob(filename)
 
@@ -40,13 +40,13 @@ class TestLocalStorage(unittest.TestCase):
   def test_list_blobs(self):
     client = local_storage.Client(pathlib.Path(self.directory_path))
 
-    bucket_name = 'bucket'
+    bucket_name = "bucket"
     (self.directory_path / bucket_name).mkdir()
     bucket = client.get_bucket(bucket_name)
 
-    content = 'blibablub'
-    filename1 = 'filename1.txt'
-    filename2 = 'filename2.txt'
+    content = "blibablub"
+    filename1 = "filename1.txt"
+    filename2 = "filename2.txt"
     (self.directory_path / bucket_name / filename1).write_text(content)
     (self.directory_path / bucket_name / filename2).write_text(content)
 

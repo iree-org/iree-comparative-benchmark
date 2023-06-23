@@ -20,11 +20,11 @@ class Table:
 
   @property
   def table_id(self):
-    return self.name.split('.')[1]
+    return self.name.split(".")[1]
 
   @property
   def dataset_id(self):
-    return self.name.split('.')[0]
+    return self.name.split(".")[0]
 
   def get_rows(self) -> Sequence:
     return self.rows
