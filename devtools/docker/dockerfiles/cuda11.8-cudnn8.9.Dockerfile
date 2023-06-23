@@ -6,7 +6,7 @@
 
 # An image that includes Tensorflow 2.12.0 with GPU support.
 
-FROM gcr.io/iree-oss/openxla-benchmark/base@sha256:a6c5cbb4b29591d8df109576bfed68d91e3c99db92dc80d819aaac8c46037236
+FROM gcr.io/iree-oss/openxla-benchmark/base@sha256:692bb3ca648c474e89bad21ef89f4b33a9741e3d1cc477fa61844caddd798ba0
 
 ######## NVIDIA ########
 WORKDIR /install-cuda
