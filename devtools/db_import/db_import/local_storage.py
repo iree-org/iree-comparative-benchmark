@@ -20,7 +20,7 @@ class Blob:
 
   @property
   def name(self):
-    return os.path.relpath(self.file, self.bucket.path)
+    return str(self.file.relative_to(self.bucket.path))
 
   def open(self):
     return open(self.file)
