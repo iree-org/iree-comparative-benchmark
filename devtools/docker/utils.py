@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2020 The IREE Authors
+# Copyright 2023 The OpenXLA Authors
 #
 # Licensed under the Apache License v2.0 with LLVM Exceptions.
 # See https://llvm.org/LICENSE.txt for license information.

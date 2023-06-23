@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-# Copyright 2020 The IREE Authors
+# Copyright 2023 The OpenXLA Authors
 #
 # Licensed under the Apache License v2.0 with LLVM Exceptions.
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-"""Manages IREE Docker image definitions.
+"""Manages Docker image definitions.
 
 Includes information on their dependency graph and GCR URL.
 
@@ -13,16 +13,16 @@ See the README for more information on how to add and update images.
 
 Example usage:
 
-Rebuild the cmake image and all images that transitively on depend on it,
+Rebuild the base image and all images that transitively on depend on it,
 tagging them with `latest` and updating all references to their sha digests:
-  python3 build_tools/docker/manage_images.py --image cmake
+  python3 devtools/docker/manage_images.py --image base
 
-Print out output for rebuilding the cmake image and all images that
+Print out output for rebuilding the base image and all images that
 transitively depend on it, but don't take side-effecting actions:
-  python3 build_tools/docker/manage_images.py --image cmake --dry-run
+  python3 devtools/docker/manage_images.py --image base --dry-run
 
 Rebuild and push all images and update references to them in the repository:
-  python3 build_tools/docker/manage_images.py --images all
+  python3 devtools/docker/manage_images.py --images all
 """
 
 import argparse
@@ -35,7 +35,6 @@ from typing import Dict, List, Sequence
 
 import utils
 
-IREE_GCR_URL = "gcr.io/iree-oss/"
 DIGEST_REGEX = r"sha256:[a-zA-Z0-9]+"
 IMAGE_DEPS_FILENAME = "image_deps.json"
 PROD_DIGESTS_FILENAME = "prod_digests.txt"
@@ -45,7 +44,7 @@ DOCKERFILES_DIRNAME = "dockerfiles"
 def parse_arguments():
   """Parses command-line options."""
   parser = argparse.ArgumentParser(
-      description="Build IREE's Docker images and optionally push them to GCR.")
+      description="Build Docker images and optionally push them to GCR.")
   parser.add_argument(
       "--images",
       "--image",
@@ -71,9 +70,16 @@ def parse_arguments():
       "--docker_dir",
       "--docker-dir",
       type=pathlib.Path,
-      default=pathlib.Path("build_tools/docker"),
+      default=pathlib.Path("devtools/docker"),
       help=(f"Directory that contains: `{DOCKERFILES_DIRNAME}/*.Dockerfile`,"
             f" `{IMAGE_DEPS_FILENAME}`, and `{PROD_DIGESTS_FILENAME}`"),
+  )
+  parser.add_argument(
+      "--gcr_url",
+      "--gcr-url",
+      type=str,
+      default="gcr.io/iree-oss/openxla-benchmark",
+      help="Parent GCR URL to push to",
   )
 
   args = parser.parse_args()
@@ -186,6 +192,7 @@ def main(
     images: Sequence[str],
     only_references: bool,
     docker_dir: pathlib.Path,
+    gcr_url: str,
     dry_run: bool,
 ):
   image_deps = json.loads((docker_dir / IMAGE_DEPS_FILENAME).read_text())
@@ -211,18 +218,17 @@ def main(
                                     images_to_dependents=images_to_dependents)
     print(f"Pulling image dependencies: {dependencies}")
     for dependency in dependencies:
-      image_digest = image_urls_to_prod_digests.get(
-          f"{IREE_GCR_URL}{dependency}")
+      image_digest = image_urls_to_prod_digests.get(f"{gcr_url}/{dependency}")
       # If `dependency` is a new image then it may not have a digest yet.
       if image_digest is not None:
-        dependency_url = f"{IREE_GCR_URL}{dependency}"
+        dependency_url = f"{gcr_url}/{dependency}"
         dependency_with_digest = f"{dependency_url}@{image_digest}"
         utils.run_command(["docker", "pull", dependency_with_digest],
                           dry_run=dry_run)
 
   for image in images_to_process:
     print("\n" * 5 + f"Processing image {image}")
-    image_url = f"{IREE_GCR_URL}{image}"
+    image_url = f"{gcr_url}/{image}"
     image_path = docker_dir / DOCKERFILES_DIRNAME / f"{image}.Dockerfile"
 
     if only_references:
