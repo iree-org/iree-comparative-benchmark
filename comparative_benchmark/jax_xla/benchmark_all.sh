@@ -9,12 +9,18 @@
 set -xeuo pipefail
 
 VENV_DIR="${OOBI_VENV_DIR:-jax-benchmarks.venv}"
+PYTHON="${PYTHON:-/usr/bin/python3}"
 TARGET_DEVICE="${1:-${OOBI_TARGET_DEVICE}}"
 OUTPUT_PATH="${2:-${OOBI_OUTPUT}}"
 
 TD="$(cd $(dirname $0) && pwd)"
 
-VENV_DIR="${VENV_DIR}" source "${TD}/setup_venv.sh"
+if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then
+  export WITH_CUDA=1
+fi
+
+VENV_DIR="${VENV_DIR}" PYTHON="${PYTHON}" source "${TD}/setup_venv.sh"
+unset WITH_CUDA
 
 declare -a GPU_BENCHMARK_NAMES=(
   "models/T5_LARGE_FP32_JAX_512XI32_BATCH1/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"

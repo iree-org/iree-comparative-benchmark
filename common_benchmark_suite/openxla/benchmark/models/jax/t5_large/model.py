@@ -23,7 +23,8 @@ class T5Large(model_interfaces.InferenceModel):
     self.model = FlaxT5Model.from_pretrained("t5-large", return_dict=True)
 
   def generate_inputs(self) -> Tuple[Any, Any]:
-    tokenizer = AutoTokenizer.from_pretrained("t5-large")
+    tokenizer = AutoTokenizer.from_pretrained("t5-large",
+                                              model_max_length=self.seq_len)
     tokenization_kwargs = {
         "pad_to_multiple_of": self.seq_len,
         "padding": True,
@@ -49,7 +50,7 @@ class T5Large(model_interfaces.InferenceModel):
     return self.model(
         input_ids=encoder_input_ids,
         decoder_input_ids=decoder_input_ids,
-    )[0]
+    ).last_hidden_state
 
 
 def create_model(batch_size: int = 1,
