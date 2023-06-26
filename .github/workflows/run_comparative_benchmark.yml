@@ -15,6 +15,13 @@ on:
   workflow_dispatch:
   pull_request:
 
+concurrency:
+  # A PR number if a pull request and otherwise the commit hash. This cancels
+  # queued and in-progress runs for the same PR (presubmit) or commit
+  # (postsubmit).
+  group: ${{ github.event.number || github.sha }}
+  cancel-in-progress: true
+
 env:
   # TODO(#20): Upload reuslts to "gs://comparative-benchmark-artifacts"
   GCS_DIR: gs://openxla-github-actions-${{ github.event_name == 'pull_request' && 'presubmit' || 'postsubmit' }}-artifacts/${{ github.run_id }}/${{ github.run_attempt }}
