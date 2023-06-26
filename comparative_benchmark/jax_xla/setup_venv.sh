@@ -8,21 +8,36 @@
 #
 # Environment variables:
 #   VENV_DIR=jax-benchmarks.venv
+#   PYTHON=/usr/bin/python3.10
+#   WITH_CUDA=1
 
 set -xeuo pipefail
 
 TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR="${VENV_DIR:-jax-benchmarks.venv}"
+WITH_CUDA="${WITH_CUDA:-}"
+
+if [ -z "$PYTHON" ]; then
+  PYTHON="$(which python)"
+fi
 
 echo "Setting up venv dir: ${VENV_DIR}"
 
-python3 -m venv "${VENV_DIR}" || echo "Could not create venv."
+${PYTHON} -m venv "${VENV_DIR}" || echo "Could not create venv."
 source "${VENV_DIR}/bin/activate" || echo "Could not activate venv"
 
 # Upgrade pip and install requirements. 'python' is used here in order to
 # reference to the python executable from the venv.
 python -m pip install --upgrade pip || echo "Could not upgrade pip"
-python -m pip install --upgrade jax[cuda11_local] flax -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+
+if [ -z "$WITH_CUDA" ]; then
+  echo "Installing jax and dependencies without cuda support; set WITH_CUDA to enable cuda support."
+  python -m pip install --upgrade "jax[cpu]" "flax"
+else
+  echo "Installing jax and dependencies with cuda support"
+  python -m pip install --upgrade "jax[cuda11_local]" "flax" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+fi
+
 python -m pip install --upgrade -r "${TD}/requirements.txt"
 
 echo "Activate venv with:"
