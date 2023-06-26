@@ -7,20 +7,33 @@
 
 import abc
 import typing
+from typing import Any
 
 T = typing.TypeVar("T")
 U = typing.TypeVar("U")
+V = typing.TypeVar("V")
 
 
-class InferenceModel(abc.ABC, typing.Generic[T, U]):
+class InferenceModel(abc.ABC, typing.Generic[T, U, V]):
   """Interface to interact with a JAX inference model."""
 
+  # TODO(#12): This will be removed once we store raw data in GCS.
   @abc.abstractmethod
-  def generate_inputs(self) -> T:
-    """Transforms raw input data into model inputs."""
+  def generate_default_inputs(self) -> T:
+    """Returns default inputs in its raw form."""
     pass
 
   @abc.abstractmethod
-  def forward(self, inputs: T) -> U:
+  def preprocess(self, raw_input: T) -> U:
+    """Converts raw inputs into a form that is understandable by the model."""
+    pass
+
+  @abc.abstractmethod
+  def forward(self, inputs: U) -> V:
     """Model inference function."""
+    pass
+
+  @abc.abstractmethod
+  def postprocess(self, outputs: V) -> Any:
+    """Converts raw outputs to a more human-understandable form."""
     pass
