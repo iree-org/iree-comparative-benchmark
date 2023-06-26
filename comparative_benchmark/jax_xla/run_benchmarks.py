@@ -45,7 +45,8 @@ def _run_framework_benchmark(model: def_types.Model, warmup_iterations: int,
 
       # TODO(#14): Benchmark should load the dumped model input instead of
       # generating it.
-      inputs = model_obj.generate_inputs()
+      raw_inputs = model_obj.generate_default_inputs()
+      inputs = model_obj.preprocess(raw_inputs)
 
       # Create jits.
       start = time.perf_counter()

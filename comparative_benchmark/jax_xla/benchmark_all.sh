@@ -17,19 +17,17 @@ TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR="${VENV_DIR}" source "${TD}/setup_venv.sh"
 
 declare -a GPU_BENCHMARK_NAMES=(
-  "models/T5_LARGE_FP32_JAX_512XI32_BATCH1/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
-  "models/T5_LARGE_FP32_JAX_512XI32_BATCH16/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
-  "models/T5_LARGE_FP32_JAX_512XI32_BATCH24/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
-  "models/T5_LARGE_FP32_JAX_512XI32_BATCH32/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
-  "models/T5_LARGE_FP32_JAX_512XI32_BATCH48/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
-  "models/T5_LARGE_FP32_JAX_512XI32_BATCH64/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
-  "models/T5_LARGE_FP32_JAX_512XI32_BATCH512/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
+  "models/T5_LARGE_FP32_JAX_512XI32_BATCH\d+/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
+  "models/T5_LARGE_4CG_FP32_JAX_512XI32_BATCH\d+/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
 )
 
 declare -a CPU_BENCHMARK_NAMES=(
   "models/T5_LARGE_FP32_JAX_512XI32_BATCH1/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
   "models/T5_LARGE_FP32_JAX_512XI32_BATCH16/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
   "models/T5_LARGE_FP32_JAX_512XI32_BATCH32/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
+  "models/T5_LARGE_4CG_FP32_JAX_512XI32_BATCH1/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
+  "models/T5_LARGE_4CG_FP32_JAX_512XI32_BATCH16/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
+  "models/T5_LARGE_4CG_FP32_JAX_512XI32_BATCH32/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
 )
 
 if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then
@@ -62,5 +60,6 @@ for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
   "${TD}/run_benchmarks.py" \
     --benchmark_name="${benchmark_name}" \
     --output="${OUTPUT_PATH}" \
-    --iterations="${ITERATIONS}"
+    --iterations="${ITERATIONS}" \
+    --run_in_process
 done
