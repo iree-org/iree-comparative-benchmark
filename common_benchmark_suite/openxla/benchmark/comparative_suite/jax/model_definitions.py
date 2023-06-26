@@ -16,7 +16,7 @@ T5_LARGE_FP32_JAX_IMPL = def_types.ModelImplementation(
     name="T5_LARGE_FP32_JAX",
     tags=["fp32", "transformer-encoder", "transformer-decoder", "t5"],
     framework_type=def_types.ModelFrameworkType.JAX,
-    module_path=f"{utils.MODELS_MODULE_PATH}.jax.t5_large.model",
+    module_path=f"{utils.MODELS_MODULE_PATH}.jax.t5.t5_model",
     source_info=
     "https://huggingface.co/docs/transformers/model_doc/t5#transformers.FlaxT5Model",
 )
@@ -29,6 +29,7 @@ T5_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
     model_parameters={
         "batch_size": utils.BATCH_SIZE_PARAM,
         "data_type": "fp32",
+        "model_name": "t5-large",
     },
     artifacts={
         def_types.ModelArtifactType.STABLEHLO:
@@ -50,4 +51,36 @@ T5_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
 )
 T5_LARGE_FP32_JAX_512XI32_BATCHES = utils.build_batch_models(
     template=T5_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE,
+    batch_sizes=[1, 16, 24, 32, 48, 64, 512])
+
+T5_LARGE_4CG_FP32_JAX_IMPL = def_types.ModelImplementation(
+    id=unique_ids.MODEL_T5_LARGE_4CG_FP32_JAX,
+    name="T5_LARGE_4CG_FP32_JAX",
+    tags=[
+        "fp32", "transformer-encoder", "transformer-decoder", "t5",
+        "auto-regressive"
+    ],
+    framework_type=def_types.ModelFrameworkType.JAX,
+    module_path=
+    f"{utils.MODELS_MODULE_PATH}.jax.t5.t5_for_conditional_generation",
+    source_info=
+    "https://huggingface.co/docs/transformers/model_doc/t5#transformers.FlaxT5ForConditionalGeneration",
+)
+
+T5_LARGE_4CG_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
+    id=utils.BATCH_ID(unique_ids.MODEL_T5_LARGE_4CG_FP32_JAX),
+    name=utils.BATCH_NAME("T5_LARGE_4CG_FP32_JAX_512XI32"),
+    tags=[utils.BATCH_TAG],
+    model_impl=T5_LARGE_4CG_FP32_JAX_IMPL,
+    model_parameters={
+        "batch_size": utils.BATCH_SIZE_PARAM,
+        "data_type": "fp32",
+        "model_name": "t5-large",
+    },
+    artifacts={
+        #TODO(mariecwhite): Add artifacts once artifact generation pipeline is implemented.
+    },
+)
+T5_LARGE_4CG_FP32_JAX_512XI32_BATCHES = utils.build_batch_models(
+    template=T5_LARGE_4CG_FP32_JAX_512XI32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512])
