@@ -7,7 +7,7 @@
    Check out `local_storage` for an alternative implementation of these types.
 """
 
-from typing import Protocol, IO, Sequence, runtime_checkable
+from typing import Protocol, IO, Optional, Sequence, runtime_checkable
 
 
 @runtime_checkable
@@ -28,7 +28,7 @@ class Blob(Protocol):
 @runtime_checkable
 class Bucket(Protocol):
 
-  def list_blobs(self) -> Sequence[Blob]:
+  def list_blobs(self, prefix: Optional[str] = None) -> Sequence[Blob]:
     ...
 
   def blob(self, filepath: str) -> Blob:

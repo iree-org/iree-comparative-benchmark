@@ -11,6 +11,8 @@
 import os
 import pathlib
 
+from typing import Optional
+
 
 class Blob:
 
@@ -32,10 +34,12 @@ class Bucket:
     self.name: str = name
     self.path: pathlib.Path = directory / name
 
-  def list_blobs(self):
+  def list_blobs(self, prefix: Optional[str] = None):
     for root, dirs, files in os.walk(self.path):
       for file in files:
-        yield Blob(pathlib.Path(root) / file, self)
+        blob = Blob(pathlib.Path(root) / file, self)
+        if not prefix or blob.name.startswith(prefix):
+          yield blob
 
   def blob(self, filepath: str):
     full_path = self.path / filepath

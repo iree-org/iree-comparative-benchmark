@@ -5,42 +5,13 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import io
 import json
 import pathlib
 import tempfile
 import unittest
 
 from rules import apply_rule_to_file, BenchmarkRunAlreadyPresentError
-
-
-# This class mocks a Blob from the google-cloud-storage package.
-# So far it only supports reading files. The contents is provided as a string.
-class Blob:
-
-  def __init__(self, name: str, bucket, contents: str):
-    self.name = name
-    self.bucket = bucket
-    self.contents = contents
-
-  def open(self):
-    return io.StringIO(self.contents)
-
-
-# This class mocks a Bucket from the google-cloud-storage package.
-# Blobs can be registered with `registerBlob` and will then appear as present in the bucket.
-class Bucket:
-
-  def __init__(self):
-    self.contents: dict[str, str] = {}
-
-  def blob(self, name: str) -> Blob:
-    return Blob(name, self, self.contents[name])
-
-  def register_blob(self, name: str, contents: str):
-    self.contents[name] = contents
-    return self.blob(name)
-
+from in_memory_storage import Bucket
 
 EMPTY_CONFIG = {
     "bucket_name": "random_bucket_name",
