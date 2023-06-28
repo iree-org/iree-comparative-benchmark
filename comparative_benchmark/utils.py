@@ -7,10 +7,11 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import concurrent.futures
+import numpy as np
 import pathlib
 import requests
 import tarfile
-from typing import List, Tuple
+from typing import List, Sequence, Tuple
 
 
 def download_file(source_url: str,
@@ -64,3 +65,25 @@ def download_files(urls_to_paths: List[Tuple[str, pathlib.Path]],
                           save_path=save_path,
                           verbose=verbose))
     concurrent.futures.wait(futures)
+
+
+def compare_tensors(outputs: Sequence[np.ndarray],
+                    expects: Sequence[np.ndarray],
+                    absolute_tolerance: float = 0,
+                    relative_tolerance: float = 0) -> List[Tuple[bool, float]]:
+  """Compares numpy tensors and returns a list of (is_equal, max_diff).
+  
+  See numpy.allclose for the meaning of absolute_tolerance and
+  relative_tolerance.
+  """
+
+  verdicts = []
+  for output, expect in zip(outputs, expects):
+    is_equal = np.allclose(output,
+                           expect,
+                           rtol=relative_tolerance,
+                           atol=absolute_tolerance)
+    max_diff = np.max(np.abs(expect - output))
+    verdicts.append((is_equal, max_diff))
+
+  return verdicts

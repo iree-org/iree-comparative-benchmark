@@ -37,6 +37,8 @@ import utils
 def _run_framework_benchmark(
     model: def_types.Model,
     input_npys: Sequence[pathlib.Path],
+    expect_npys: Sequence[pathlib.Path],
+    verify_params: Dict[str, Any],
     warmup_iterations: int,
     benchmark_iterations: int,
     backend: str,
@@ -48,6 +50,7 @@ def _run_framework_benchmark(
       **model.model_parameters)
 
   inputs = [np.load(path) for path in input_npys]
+  expects = [np.load(path) for path in expect_npys]
 
   try:
     with jax.default_device(jax.devices(backend)[0]):
@@ -74,13 +77,29 @@ def _run_framework_benchmark(
 
       # Run benchmark.
       latencies = []
+      last_outputs = None
       for i in range(benchmark_iterations):
         start = time.perf_counter()
-        jax.block_until_ready(jit_function(jit_inputs))
+        last_outputs = jit_function(jit_inputs)
+        jax.block_until_ready(last_outputs)
         end = time.perf_counter()
         latencies.append(1000 * (end - start))
 
-      # TODO(#11): Verify the model output.
+      if last_outputs is None:
+        raise ValueError("No benchmark runs.")
+
+      verdicts = utils.compare_tensors(outputs=last_outputs,
+                                       expects=expects,
+                                       **verify_params)
+      all_equal = True
+      for idx, verdict in enumerate(verdicts):
+        is_equal, max_diff = verdict
+        if not is_equal:
+          print(f"Output {idx} exceeds tolerance. Max diff: {max_diff}")
+          all_equal = False
+
+      if not all_equal:
+        raise ValueError("Output verification failed.")
 
   except Exception as e:
     print(f"Failed to benchmark model {model.name}. Exception: {e}")
@@ -139,7 +158,8 @@ def _append_result(result_path: pathlib.Path, result: BenchmarkResult) -> None:
 
 def _run(benchmark: def_types.BenchmarkCase, run_in_process: bool,
          warmup_iterations: int, iterations: int,
-         input_npys: Sequence[pathlib.Path]) -> BenchmarkResult:
+         input_npys: Sequence[pathlib.Path],
+         expect_npys: Sequence[pathlib.Path]) -> BenchmarkResult:
   model = benchmark.model
   input_data = benchmark.input_data.artifacts[
       def_types.ModelTestDataFormat.NUMPY_TENSORS]
@@ -173,6 +193,8 @@ def _run(benchmark: def_types.BenchmarkCase, run_in_process: bool,
     kwargs: Dict[str, Any] = dict(
         model=model,
         input_npys=list(input_npys),
+        expect_npys=list(expect_npys),
+        verify_params=expected_output.verify_parameters,
         warmup_iterations=warmup_iterations,
         benchmark_iterations=iterations,
         backend=backend,
@@ -203,10 +225,15 @@ def _download_artifacts(benchmarks: Sequence[def_types.BenchmarkCase],
 
   download_list = []
   for benchmark in benchmarks:
-    artifact = benchmark.input_data.artifacts[
+    input_artifact = benchmark.input_data.artifacts[
         def_types.ModelTestDataFormat.NUMPY_TENSORS]
     input_path = root_dir / benchmark.model.name / "input_npy.tgz"
-    download_list.append((artifact.source_url, input_path))
+    download_list.append((input_artifact.source_url, input_path))
+
+    expect_artifact = benchmark.expected_output.artifacts[
+        def_types.ModelTestDataFormat.NUMPY_TENSORS]
+    expect_path = root_dir / benchmark.model.name / "output_npy.tgz"
+    download_list.append((expect_artifact.source_url, expect_path))
 
   utils.download_files(download_list, verbose=verbose)
 
@@ -283,30 +310,42 @@ def main(
                         verbose=verbose)
 
   benchmarks_to_inputs = {}
+  benchmarks_to_expects = {}
   for benchmark in benchmarks:
-    artifact = benchmark.input_data.artifacts[
-        def_types.ModelTestDataFormat.NUMPY_TENSORS]
     model_dir = root_dir / benchmark.model.name
 
-    num_of_tensors = len(artifact.data_parameters["tensor_dimensions"])
+    input_artifact = benchmark.input_data.artifacts[
+        def_types.ModelTestDataFormat.NUMPY_TENSORS]
+    num_of_inputs = len(input_artifact.data_parameters["tensor_dimensions"])
     input_npys = []
-
     # Check and gather input npy paths.
-    for idx in range(num_of_tensors):
-      tensor_path = model_dir / "input_npy" / f"input_{idx}.npy"
-      if not tensor_path.exists():
-        raise ValueError(f"Missing input data '{tensor_path}'.")
+    for idx in range(num_of_inputs):
+      path = model_dir / "input_npy" / f"input_{idx}.npy"
+      if not path.exists():
+        raise ValueError(f"Missing input data '{path}'.")
+      input_npys.append(path)
 
-      input_npys.append(tensor_path)
+    expect_artifact = benchmark.expected_output.artifacts[
+        def_types.ModelTestDataFormat.NUMPY_TENSORS]
+    num_of_expects = len(expect_artifact.data_parameters["tensor_dimensions"])
+    expect_npys = []
+    # Check and gather expect npy paths.
+    for idx in range(num_of_expects):
+      path = model_dir / "output_npy" / f"output_{idx}.npy"
+      if not path.exists():
+        raise ValueError(f"Missing expected data '{path}'.")
+      expect_npys.append(path)
 
     benchmarks_to_inputs[benchmark.id] = input_npys
+    benchmarks_to_expects[benchmark.id] = expect_npys
 
   for benchmark in benchmarks:
     result = _run(benchmark,
                   run_in_process=run_in_process,
                   warmup_iterations=warmup_iterations,
                   iterations=iterations,
-                  input_npys=benchmarks_to_inputs[benchmark.id])
+                  input_npys=benchmarks_to_inputs[benchmark.id],
+                  expect_npys=benchmarks_to_expects[benchmark.id])
     if verbose:
       print(json.dumps(dataclasses.asdict(result), indent=2))
 

@@ -57,7 +57,8 @@ def _substitute_template(obj: Any, **substitutions) -> Any:
     return obj.func(**substitutions)
 
   if obj is None or any(
-      isinstance(obj, primitive_type) for primitive_type in [int, str, bool]):
+      isinstance(obj, primitive_type)
+      for primitive_type in [int, float, str, bool]):
     return obj
   if isinstance(obj, string.Template):
     return obj.substitute(**substitutions)
