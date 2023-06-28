@@ -34,7 +34,7 @@ def download_file(source_url: str,
   if verbose:
     print(f"Downloading '{source_url}' to '{save_path}'.")
 
-  # requests doesn't clearly state its session is thread-safe. In order to
+  # requests doesn't clearly state that its session is thread-safe. In order to
   # download in parallel, don't use session here.
   with requests.get(source_url, stream=True) as response:
     with save_path.open("wb") as f:
