@@ -28,6 +28,8 @@ def download_file(source_url: str,
   """
 
   save_path.parent.mkdir(parents=True, exist_ok=True)
+  # requests doesn't clearly state its session is thread-safe. In order to
+  # download in parallel, don't use session here.
   with requests.get(source_url, stream=True) as response:
     with save_path.open("wb") as f:
       for chunk in response.iter_content(chunk_size=65536):
@@ -42,10 +44,11 @@ def download_file(source_url: str,
       tar_file.extractall(save_path.with_suffix(""))
 
 
-def download_files(urls_to_paths: List[Tuple[str, pathlib.Path]]):
+def download_files(urls_to_paths: List[Tuple[str, pathlib.Path]],
+                   max_workers: int = 8):
   """Fetch a list of URLs in parallel."""
 
-  with concurrent.futures.ProcessPoolExecutor(8) as executor:
+  with concurrent.futures.ThreadPoolExecutor(max_workers) as executor:
     futures = []
     for source_url, save_path in urls_to_paths:
       futures.append(
