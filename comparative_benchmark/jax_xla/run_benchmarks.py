@@ -197,7 +197,8 @@ def _run(benchmark: def_types.BenchmarkCase, run_in_process: bool,
 
 
 def _download_artifacts(benchmarks: Sequence[def_types.BenchmarkCase],
-                        root_dir: pathlib.Path):
+                        root_dir: pathlib.Path,
+                        verbose: bool = False):
   """Download benchmark artifacts."""
 
   download_list = []
@@ -207,7 +208,7 @@ def _download_artifacts(benchmarks: Sequence[def_types.BenchmarkCase],
     input_path = root_dir / benchmark.model.name / "input_npy.tgz"
     download_list.append((artifact.source_url, input_path))
 
-  utils.download_files(download_list)
+  utils.download_files(download_list, verbose=verbose)
 
 
 def _parse_arguments() -> argparse.Namespace:
@@ -277,7 +278,9 @@ def main(
                      f' Available benchmarks:\n{all_benchmark_list}')
 
   if not no_download:
-    _download_artifacts(benchmarks=benchmarks, root_dir=root_dir)
+    _download_artifacts(benchmarks=benchmarks,
+                        root_dir=root_dir,
+                        verbose=verbose)
 
   benchmarks_to_inputs = {}
   for benchmark in benchmarks:

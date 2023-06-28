@@ -66,5 +66,6 @@ for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
   "${TD}/run_benchmarks.py" \
     --benchmark_name="${benchmark_name}" \
     --output="${OUTPUT_PATH}" \
-    --iterations="${ITERATIONS}"
+    --iterations="${ITERATIONS}" \
+    --verbose
 done
