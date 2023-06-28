@@ -37,14 +37,15 @@ T5_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
                 artifact_type=def_types.ModelArtifactType.STABLEHLO,
                 source_url=string.Template(
                     PARENT_GCS_DIR +
-                    "/T5_LARGE/batch_${batch_size}/stablehlo.mlirbc"),
+                    "T5_LARGE_FP32_JAX_512XI32_BATCH${batch_size}/stablehlo.mlirbc"
+                ),
             ),
         def_types.ModelArtifactType.XLA_HLO_DUMP:
             utils.ModelArtifactTemplate(
                 artifact_type=def_types.ModelArtifactType.XLA_HLO_DUMP,
                 source_url=string.Template(
                     PARENT_GCS_DIR +
-                    "/T5_LARGE/batch_${batch_size}/hlo/jit_forward.before_optimizations.txt"
+                    "T5_LARGE_FP32_JAX_512XI32_BATCH${batch_size}/hlo/jit_forward.before_optimizations.txt"
                 ),
             ),
     },
