@@ -6,18 +6,15 @@
 
 import argparse
 import json
-import os
 import sys
 
 from google.cloud import bigquery, storage as CloudStorage
-from typing import Optional, Any, Callable, Dict
+from typing import Optional, Any, Callable, Dict, List
 
-from local_storage import Client as LocalStorageClient
-from in_memory_database import Client as InMemoryDbClient
-from rules import apply_rule_to_file
-import storage
-
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+from db_import.local_storage import Client as LocalStorageClient
+from db_import.in_memory_database import Client as InMemoryDbClient
+from db_import.rules import apply_rule_to_file
+from db_import import storage
 
 
 def configure_parser(parser: argparse.ArgumentParser):
@@ -79,7 +76,7 @@ def _process(config_file, args: argparse.Namespace):
                                config, config_file["snippets"])
 
   if args.dry_run:
-    print(json.dumps(result))
+    print(json.dumps(result, indent=2))
 
   print("Done." if result else "No rule applies.", file=sys.stderr)
 
@@ -89,13 +86,13 @@ class NoRuleAppliesError(Exception):
 
 
 def process_single_file(
-    rules: list[dict],
+    rules: List[Dict],
     file: storage.Blob,
-    config: dict,
-    snippets: dict[str, str],
+    config: Dict,
+    snippets: Dict[str, str],
     presence_check: Optional[Callable[[Dict, Dict], bool]] = None,
     dump_files_to: Optional[str] = None,
-) -> list[Any]:
+) -> List[Any]:
 
   for rule in rules:
     rows = apply_rule_to_file(

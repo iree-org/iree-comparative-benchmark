@@ -10,8 +10,8 @@ import pathlib
 import tempfile
 import unittest
 
-from rules import apply_rule_to_file, BenchmarkRunAlreadyPresentError
-from in_memory_storage import Bucket
+from db_import.rules import apply_rule_to_file, BenchmarkRunAlreadyPresentError
+from db_import.in_memory_storage import Bucket
 
 EMPTY_CONFIG = {
     "bucket_name": "random_bucket_name",
@@ -210,7 +210,3 @@ class TestApplyRuleToFile(unittest.TestCase):
     result = apply_rule_to_file(rule, file1_with_content, EMPTY_CONFIG, dict(),
                                 None, None)
     self.assertEqual(result, file1_with_content.contents)
-
-
-if __name__ == "__main__":
-  unittest.main()

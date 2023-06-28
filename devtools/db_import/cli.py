@@ -7,11 +7,9 @@
 
 import argparse
 import pathlib
-import sys
 import yaml
 
 SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
-sys.path.append(str(SCRIPT_DIR / "db_import"))
 
 from db_import.process import configure_parser as configure_process_parser
 
