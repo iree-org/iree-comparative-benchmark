@@ -6,9 +6,11 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+import concurrent.futures
 import pathlib
 import requests
 import tarfile
+from typing import List, Tuple
 
 
 def download_file(source_url: str,
@@ -38,3 +40,16 @@ def download_file(source_url: str,
     with tarfile.open(save_path) as tar_file:
       # If the tgz is at `x/y.tgz`, unpack at `x/y`.
       tar_file.extractall(save_path.with_suffix(""))
+
+
+def download_files(urls_to_paths: List[Tuple[str, pathlib.Path]]):
+  """Fetch a list of URLs in parallel."""
+
+  with concurrent.futures.ProcessPoolExecutor(8) as executor:
+    futures = []
+    for source_url, save_path in urls_to_paths:
+      futures.append(
+          executor.submit(download_file,
+                          source_url=source_url,
+                          save_path=save_path))
+    concurrent.futures.wait(futures)

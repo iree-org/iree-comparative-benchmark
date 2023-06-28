@@ -36,7 +36,7 @@ import utils
 
 def _run_framework_benchmark(
     model: def_types.Model,
-    input_paths: Sequence[pathlib.Path],
+    input_npys: Sequence[pathlib.Path],
     warmup_iterations: int,
     benchmark_iterations: int,
     backend: str,
@@ -47,7 +47,7 @@ def _run_framework_benchmark(
   model_obj: model_interfaces.InferenceModel = model_module.create_model(
       **model.model_parameters)
 
-  inputs = [np.load(path) for path in input_paths]
+  inputs = [np.load(path) for path in input_npys]
 
   try:
     with jax.default_device(jax.devices(backend)[0]):
@@ -139,7 +139,7 @@ def _append_result(result_path: pathlib.Path, result: BenchmarkResult) -> None:
 
 def _run(benchmark: def_types.BenchmarkCase, run_in_process: bool,
          warmup_iterations: int, iterations: int,
-         input_paths: Sequence[pathlib.Path]) -> BenchmarkResult:
+         input_npys: Sequence[pathlib.Path]) -> BenchmarkResult:
   model = benchmark.model
   input_data = benchmark.input_data.artifacts[
       def_types.ModelTestDataFormat.NUMPY_TENSORS]
@@ -172,7 +172,7 @@ def _run(benchmark: def_types.BenchmarkCase, run_in_process: bool,
     backend = benchmark.target_device.accelerator_type
     kwargs: Dict[str, Any] = dict(
         model=model,
-        input_paths=list(input_paths),
+        input_npys=list(input_npys),
         warmup_iterations=warmup_iterations,
         benchmark_iterations=iterations,
         backend=backend,
@@ -194,6 +194,20 @@ def _run(benchmark: def_types.BenchmarkCase, run_in_process: bool,
           "framework_level": framework_metrics,
       },
   )
+
+
+def _download_artifacts(benchmarks: Sequence[def_types.BenchmarkCase],
+                        root_dir: pathlib.Path):
+  """Download benchmark artifacts."""
+
+  download_list = []
+  for benchmark in benchmarks:
+    artifact = benchmark.input_data.artifacts[
+        def_types.ModelTestDataFormat.NUMPY_TENSORS]
+    input_path = root_dir / benchmark.model.name / "input_npy.tgz"
+    download_list.append((artifact.source_url, input_path))
+
+  utils.download_files(download_list)
 
 
 def _parse_arguments() -> argparse.Namespace:
@@ -224,11 +238,15 @@ def _parse_arguments() -> argparse.Namespace:
       action="store_true",
       help=("Whether to run the benchmark under the same process. Set this to"
             " true when profiling a single workload."))
-  parser.add_argument("--tmpdir",
+  parser.add_argument("--root-dir",
+                      "--root_dir",
                       type=pathlib.Path,
                       default=pathlib.Path("/tmp/openxla-benchmark/jax_xla"),
-                      help="Directory to store temporary data.")
-
+                      help="Root directory stores benchmark artifacts.")
+  parser.add_argument("--no-download",
+                      "--no_download",
+                      action="store_true",
+                      help="Don't automatically download benchmark artifacts.")
   parser.add_argument("--verbose",
                       action="store_true",
                       help="Show verbose messages.")
@@ -242,7 +260,8 @@ def main(
     warmup_iterations: int,
     iterations: int,
     output: pathlib.Path,
-    tmpdir: pathlib.Path,
+    root_dir: pathlib.Path,
+    no_download: bool,
     verbose: bool,
 ):
   name_pattern = re.compile(f"^{benchmark_name}$")
@@ -257,26 +276,34 @@ def main(
     raise ValueError(f'No benchmark matches "{benchmark_name}".'
                      f' Available benchmarks:\n{all_benchmark_list}')
 
+  if not no_download:
+    _download_artifacts(benchmarks=benchmarks, root_dir=root_dir)
+
   benchmarks_to_inputs = {}
   for benchmark in benchmarks:
     artifact = benchmark.input_data.artifacts[
         def_types.ModelTestDataFormat.NUMPY_TENSORS]
-    model_dir = tmpdir / benchmark.model.name
-    utils.download_file(source_url=artifact.source_url,
-                        save_path=model_dir / "input_npy.tgz")
+    model_dir = root_dir / benchmark.model.name
+
     num_of_tensors = len(artifact.data_parameters["tensor_dimensions"])
-    input_paths = [
-        model_dir / "input_npy" / f"input_{idx}.npy"
-        for idx in range(num_of_tensors)
-    ]
-    benchmarks_to_inputs[benchmark.id] = input_paths
+    input_npys = []
+
+    # Check and gather input npy paths.
+    for idx in range(num_of_tensors):
+      tensor_path = model_dir / "input_npy" / f"input_{idx}.npy"
+      if not tensor_path.exists():
+        raise ValueError(f"Missing input data '{tensor_path}'.")
+
+      input_npys.append(tensor_path)
+
+    benchmarks_to_inputs[benchmark.id] = input_npys
 
   for benchmark in benchmarks:
     result = _run(benchmark,
                   run_in_process=run_in_process,
                   warmup_iterations=warmup_iterations,
                   iterations=iterations,
-                  input_paths=benchmarks_to_inputs[benchmark.id])
+                  input_npys=benchmarks_to_inputs[benchmark.id])
     if verbose:
       print(json.dumps(dataclasses.asdict(result), indent=2))
 
