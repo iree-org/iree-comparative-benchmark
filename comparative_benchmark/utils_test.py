@@ -29,6 +29,13 @@ class UtilsTest(unittest.TestCase):
             (True, 1),
         ])
 
+  def test_compare_tensors_mismatch_outputs(self):
+    self.assertRaises(
+        ValueError, lambda: utils.compare_tensors(
+            outputs=(np.array([0]),),
+            expects=(np.array([0]), np.array([1])),
+        ))
+
 
 if __name__ == "__main__":
   unittest.main()

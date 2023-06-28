@@ -77,6 +77,9 @@ def compare_tensors(outputs: Sequence[np.ndarray],
   relative_tolerance.
   """
 
+  if len(outputs) != len(expects):
+    raise ValueError("Numbers of output and expect mismatch.")
+
   verdicts = []
   for output, expect in zip(outputs, expects):
     is_equal = np.allclose(output,
