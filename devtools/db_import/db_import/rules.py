@@ -15,7 +15,7 @@ import rjsonnet
 from google.cloud import storage
 from typing import Any, Callable, Dict, Optional
 
-from utils import first_no_except
+from db_import.utils import first_no_except
 
 
 class BenchmarkRunAlreadyPresentError(Exception):

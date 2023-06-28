@@ -7,7 +7,7 @@
 
 import unittest
 
-from utils import first_no_except
+from db_import.utils import first_no_except
 
 
 class TestFirstNoExcept(unittest.TestCase):
@@ -40,7 +40,3 @@ class TestFirstNoExcept(unittest.TestCase):
 
     self.assertEqual(first_no_except(raise_when_smaller_5, range(10)), 5)
     self.assertEqual(raise_when_smaller_5.number_of_calls, 6)
-
-
-if __name__ == "__main__":
-  unittest.main()

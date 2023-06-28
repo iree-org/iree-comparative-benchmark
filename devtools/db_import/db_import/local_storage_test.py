@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 ## Copyright 2023 The OpenXLA Authors
 #
 # Licensed under the Apache License v2.0 with LLVM Exceptions.
@@ -9,8 +8,8 @@ import pathlib
 import tempfile
 import unittest
 
-import local_storage
-import storage
+from db_import import local_storage
+from db_import import storage
 
 
 class TestLocalStorage(unittest.TestCase):
@@ -53,7 +52,3 @@ class TestLocalStorage(unittest.TestCase):
 
     self.assertEqual(set(blob.name for blob in bucket.list_blobs()),
                      set([filename1, filename2]))
-
-
-if __name__ == "__main__":
-  unittest.main()

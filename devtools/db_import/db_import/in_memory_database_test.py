@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 ## Copyright 2023 The OpenXLA Authors
 #
 # Licensed under the Apache License v2.0 with LLVM Exceptions.
@@ -7,8 +6,8 @@
 
 import unittest
 
-import db
-import in_memory_database
+from db_import import db
+from db_import import in_memory_database
 
 
 class TestInMemoryDatabase(unittest.TestCase):
@@ -33,7 +32,3 @@ class TestInMemoryDatabase(unittest.TestCase):
     with self.assertRaises(RuntimeError):
       # Querying is not supported
       client.query('SELECT * FROM table')
-
-
-if __name__ == "__main__":
-  unittest.main()
