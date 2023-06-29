@@ -41,13 +41,18 @@ class T5ForConditionalGeneration(model_interfaces.InferenceModel):
     inputs = self.tokenizer(*raw_input, **self.tokenization_kwargs)
     return (inputs["input_ids"], inputs["attention_mask"])
 
-  def forward(self, inputs: Tuple[Any, ...], max_new_tokens: int = 50) -> Any:
+  def forward(
+      self,
+      inputs: Tuple[Any, ...],
+      max_new_tokens: int = 50,
+  ) -> Tuple[Any, ...]:
     input_ids, attention_mask = inputs
     # Calls `generate()` which takes care of running the encoder and decoder
     # auto-regressively.
-    return self.model.generate(input_ids=input_ids,
-                               attention_mask=attention_mask,
-                               max_new_tokens=max_new_tokens)
+    output = self.model.generate(input_ids=input_ids,
+                                 attention_mask=attention_mask,
+                                 max_new_tokens=max_new_tokens)
+    return (output,)
 
   def postprocess(self, outputs: Any) -> Any:
     return self.tokenizer.batch_decode(outputs, skip_special_tokens=True)

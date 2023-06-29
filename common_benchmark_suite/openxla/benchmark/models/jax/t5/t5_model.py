@@ -51,12 +51,13 @@ class T5(model_interfaces.InferenceModel):
     # decoder_input_ids = self.model._shift_right(decoder_input_ids)
     return (encoder_input_ids, decoder_input_ids)
 
-  def forward(self, inputs: Tuple[Any, ...]) -> Any:
+  def forward(self, inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
     encoder_input_ids, decoder_input_ids = inputs
-    return self.model(
+    output = self.model(
         input_ids=encoder_input_ids,
         decoder_input_ids=decoder_input_ids,
     ).last_hidden_state
+    return (output,)
 
   def postprocess(self, outputs: Any) -> Any:
     # No-op.

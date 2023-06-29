@@ -52,8 +52,9 @@ OUTPUT_DATA_T5_LARGE_FP32_JAX_512X1024XF32_BATCH_TEMPLATE = utils.ModelTestDataT
                         utils.BATCH_TENSOR_DIMS("512x1024xi32"),
                     ]
                 },
-                # TODO(#11): Add verification tolerance `0.5`.
-                verify_parameters={},
+                verify_parameters={
+                    "absolute_tolerance": 0.5,
+                },
                 source_url=string.Template(
                     "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/T5_LARGE_FP32_JAX_512XI32_BATCH${batch_size}/output_npy.tgz"
                 ))
