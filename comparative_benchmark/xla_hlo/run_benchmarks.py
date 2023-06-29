@@ -275,7 +275,7 @@ def _download_artifacts(benchmarks: Sequence[def_types.BenchmarkCase],
 
 
 def _parse_arguments() -> argparse.Namespace:
-  parser = argparse.ArgumentParser(description="Run XLA compiler benchmarks.")
+  parser = argparse.ArgumentParser(description="Run XLA-HLO benchmarks.")
   parser.add_argument("-o",
                       "--output",
                       type=pathlib.Path,
