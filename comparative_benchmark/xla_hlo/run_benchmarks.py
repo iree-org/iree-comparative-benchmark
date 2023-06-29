@@ -299,7 +299,8 @@ def _parse_arguments() -> argparse.Namespace:
   parser.add_argument("--hlo-tool",
                       "--hlo_tool",
                       required=True,
-                      help="The path to `run_hlo_module`.")
+                      help="The path to `run_hlo_module` for CPU benchmarking"
+                      " and `hlo_runner_main` for GPU benchmarking.")
   parser.add_argument("--root-dir",
                       "--root_dir",
                       type=pathlib.Path,

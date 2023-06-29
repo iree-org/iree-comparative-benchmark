@@ -99,6 +99,9 @@ jobs:
     env:
       RESULTS_DIR: results-dir
       TARGET_DEVICE: a2-highgpu-1g
+      XLA_TOOLS_DIR: ${{ needs.build_xla_tools.outputs.xla-tools-dir }}
+      XLA_TOOLS_DIR_ARCHIVE: ${{ needs.build_xla_tools.outputs.xla-tools-dir-archive }}
+      XLA_TOOLS_DIR_GCS_ARTIFACT: ${{ needs.build_xla_tools.outputs.xla-tools-dir-gcs-artifact }}
     steps:
       - name: "Checking out PR repository"
         uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
@@ -107,7 +110,24 @@ jobs:
         run: |
           echo "results-gcs-dir=${GCS_DIR}/${TARGET_DEVICE}_$(date +'%Y-%m-%d').$(date +'%s')" >> "${GITHUB_OUTPUT}"
           mkdir "${RESULTS_DIR}"
-      - name: "Benchmarking JAX/XLA:GPU"
+      - name: "Downloading and unpacking XLA tools"
+        run: |
+          gcloud storage cp "${XLA_TOOLS_DIR_GCS_ARTIFACT}" "${XLA_TOOLS_DIR_ARCHIVE}"
+          tar -xvf "${XLA_TOOLS_DIR_ARCHIVE}"
+      - name: "Benchmarking XLA-HLO:GPU"
+        env:
+          XLA_HLO_RESULTS_JSON: xla-hlo.json
+          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+        run: |
+          RESULTS_PATH="${RESULTS_DIR}/${XLA_HLO_RESULTS_JSON}"
+          docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+            --env "OOBI_XLA_TOOLS_DIR=${XLA_TOOLS_DIR}" \
+            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:c39107c4160e749b7c4bac18862c6c1b6d56e1aa60644a4fe323e315ffba0a0b" \
+            ./comparative_benchmark/xla_hlo/benchmark_all.sh \
+              "${TARGET_DEVICE}"\
+              "${RESULTS_PATH}"
+          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+      - name: "Benchmarking JAX-XLA:GPU"
         env:
           JAX_XLA_RESULTS_JSON: jax-xla.json
           RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
