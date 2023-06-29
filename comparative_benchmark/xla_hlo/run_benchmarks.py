@@ -31,15 +31,14 @@ TIME_UNITS = {"us": 1e-3, "ms": 1, "s": 1e3, "min": 60 * 1e3, "h": 3600 * 1e3}
 TIME_REGEXP = re.compile(r"time: (\d+\.?\d*) (%s)" % "|".join(TIME_UNITS))
 SIZE_REGEXP = re.compile(r" (\d+) bytes")
 LOG_TIME_REGEXP = re.compile(
-    rb"^(\d{4}-\d{2}-\d{2}) (\d{2}):(\d{2}):(\d{2}\.\d+):")
+    r"^(\d{4}-\d{2}-\d{2}) (\d{2}):(\d{2}):(\d{2}\.\d+):")
 
 GPU_COMPILE_TIME_REGEXP = re.compile(
-    rb"NVPTXCompiler::CompileTargetBinary - CompileToPtx.*")
+    r"NVPTXCompiler::CompileTargetBinary - CompileToPtx.*")
 GPU_PEAK_MEMORY_REGEXP = re.compile(
-    rb"New Peak memory usage of \d+ bytes for GPU")
-GPU_LATENCY_START_REGEXP = re.compile(rb".+HloRunner: ExecuteOnDevices started")
-GPU_LATENCY_STOP_REGEXP = re.compile(
-    rb".+HloRunner: ExecuteOnDevices succeeded")
+    r"New Peak memory usage of \d+ bytes for GPU")
+GPU_LATENCY_START_REGEXP = re.compile(r".+HloRunner: ExecuteOnDevices started")
+GPU_LATENCY_STOP_REGEXP = re.compile(r".+HloRunner: ExecuteOnDevices succeeded")
 
 CPU_COMPILE_TIME_REGEXP = re.compile(r"... compiled and ran in (.*)s.")
 CPU_LATENCY_REGEXP = re.compile(r"execution time for runner [A-Za-z]*: (.*)s.")
@@ -47,7 +46,7 @@ CPU_LATENCY_REGEXP = re.compile(r"execution time for runner [A-Za-z]*: (.*)s.")
 HLO_FILENAME = "xla_hlo_before_optimizations.txt"
 
 
-def _parse_log_time(line: bytes) -> float:
+def _parse_log_time(line: str) -> float:
   """Parses timestamp from the standard log."""
   match = LOG_TIME_REGEXP.search(line)
   assert match, "Unable to parse log time: %s" % line
@@ -55,16 +54,15 @@ def _parse_log_time(line: bytes) -> float:
   return 1000 * (int(h) * 3600 + int(m) * 60 + float(s))
 
 
-def _parse_log_elapsed_time(line1: bytes, line2: bytes) -> float:
-  """Calculates elapsed time between two log lines.
-  """
+def _parse_log_elapsed_time(line1: str, line2: str) -> float:
+  """Calculates elapsed time between two log lines."""
   start, end = _parse_log_time(line1), _parse_log_time(line2)
   end += 86400 if end < start else 0  # next day correction
   return end - start
 
 
-def _parse_latencies(raw_output: bytes,
-                     expected_iterations: int) -> List[float]:
+def _parse_gpu_latencies(raw_output: str,
+                         expected_iterations: int) -> List[float]:
   """Returns a list of latencies in milliseconds parsed from XLA logs."""
   start_matches = GPU_LATENCY_START_REGEXP.findall(raw_output)
   stop_matches = GPU_LATENCY_STOP_REGEXP.findall(raw_output)
@@ -88,28 +86,28 @@ def _parse_latencies(raw_output: bytes,
   return latencies
 
 
-def _parse_log_duration(time_str: bytes) -> float:
+def _parse_log_duration(time_str: str) -> float:
   """Returns the time in milliseconds parsed from XLA logs."""
-  match = TIME_REGEXP.search(time_str.decode())
+  match = TIME_REGEXP.search(time_str)
   assert match, "Unable to parse the time on log line"
   exp = TIME_UNITS[match.group(2)]
   return float(match.group(1)) * exp
 
 
-def _parse_log_size(size_str: bytes) -> float:
+def _parse_log_size(size_str: str) -> float:
   """Returns the size in bytes parsed from XLA logs."""
-  match = SIZE_REGEXP.search(size_str.decode())
+  match = SIZE_REGEXP.search(size_str)
   assert match, "Unable to parse the size on log line"
   return float(match.group(1)) * 1e-6
 
 
-def _parse_compile_time(raw_output: bytes) -> float:
+def _parse_gpu_compile_time(raw_output: str) -> float:
   matches = GPU_COMPILE_TIME_REGEXP.findall(raw_output)
   total_compile_time_ms = sum([_parse_log_duration(t1) for t1 in matches])
   return total_compile_time_ms * 1e-3
 
 
-def _parse_peak_memory(raw_output: bytes) -> float:
+def _parse_gpu_peak_memory(raw_output: str) -> float:
   matches = GPU_PEAK_MEMORY_REGEXP.findall(raw_output)
   assert matches, "Unable to find peak memory"
   return _parse_log_size(matches[-1])
@@ -119,13 +117,12 @@ def _run_compiler_benchmark_gpu(
     hlo_benchmark_tool_path: pathlib.Path,
     hlo_input_path: pathlib.Path,
     benchmark_iterations: int,
-    device: str,
     verbose: bool,
 ) -> Dict[str, Any]:
   cmd = [
       hlo_benchmark_tool_path,
       f"--hlo_file={hlo_input_path}",
-      f"--device_type={device}",
+      f"--device_type=gpu",
       f"--num_repeats={benchmark_iterations}",
       "--input_format=text",
       "--num_replicas=1",
@@ -146,11 +143,11 @@ def _run_compiler_benchmark_gpu(
           "TF_CPP_VMODULE":
               "nvptx_compiler=1,gpu_compiler=1,parse_flags_from_env=1,bfc_allocator=2,functional_hlo_runner=1",
       })
-  result_text = result.stdout
+  result_text = result.stdout.decode("utf-8")
 
-  latencies = _parse_latencies(result_text, benchmark_iterations)
-  compile_time_s = _parse_compile_time(result_text)
-  peak_memory_usage = _parse_peak_memory(result_text)
+  latencies = _parse_gpu_latencies(result_text, benchmark_iterations)
+  compile_time_s = _parse_gpu_compile_time(result_text)
+  peak_memory_usage = _parse_gpu_peak_memory(result_text)
 
   results_dict = {
       "compile_time_s": compile_time_s,
@@ -169,13 +166,12 @@ def _run_compiler_benchmark_cpu(
     hlo_benchmark_tool_path: pathlib.Path,
     hlo_input_path: pathlib.Path,
     benchmark_iterations: int,
-    device: str,
     verbose: bool,
 ) -> Dict[str, Any]:
   cmd = [
       hlo_benchmark_tool_path,
       "--input_format=hlo",
-      f"--platform={device}",
+      f"--platform=cpu",
       "--reference_platform=",
       "--logtostderr",
       f"--input_module={hlo_input_path}",
@@ -246,13 +242,11 @@ def _run(
     metrics = _run_compiler_benchmark_gpu(hlo_benchmark_tool_path=hlo_tool,
                                           hlo_input_path=hlo_dump,
                                           benchmark_iterations=iterations,
-                                          device=accelerator,
                                           verbose=verbose)
   elif accelerator == "cpu":
     metrics = _run_compiler_benchmark_cpu(hlo_benchmark_tool_path=hlo_tool,
                                           hlo_input_path=hlo_dump,
                                           benchmark_iterations=iterations,
-                                          device=accelerator,
                                           verbose=verbose)
   else:
     raise ValueError(f"Unsupported accelerator: '{accelerator}'.")

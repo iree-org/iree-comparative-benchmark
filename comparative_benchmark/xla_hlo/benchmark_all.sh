@@ -44,25 +44,12 @@ else
   exit 1
 fi
 
-# Create json file and populate with global information.
-PACKAGE_VERSIONS="$(python -m pip list --format json)"
-TIMESTAMP="$(date +'%s')"
-cat <<EOF > "${OUTPUT_PATH}"
-{
-  "trigger": {
-    "timestamp": "${TIMESTAMP}"
-  },
-  "execution_environment": {
-    "python_environment": $PACKAGE_VERSIONS
-  },
-  "benchmarks": []
-}
-EOF
+"${TD}/../scripts/create_results_json.sh" "${OUTPUT_PATH}"
 
 for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
   "${TD}/run_benchmarks.py" \
     --benchmark_name="${benchmark_name}" \
-    --hlo-tool "${XLA_TOOLS_DIR}/${HLO_TOOL}" \
+    --hlo-tool="${XLA_TOOLS_DIR}/${HLO_TOOL}" \
     --output="${OUTPUT_PATH}" \
     --iterations="${ITERATIONS}" \
     --verbose
