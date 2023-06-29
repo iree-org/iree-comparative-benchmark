@@ -6,15 +6,15 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #
-# Sets up a virtual environment suitable for running `xla-hlo`.
+# Sets up a virtual environment suitable for running `xla_hlo` benchmarks.
 #
 # Environment variables:
-#   VENV_DIR=hlo-benchmarks.venv
+#   VENV_DIR=xla-hlo-benchmarks.venv
 
 set -euo pipefail
 
 TD="$(cd $(dirname $0) && pwd)"
-VENV_DIR="${VENV_DIR:-hlo-benchmarks.venv}"
+VENV_DIR="${VENV_DIR:-xla-hlo-benchmarks.venv}"
 
 if [ -z "$PYTHON" ]; then
   PYTHON="$(which python)"

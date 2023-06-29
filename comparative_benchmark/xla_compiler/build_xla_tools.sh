@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 BUILD_DIR="${XLA_BUILD_DIR:-build-xla}"
-TOOL_OUTPUT_DIR="${1:-"${XLA_TOOL_OUTPUT_DIR}"}"
+TOOLS_OUTPUT_DIR="${1:-"${XLA_TOOLS_OUTPUT_DIR}"}"
 CUDA_VERSION="${2:-"${XLA_CUDA_VERSION}"}"
 
 mkdir -p "${BUILD_DIR}"
@@ -34,4 +34,4 @@ RUN_HLO_MODULE_PATH="$(realpath bazel-bin/xla/tools/run_hlo_module)"
 
 popd
 
-cp "${RUN_HLO_RUNNER_MAIN_PATH}" "${RUN_HLO_MODULE_PATH}" "${TOOL_OUTPUT_DIR}/"
+cp "${RUN_HLO_RUNNER_MAIN_PATH}" "${RUN_HLO_MODULE_PATH}" "${TOOLS_OUTPUT_DIR}/"

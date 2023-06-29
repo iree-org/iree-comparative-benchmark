@@ -9,7 +9,7 @@ import string
 from openxla.benchmark import def_types, unique_ids
 from openxla.benchmark.comparative_suite import utils
 
-PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752"
+PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/"
 
 T5_LARGE_FP32_JAX_IMPL = def_types.ModelImplementation(
     id=unique_ids.MODEL_T5_LARGE_FP32_JAX,

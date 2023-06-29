@@ -182,7 +182,7 @@ def _run_compiler_benchmark_cpu(
       f"--iterations={benchmark_iterations}",
   ]
   if verbose:
-    print(f"Run command: {cmd}")
+    print(f'Run command: {" ".join(cmd)}')
   result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
   result_text = result.stdout.decode("utf-8")
 
