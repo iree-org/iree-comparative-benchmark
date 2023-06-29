@@ -120,6 +120,7 @@ def _run_compiler_benchmark_gpu(
     hlo_input_path: pathlib.Path,
     benchmark_iterations: int,
     device: str,
+    verbose: bool,
 ) -> Dict[str, Any]:
   cmd = [
       hlo_benchmark_tool_path,
@@ -131,7 +132,8 @@ def _run_compiler_benchmark_gpu(
       "--num_partitions=1",
       "--logtostderr",
   ]
-
+  if verbose:
+    print(f"Run command: {cmd}")
   result = subprocess.run(
       cmd,
       stdout=subprocess.PIPE,
@@ -168,6 +170,7 @@ def _run_compiler_benchmark_cpu(
     hlo_input_path: pathlib.Path,
     benchmark_iterations: int,
     device: str,
+    verbose: bool,
 ) -> Dict[str, Any]:
   cmd = [
       hlo_benchmark_tool_path,
@@ -178,6 +181,8 @@ def _run_compiler_benchmark_cpu(
       f"--input_module={hlo_input_path}",
       f"--iterations={benchmark_iterations}",
   ]
+  if verbose:
+    print(f"Run command: {cmd}")
   result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
   result_text = result.stdout.decode("utf-8")
 
@@ -205,9 +210,13 @@ def _run_compiler_benchmark_cpu(
   return results_dict
 
 
-def _run(benchmark: def_types.BenchmarkCase, iterations: int,
-         hlo_tool: pathlib.Path,
-         hlo_dump: pathlib.Path) -> utils.BenchmarkResult:
+def _run(
+    benchmark: def_types.BenchmarkCase,
+    iterations: int,
+    hlo_tool: pathlib.Path,
+    hlo_dump: pathlib.Path,
+    verbose: bool,
+) -> utils.BenchmarkResult:
   model = benchmark.model
   input_data = benchmark.input_data.artifacts[
       def_types.ModelTestDataFormat.NUMPY_TENSORS]
@@ -234,11 +243,17 @@ def _run(benchmark: def_types.BenchmarkCase, iterations: int,
   # We use different binaries for benchmarking gpu and cpu.
   accelerator = benchmark.target_device.accelerator_type
   if accelerator == "gpu":
-    metrics = _run_compiler_benchmark_gpu(hlo_tool, hlo_dump, iterations,
-                                          accelerator)
+    metrics = _run_compiler_benchmark_gpu(hlo_benchmark_tool_path=hlo_tool,
+                                          hlo_input_path=hlo_dump,
+                                          benchmark_iterations=iterations,
+                                          device=accelerator,
+                                          verbose=verbose)
   elif accelerator == "cpu":
-    metrics = _run_compiler_benchmark_cpu(hlo_tool, hlo_dump, iterations,
-                                          accelerator)
+    metrics = _run_compiler_benchmark_cpu(hlo_benchmark_tool_path=hlo_tool,
+                                          hlo_input_path=hlo_dump,
+                                          benchmark_iterations=iterations,
+                                          device=accelerator,
+                                          verbose=verbose)
   else:
     raise ValueError(f"Unsupported accelerator: '{accelerator}'.")
 
@@ -336,7 +351,8 @@ def main(
     result = _run(benchmark=benchmark,
                   iterations=iterations,
                   hlo_tool=hlo_tool,
-                  hlo_dump=hlo_dump)
+                  hlo_dump=hlo_dump,
+                  verbose=verbose)
     if verbose:
       print(json.dumps(dataclasses.asdict(result), indent=2))
 
