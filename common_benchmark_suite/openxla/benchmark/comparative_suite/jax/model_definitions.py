@@ -79,7 +79,7 @@ T5_LARGE_4CG_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "model_name": "t5-large",
     },
     artifacts={
-        #TODO(mariecwhite): Add artifacts once artifact generation pipeline is implemented.
+        # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
     },
 )
 T5_LARGE_4CG_FP32_JAX_512XI32_BATCHES = utils.build_batch_models(

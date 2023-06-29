@@ -18,6 +18,9 @@ TD="$(cd $(dirname $0) && pwd)"
 
 VENV_DIR="${VENV_DIR}" PYTHON="${PYTHON}" source "${TD}/setup_venv.sh"
 
+# TODO(#12): Add models/T5_LARGE_4CG_FP32_JAX_512XI32_BATCH* once HLO dumps can
+# are generated.
+
 declare -a GPU_BENCHMARK_NAMES=(
   "models/T5_LARGE_FP32_JAX_512XI32_BATCH\d+/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
 )
