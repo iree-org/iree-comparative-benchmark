@@ -39,6 +39,7 @@ declare -a GPU_BENCHMARK_NAMES=(
   "models/T5_LARGE_FP32_JAX_.+"
   "models/T5_4CG_LARGE_FP32_JAX_.+"
   "models/GPT2LMHEAD_FP32_JAX_.+"
+  "models/NVIDIA1_3B_2G_TRAIN_BF16_JAX.+"
 )
 
 declare -a CPU_BENCHMARK_NAMES=(

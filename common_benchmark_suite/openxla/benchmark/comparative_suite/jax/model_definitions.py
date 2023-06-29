@@ -295,6 +295,35 @@ GPT2LMHEAD_FP32_JAX_512XI32_BATCHES = utils.build_batch_models(
     template=GPT2LMHEAD_FP32_JAX_512XI32_BATCH_TEMPLATE,
     batch_sizes=[1, 64, 128])
 
+# DO_NOT_SUBMIT
+NVIDIA1_3B_2G_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.13_1690046172/"
+NVIDIA1_3B_2G_ARTIFACTS_DIR_URL_TEMPLATE = string.Template(NVIDIA1_3B_2G_GCS_DIR +
+                                                           "${name}")
+NVIDIA1_3B_2G_TRAIN_BF16_JAX_IMPL = def_types.ModelImplementation(
+    name="MODEL_NVIDIA1_3B_2G_TRAIN_BF16_JAX",
+    tags=["fp32", "transformer-decoder", "nvidia"],
+    framework_type=def_types.ModelFrameworkType.JAX,
+    module_path=f"{utils.MODELS_MODULE_PATH}.jax.pax.nvidia1_3b_2g_train_model",
+    source_info="PAX LLM",
+)
+NVIDIA1_3B_2G_TRAIN_BF16_JAX_BATCH_TEMPLATE = utils.ModelTemplate(
+    name=utils.BATCH_NAME("NVIDIA1_3B_2G_TRAIN_BF16_JAX"),
+    tags=[utils.BATCH_TAG],
+    model_impl=NVIDIA1_3B_2G_TRAIN_BF16_JAX_IMPL,
+    model_parameters={
+        "batch_size": utils.BATCH_SIZE_PARAM,
+        "data_type": "fp32",
+    },
+    artifacts_dir_url=NVIDIA1_3B_2G_ARTIFACTS_DIR_URL_TEMPLATE,
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+)
+NVIDIA1_3B_2G_TRAIN_BF16_JAX_BATCHES = utils.build_batch_models(
+    template=NVIDIA1_3B_2G_TRAIN_BF16_JAX_BATCH_TEMPLATE,
+    batch_sizes=[8])
+
 ALL_MODELS = list(
     itertools.chain(
         T5_LARGE_FP32_JAX_512XI32_BATCHES.values(),
@@ -308,4 +337,5 @@ ALL_MODELS = list(
         RESNET50_FP16_JAX_3X224X224XF16_BATCHES.values(),
         RESNET50_BF16_JAX_3X224X224XBF16_BATCHES.values(),
         GPT2LMHEAD_FP32_JAX_512XI32_BATCHES.values(),
+        NVIDIA1_3B_2G_TRAIN_BF16_JAX_BATCHES.values(),
     ))

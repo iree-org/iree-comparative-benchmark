@@ -4,6 +4,7 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+from absl import flags
 import argparse
 import jax
 import os
@@ -120,7 +121,7 @@ def main(output_dir: pathlib.Path, filter: str, iree_opt_path: pathlib.Path):
 
   output_dir.mkdir(parents=True, exist_ok=True)
   for model in models:
-    # We need to generate artifacts in a separate proces each time in order for
+    # We need to generate artifacts in a separate process each time in order for
     # XLA to update the HLO dump directory.
     p = multiprocessing.Process(target=_generate_artifacts,
                                 args=(model, output_dir, iree_opt_path))
@@ -129,4 +130,6 @@ def main(output_dir: pathlib.Path, filter: str, iree_opt_path: pathlib.Path):
 
 
 if __name__ == "__main__":
+  # PAX requires absl's flags to be initialized.
+  flags.FLAGS(sys.argv[:1])
   main(**vars(_parse_arguments()))

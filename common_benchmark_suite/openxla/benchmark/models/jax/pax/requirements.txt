@@ -1,6 +1,3 @@
-flax
 jax
-transformers
-pillow
 praxis @ git+https://github.com/google/praxis
 paxml @ git+https://github.com/google/paxml
