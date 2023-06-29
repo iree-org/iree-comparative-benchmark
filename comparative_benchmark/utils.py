@@ -7,11 +7,18 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import concurrent.futures
+from dataclasses import dataclass
 import numpy as np
 import pathlib
 import requests
 import tarfile
-from typing import List, Sequence, Tuple
+from typing import Any, Dict, List, Sequence, Tuple
+
+
+@dataclass
+class BenchmarkResult:
+  definition: Dict[str, Any]
+  metrics: Dict[str, Any]
 
 
 def download_file(source_url: str,

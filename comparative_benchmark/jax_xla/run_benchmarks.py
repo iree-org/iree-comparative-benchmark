@@ -139,12 +139,6 @@ def _run_framework_benchmark(
   shared_dict.update(result_dict)
 
 
-@dataclass
-class BenchmarkResult:
-  definition: Dict[str, Any]
-  metrics: Dict[str, Any]
-
-
 def _append_result(result_path: pathlib.Path, result: BenchmarkResult) -> None:
   result_obj = {}
   if result_path.exists():
@@ -159,7 +153,7 @@ def _append_result(result_path: pathlib.Path, result: BenchmarkResult) -> None:
 def _run(benchmark: def_types.BenchmarkCase, run_in_process: bool,
          warmup_iterations: int, iterations: int,
          input_npys: Sequence[pathlib.Path],
-         expect_npys: Sequence[pathlib.Path]) -> BenchmarkResult:
+         expect_npys: Sequence[pathlib.Path]) -> utils.BenchmarkResult:
   model = benchmark.model
   input_data = benchmark.input_data.artifacts[
       def_types.ModelTestDataFormat.NUMPY_TENSORS]
@@ -210,7 +204,7 @@ def _run(benchmark: def_types.BenchmarkCase, run_in_process: bool,
 
     framework_metrics = dict(shared_dict)
 
-  return BenchmarkResult(
+  return utils.BenchmarkResult(
       definition=benchmark_definition,
       metrics={
           "framework_level": framework_metrics,
