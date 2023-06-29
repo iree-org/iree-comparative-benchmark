@@ -7,12 +7,13 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import argparse
+import dataclasses
+import json
 import pathlib
 import re
 import statistics
 import subprocess
 import sys
-
 from typing import Any, Dict, List, Sequence
 
 # Add common_benchmark_suite dir to the search path.
@@ -29,6 +30,8 @@ import utils
 TIME_UNITS = {"us": 1e-3, "ms": 1, "s": 1e3, "min": 60 * 1e3, "h": 3600 * 1e3}
 TIME_REGEXP = re.compile(r"time: (\d+\.?\d*) (%s)" % "|".join(TIME_UNITS))
 SIZE_REGEXP = re.compile(r" (\d+) bytes")
+LOG_TIME_REGEXP = re.compile(
+    rb"^(\d{4}-\d{2}-\d{2}) (\d{2}):(\d{2}):(\d{2}\.\d+):")
 
 GPU_COMPILE_TIME_REGEXP = re.compile(
     rb"NVPTXCompiler::CompileTargetBinary - CompileToPtx.*")
@@ -45,10 +48,8 @@ HLO_FILENAME = "xla_hlo_before_optimizations.txt"
 
 
 def _parse_log_time(line: bytes) -> float:
-  """Parses timestamp from the standard log.
-  """
-  match = re.search(rb"^(\d{4}-\d{2}-\d{2}) (\d{2}):(\d{2}):(\d{2}\.\d+):",
-                    line)
+  """Parses timestamp from the standard log."""
+  match = LOG_TIME_REGEXP.search(line)
   assert match, "Unable to parse log time: %s" % line
   _, h, m, s = match.groups()
   return 1000 * (int(h) * 3600 + int(m) * 60 + float(s))
@@ -120,8 +121,6 @@ def _run_compiler_benchmark_gpu(
     benchmark_iterations: int,
     device: str,
 ) -> Dict[str, Any]:
-  assert hlo_benchmark_tool_path.name == "hlo_runner_main"
-
   cmd = [
       hlo_benchmark_tool_path,
       f"--hlo_file={hlo_input_path}",
@@ -170,8 +169,6 @@ def _run_compiler_benchmark_cpu(
     benchmark_iterations: int,
     device: str,
 ) -> Dict[str, Any]:
-  assert hlo_benchmark_tool_path.name == "run_hlo_module"
-
   cmd = [
       hlo_benchmark_tool_path,
       "--input_format=hlo",
@@ -269,14 +266,12 @@ def _download_artifacts(benchmarks: Sequence[def_types.BenchmarkCase],
 
 
 def _parse_arguments() -> argparse.Namespace:
-  parser = argparse.ArgumentParser()
-  parser.add_argument(
-      "-o",
-      "--output_path",
-      required=True,
-      help=
-      "Path to results json file. Expects this file to have been pre-populated."
-  )
+  parser = argparse.ArgumentParser(description="Run XLA compiler benchmarks.")
+  parser.add_argument("-o",
+                      "--output",
+                      type=pathlib.Path,
+                      required=True,
+                      help="JSON file path to merge the results.")
   parser.add_argument("-name",
                       "--benchmark_name",
                       required=True,
@@ -308,6 +303,7 @@ def _parse_arguments() -> argparse.Namespace:
 
 def main(
     benchmark_name: str,
+    output: pathlib.Path,
     root_dir: pathlib.Path,
     hlo_tool: pathlib.Path,
     iterations: int,
@@ -337,10 +333,14 @@ def main(
     if not hlo_dump.exists():
       raise ValueError(f"HLO dump not found: '{hlo_dump}'.")
 
-    _run(benchmark=benchmark,
-         iterations=iterations,
-         hlo_tool=hlo_tool,
-         hlo_dump=hlo_dump)
+    result = _run(benchmark=benchmark,
+                  iterations=iterations,
+                  hlo_tool=hlo_tool,
+                  hlo_dump=hlo_dump)
+    if verbose:
+      print(json.dumps(dataclasses.asdict(result), indent=2))
+
+    utils.append_benchmark_result(output, result)
 
 
 if __name__ == "__main__":

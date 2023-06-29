@@ -139,17 +139,6 @@ def _run_framework_benchmark(
   shared_dict.update(result_dict)
 
 
-def _append_result(result_path: pathlib.Path, result: BenchmarkResult) -> None:
-  result_obj = {}
-  if result_path.exists():
-    result_obj = json.loads(result_path.read_text())
-
-  benchmarks = result_obj.get("benchmarks", [])
-  result_obj["benchmarks"] = benchmarks + [dataclasses.asdict(result)]
-
-  result_path.write_text(json.dumps(result_obj))
-
-
 def _run(benchmark: def_types.BenchmarkCase, run_in_process: bool,
          warmup_iterations: int, iterations: int,
          input_npys: Sequence[pathlib.Path],
@@ -343,7 +332,7 @@ def main(
     if verbose:
       print(json.dumps(dataclasses.asdict(result), indent=2))
 
-    _append_result(output, result)
+    utils.append_benchmark_result(output, result)
 
 
 if __name__ == "__main__":
