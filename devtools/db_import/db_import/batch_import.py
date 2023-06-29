@@ -89,8 +89,9 @@ def import_entire_bucket(
       print("No rule applies.\r" + " " * 250, end="\r")
     except BenchmarkRunAlreadyPresentError:
       print("Data already present.")
-    except Exception:
-      print("Failure.")
+    except Exception as e:
+      print("Failure:")
+      print(e)
 
   for file in bucket.list_blobs(
       prefix=prefix_filter if prefix_filter else None):
