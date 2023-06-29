@@ -47,8 +47,50 @@ jobs:
           # `runner-group` a job output variable.
           echo "runner-group=${RUNNER_GROUP}" > "${GITHUB_OUTPUT}"
 
-  benchmark_on_a2-highgpu-1g:
+  build_xla_tools:
     needs: setup
+    runs-on:
+      - self-hosted  # must come first
+      - runner-group=${{ needs.setup.outputs.runner-group }}
+      - environment=prod
+      - cpu
+      - os-family=Linux
+    env:
+      CUDA_VERSION: 11.8
+      XLA_TOOLS_DIR: xla-tools-dir
+    outputs:
+      xla-tools-dir: ${{ env.XLA_TOOLS_DIR }}
+      xla-tools-dir-archive: ${{ steps.archive.outputs.xla-tools-dir-archive }}
+      xla-tools-dir-gcs-artifact: ${{ steps.upload.outputs.xla-tools-dir-gcs-artifact }}
+    steps:
+      - name: "Checking out PR repository"
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
+      - name: "Building XLA"
+        run: |
+          mkdir -p "${XLA_TOOLS_DIR}"
+          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:c39107c4160e749b7c4bac18862c6c1b6d56e1aa60644a4fe323e315ffba0a0b" \
+            ./comparative_benchmark/xla_compiler/build_xla_tools.sh \
+              "${XLA_TOOLS_DIR}" \
+              "${CUDA_VERSION}"
+      - name: "Creating tool dir archive"
+        id: archive
+        env:
+          XLA_TOOLS_DIR_ARCHIVE: ${{ env.XLA_TOOLS_DIR }}.tgz
+        run: |
+          tar -zcvf ${XLA_TOOLS_DIR_ARCHIVE} ${XLA_TOOLS_DIR}
+          echo "xla-tools-dir-archive=${XLA_TOOLS_DIR_ARCHIVE}" >> "${GITHUB_OUTPUT}"
+      - name: "Uploading tool dir archive"
+        id: upload
+        env:
+          XLA_TOOLS_DIR_ARCHIVE: ${{ steps.archive.outputs.xla-tools-dir-archive }}
+          XLA_TOOLS_DIR_GCS_ARTIFACT: ${{ env.GCS_DIR }}/${{ steps.archive.outputs.xla-tools-dir-archive }}
+        run: |
+          gcloud storage cp "${XLA_TOOLS_DIR_ARCHIVE}" "${XLA_TOOLS_DIR_GCS_ARTIFACT}"
+          echo "xla-tools-dir-gcs-artifact=${XLA_TOOLS_DIR_GCS_ARTIFACT}" >> "${GITHUB_OUTPUT}"
+
+  benchmark_on_a2-highgpu-1g:
+    needs: [setup, build_xla_tools]
     runs-on:
       - self-hosted  # must come first
       - runner-group=${{ needs.setup.outputs.runner-group }}
