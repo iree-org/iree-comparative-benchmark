@@ -10,19 +10,17 @@
 #
 # Environment variables:
 #   VENV_DIR=xla-hlo-benchmarks.venv
+#   PYTHON=/usr/bin/python3.10
 
 set -euo pipefail
 
 TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR="${VENV_DIR:-xla-hlo-benchmarks.venv}"
-
-if [ -z "$PYTHON" ]; then
-  PYTHON="$(which python)"
-fi
+PYTHON="${PYTHON:-"$(which python3)"}"
 
 echo "Setting up venv dir: ${VENV_DIR}"
 
-${PYTHON} -m venv "${VENV_DIR}" || echo "Could not create venv."
+"${PYTHON}" -m venv "${VENV_DIR}" || echo "Could not create venv."
 source "${VENV_DIR}/bin/activate" || echo "Could not activate venv"
 
 # Upgrade pip and install requirements. 'python' is used here in order to
