@@ -11,8 +11,9 @@ import yaml
 
 SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 
-from db_import.batch_import import configure_parser as configure_batch_import_parser
-from db_import.process import configure_parser as configure_process_parser
+from db_import import download
+from db_import import batch_import
+from db_import import process
 
 parser = argparse.ArgumentParser(prog="cli",
                                  description="Manages the cloud functions")
@@ -26,13 +27,17 @@ parser.add_argument(
 )
 subparsers = parser.add_subparsers(required=True)
 
+download_parser = subparsers.add_parser(
+    "download", help="Download files from bucket for local usage")
+download.configure_parser(download_parser)
+
 batch_import_parser = subparsers.add_parser(
     "batch_import", help="Batch import an entire bucket")
-configure_batch_import_parser(batch_import_parser)
+batch_import.configure_parser(batch_import_parser)
 
 process_parser = subparsers.add_parser(
     "process", help="Process a single file from a bucket")
-configure_process_parser(process_parser)
+process.configure_parser(process_parser)
 
 args = parser.parse_args()
 

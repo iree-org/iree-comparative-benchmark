@@ -71,9 +71,9 @@ def apply_rule_to_file(
       contents = fd.read()
 
     if dump_files_to:
-      dump_directory = dump_files_to / config["bucket_name"]
-      dump_directory.mkdir(parents=True, exist_ok=True)
-      (dump_directory / filepath).write_text(contents)
+      full_filepath = dump_files_to / config["bucket_name"] / filepath
+      full_filepath.parent.mkdir(parents=True, exist_ok=True)
+      full_filepath.write_text(contents)
 
     return contents
 

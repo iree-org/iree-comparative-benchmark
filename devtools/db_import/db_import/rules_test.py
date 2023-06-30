@@ -113,14 +113,14 @@ class TestApplyRuleToFile(unittest.TestCase):
     bucket = in_memory_storage.Bucket()
     file1_with_content = bucket.register_blob("hello.json",
                                               "hello.json content")
-    file2_with_content = bucket.register_blob("world.json",
+    file2_with_content = bucket.register_blob("subdirectory/world.json",
                                               "world.json content")
 
     rule = {
         "filepath_regex":
             "hello\.json",
         "result":
-            "std.native('readFile')('hello.json') + std.native('readFile')('world.json')",
+            "std.native('readFile')('hello.json') + std.native('readFile')('subdirectory/world.json')",
     }
 
     with tempfile.TemporaryDirectory() as dir:
@@ -132,7 +132,8 @@ class TestApplyRuleToFile(unittest.TestCase):
       self.assertTrue(path1.is_file())
       self.assertEqual(path1.read_text(), file1_with_content.contents)
 
-      path2 = temp_dir / EMPTY_CONFIG["bucket_name"] / "world.json"
+      path2 = temp_dir / EMPTY_CONFIG[
+          "bucket_name"] / "subdirectory" / "world.json"
       self.assertTrue(path2.is_file())
       self.assertEqual(path2.read_text(), file2_with_content.contents)
 

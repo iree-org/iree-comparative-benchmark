@@ -6,6 +6,7 @@
 
 import argparse
 import sys
+import pathlib
 
 from google.cloud import bigquery
 from google.cloud import storage
@@ -56,7 +57,7 @@ def import_entire_bucket(
     snippets: Dict[str, str],
     check_for_presence: bool,
     prefix_filter: Optional[str] = None,
-    dump_files_to: Optional[str] = None,
+    dump_files_to: Optional[pathlib.Path] = None,
 ):
   bucket = storage_client.get_bucket(config["bucket_name"])
   table = db_client.get_table(config["table_name"])
@@ -86,7 +87,7 @@ def import_entire_bucket(
       # This happens so often, that we don't wanna clutter the output, so
       # we rather do a carriage return and re-use the same line.
       print("No rule applies.\r" + " " * 250, end="\r")
-    except process.BenchmarkRunAlreadyPresentError:
+    except rules.BenchmarkRunAlreadyPresentError:
       print("Data already present.")
     except Exception as e:
       print("Failure:")
