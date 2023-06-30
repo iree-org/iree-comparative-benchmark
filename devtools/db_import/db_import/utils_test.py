@@ -7,7 +7,7 @@
 
 import unittest
 
-from db_import.utils import first_no_except
+from db_import import utils
 
 
 class TestFirstNoExcept(unittest.TestCase):
@@ -17,7 +17,7 @@ class TestFirstNoExcept(unittest.TestCase):
     def raise_immediately(arg):
       raise RuntimeError("")
 
-    self.assertEqual(first_no_except(raise_immediately, []), None)
+    self.assertEqual(utils.first_no_except(raise_immediately, []), None)
 
   def test_failure(self):
 
@@ -25,7 +25,7 @@ class TestFirstNoExcept(unittest.TestCase):
       raise RuntimeError("")
 
     with self.assertRaises(RuntimeError):
-      first_no_except(raise_immediately, [1])
+      utils.first_no_except(raise_immediately, [1])
 
   def test_success(self):
 
@@ -38,5 +38,5 @@ class TestFirstNoExcept(unittest.TestCase):
 
     raise_when_smaller_5.number_of_calls = 0
 
-    self.assertEqual(first_no_except(raise_when_smaller_5, range(10)), 5)
+    self.assertEqual(utils.first_no_except(raise_when_smaller_5, range(10)), 5)
     self.assertEqual(raise_when_smaller_5.number_of_calls, 6)
