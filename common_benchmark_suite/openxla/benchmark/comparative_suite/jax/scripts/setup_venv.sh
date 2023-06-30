@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #
 # Environment variables:
-#   VENV_DIR=jax-benchmarks.venv
+#   VENV_DIR=jax-models.venv
 #   PYTHON=/usr/bin/python3.10
 #   WITH_CUDA=1
 
@@ -15,11 +15,12 @@ set -xeuo pipefail
 
 TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR="${VENV_DIR:-jax-benchmarks.venv}"
-PYTHON="${PYTHON:-"$(which python3)"}"
 WITH_CUDA="${WITH_CUDA:-}"
+PYTHON="${PYTHON:-"$(which python)"}"
+
 echo "Setting up venv dir: ${VENV_DIR}"
 
-"${PYTHON}" -m venv "${VENV_DIR}" || echo "Could not create venv."
+${PYTHON} -m venv "${VENV_DIR}" || echo "Could not create venv."
 source "${VENV_DIR}/bin/activate" || echo "Could not activate venv"
 
 # Upgrade pip and install requirements. 'python' is used here in order to
@@ -34,7 +35,14 @@ else
   python -m pip install --upgrade "jax[cuda11_local]" "flax" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 fi
 
-python -m pip install --upgrade -r "${TD}/requirements.txt"
+# Run through all model directories and install requirements.
+JAX_MODELS_DIR="$(dirname $(dirname $(dirname "${TD}")))/models/jax"
+find "${JAX_MODELS_DIR}" -type d | while read dir; do
+  if [[ -f "${dir}/requirements.txt" ]]; then
+    echo "Installing ${dir}/requirements.txt"
+    python -m pip install --upgrade -r "${dir}/requirements.txt"
+  fi
+done
 
 echo "Activate venv with:"
 echo "  source ${VENV_DIR}/bin/activate"
