@@ -7,7 +7,7 @@
    Check out in_memory_database for an alternative implementation of these protocols.
 """
 
-from typing import Any, Protocol, Mapping, Optional, Iterable, Union, runtime_checkable
+from typing import Any, Dict, Protocol, Mapping, Optional, Iterable, Union, runtime_checkable
 from google.cloud import bigquery
 
 
@@ -47,3 +47,38 @@ class Client(Protocol):
 
   def get_table(self, table: Union[str, Table]) -> Table:
     ...
+
+
+def query_returns_non_empty_result(
+    client: Client,
+    sql: str,
+    parameters: Dict[str, str],
+) -> bool:
+  job_config = bigquery.QueryJobConfig(query_parameters=[
+      bigquery.ScalarQueryParameter(key, "STRING", value)
+      for key, value in parameters.items()
+  ])
+
+  rows = list(
+      client.query(
+          f"SELECT COUNT(*) as count FROM ({sql})",
+          job_config=job_config,
+      ).result())
+  assert len(rows) == 1
+  return rows[0].get("count") > 0
+
+
+def delete_all_preexisting_data(client: Client, config: Dict[str, Any]):
+  table = client.get_table(config["table_name"])
+
+  job_config = bigquery.QueryJobConfig(query_parameters=[
+      bigquery.ScalarQueryParameter("bucket_name", "STRING",
+                                    config["bucket_name"])
+  ])
+
+  sql = config["sql_delete"].format(table=table.table_id,
+                                    dataset=table.dataset_id)
+  client.query(
+      sql,
+      job_config=job_config,
+  ).result()

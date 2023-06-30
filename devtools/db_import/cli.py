@@ -11,6 +11,7 @@ import yaml
 
 SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 
+from db_import.batch_import import configure_parser as configure_batch_import_parser
 from db_import.process import configure_parser as configure_process_parser
 
 parser = argparse.ArgumentParser(prog="cli",
@@ -24,6 +25,10 @@ parser.add_argument(
     default=SCRIPT_DIR / "config.yml",
 )
 subparsers = parser.add_subparsers(required=True)
+
+batch_import_parser = subparsers.add_parser(
+    "batch_import", help="Batch import an entire bucket")
+configure_batch_import_parser(batch_import_parser)
 
 process_parser = subparsers.add_parser(
     "process", help="Process a single file from a bucket")

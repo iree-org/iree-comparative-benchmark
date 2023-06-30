@@ -49,6 +49,9 @@ class Client:
       self.tables[name] = Table(name)
     return self.tables[name]
 
+  def register_table(self, name: str) -> Table:
+    return self.get_table(name)
+
   def insert_rows(self, table: Union[str, Table], rows: Sequence):
     table_obj = table if isinstance(table, Table) else self.get_table(table)
     table_obj.rows.extend(rows)
