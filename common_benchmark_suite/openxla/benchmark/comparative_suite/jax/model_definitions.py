@@ -4,6 +4,7 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+import itertools
 import string
 
 from openxla.benchmark import def_types, unique_ids
@@ -155,3 +156,12 @@ BERT_LARGE_FP16_JAX_384XI32_BATCHES = utils.build_batch_models(
 BERT_LARGE_BF16_JAX_384XI32_BATCHES = utils.build_batch_models(
     template=BERT_LARGE_BF16_JAX_384XI32_BATCH_TEMPALTE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280])
+
+ALL_MODELS = list(
+    itertools.chain(
+        T5_LARGE_FP32_JAX_512XI32_BATCHES.values(),
+        T5_LARGE_4CG_FP32_JAX_512XI32_BATCHES.values(),
+        BERT_LARGE_FP32_JAX_384XI32_BATCHES.values(),
+        BERT_LARGE_FP16_JAX_384XI32_BATCHES.values(),
+        BERT_LARGE_BF16_JAX_384XI32_BATCHES.values(),
+    ))

@@ -23,7 +23,7 @@ T5_LARGE_FP32_JAX_512XI32_CASES = utils.build_batch_benchmark_cases(
 )
 T5_LARGE_4CG_FP32_JAX_512XI32_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.T5_LARGE_4CG_FP32_JAX_512XI32_BATCHES,
-    # TODO(mariecwhite): For now we use existing data defitions. Add correct
+    # TODO(mariecwhite): For now we use existing data definitions. Add correct
     # artifacts once artifact generation pipeline is implemented.
     batch_inputs=test_data_definitions.
     INPUT_DATA_T5_LARGE_JAX_SEQLEN512_I32_BATCHES,
