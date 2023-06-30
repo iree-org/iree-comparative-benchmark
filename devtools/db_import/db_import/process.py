@@ -11,9 +11,9 @@ import sys
 from google.cloud import bigquery, storage as CloudStorage
 from typing import Optional, Any, Callable, Dict, List
 
-from db_import.local_storage import Client as LocalStorageClient
-from db_import.in_memory_database import Client as InMemoryDbClient
-from db_import.rules import apply_rule_to_file
+from db_import import in_memory_database
+from db_import import local_storage
+from db_import import rules as rule_helpers
 from db_import import storage
 
 
@@ -58,7 +58,7 @@ def _process(config_file, args: argparse.Namespace):
     sys.exit(f"No configuration with the name {args.config_name} found.")
 
   if args.source:
-    storage_client = LocalStorageClient(args.source)
+    storage_client = local_storage.Client(args.source)
   else:
     storage_client = CloudStorage.Client()
 
@@ -66,7 +66,7 @@ def _process(config_file, args: argparse.Namespace):
   file = bucket.blob(args.trigger)
 
   if args.dry_run:
-    db_client = InMemoryDbClient()
+    db_client = in_memory_database.Client()
   else:
     db_client = bigquery.Client()
 
@@ -95,7 +95,7 @@ def process_single_file(
 ) -> List[Any]:
 
   for rule in rules:
-    rows = apply_rule_to_file(
+    rows = rule_helpers.apply_rule_to_file(
         rule,
         file,
         config,

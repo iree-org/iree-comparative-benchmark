@@ -10,8 +10,8 @@ import pathlib
 import tempfile
 import unittest
 
-from db_import.rules import apply_rule_to_file, BenchmarkRunAlreadyPresentError
-from db_import.in_memory_storage import Bucket
+from db_import import rules
+from db_import import in_memory_storage
 
 EMPTY_CONFIG = {
     "bucket_name": "random_bucket_name",
@@ -22,25 +22,25 @@ EMPTY_CONFIG = {
 class TestApplyRuleToFile(unittest.TestCase):
 
   def test_no_match(self):
-    empty_file = Bucket().register_blob("hello.json", "")
+    empty_file = in_memory_storage.Bucket().register_blob("hello.json", "")
 
     rule = {"filepath_regex": "unknown\.json", "result": "{}"}
 
-    result = apply_rule_to_file(rule, empty_file, EMPTY_CONFIG, dict(), None,
-                                None)
+    result = rules.apply_rule_to_file(rule, empty_file, EMPTY_CONFIG, dict(),
+                                      None, None)
     self.assertEqual(result, False)
 
   def test_matches_filepath(self):
-    empty_file = Bucket().register_blob("hello.json", "")
+    empty_file = in_memory_storage.Bucket().register_blob("hello.json", "")
 
     rule = {"filepath_regex": "hello\.json", "result": "{}"}
 
-    result = apply_rule_to_file(rule, empty_file, EMPTY_CONFIG, dict(), None,
-                                None)
+    result = rules.apply_rule_to_file(rule, empty_file, EMPTY_CONFIG, dict(),
+                                      None, None)
     self.assertEqual(result, dict())
 
   def test_already_present(self):
-    empty_file = Bucket().register_blob("hello.json", "")
+    empty_file = in_memory_storage.Bucket().register_blob("hello.json", "")
 
     rule = {"filepath_regex": "hello\.json", "result": "{}"}
 
@@ -48,53 +48,55 @@ class TestApplyRuleToFile(unittest.TestCase):
     def presence_check(rule, parameters):
       return True
 
-    with self.assertRaises(BenchmarkRunAlreadyPresentError):
-      apply_rule_to_file(rule, empty_file, EMPTY_CONFIG, dict(), presence_check,
-                         None)
+    with self.assertRaises(rules.BenchmarkRunAlreadyPresentError):
+      rules.apply_rule_to_file(rule, empty_file, EMPTY_CONFIG, dict(),
+                               presence_check, None)
 
   def test_filepath_capture(self):
-    empty_file = Bucket().register_blob("hello.json", "")
+    empty_file = in_memory_storage.Bucket().register_blob("hello.json", "")
 
     rule = {
         "filepath_regex": "(?P<capture>hello)\.json",
         "result": """std.parseJson(std.extVar("filepath_captures"))""",
     }
 
-    result = apply_rule_to_file(rule, empty_file, EMPTY_CONFIG, dict(), None,
-                                None)
+    result = rules.apply_rule_to_file(rule, empty_file, EMPTY_CONFIG, dict(),
+                                      None, None)
     self.assertEqual(result, {"capture": "hello"})
 
   def test_import_snippet(self):
-    empty_file = Bucket().register_blob("hello.json", "")
+    empty_file = in_memory_storage.Bucket().register_blob("hello.json", "")
 
     rule = {
         "filepath_regex": "hello\.json",
         "result": """local func = import "func"; func("hello")""",
     }
 
-    result = apply_rule_to_file(rule, empty_file, EMPTY_CONFIG,
-                                {"func": "function(value) 'world'"}, None, None)
+    result = rules.apply_rule_to_file(rule, empty_file, EMPTY_CONFIG,
+                                      {"func": "function(value) 'world'"}, None,
+                                      None)
     self.assertEqual(result, "world")
 
   def test_load_json(self):
     contents = {"hello": 42, "world": 43}
-    file_with_contents = Bucket().register_blob("hello.json",
-                                                json.dumps(contents))
+    file_with_contents = in_memory_storage.Bucket().register_blob(
+        "hello.json", json.dumps(contents))
 
     rule = {
         "filepath_regex": "(?P<filepath>.*\.json)",
         "result": "std.parseJson(std.native('readFile')('hello.json'))",
     }
 
-    result = apply_rule_to_file(rule, file_with_contents, EMPTY_CONFIG, dict(),
-                                None, None)
+    result = rules.apply_rule_to_file(rule, file_with_contents, EMPTY_CONFIG,
+                                      dict(), None, None)
     self.assertEqual(result, contents)
 
   def test_load_csv(self):
     csv_contents = """"col1", "col2"
 "hello", "world"
 """
-    file_with_contents = Bucket().register_blob("hello.json", csv_contents)
+    file_with_contents = in_memory_storage.Bucket().register_blob(
+        "hello.json", csv_contents)
 
     rule = {
         "filepath_regex":
@@ -103,12 +105,12 @@ class TestApplyRuleToFile(unittest.TestCase):
             "std.native('parseCsv')(std.native('readFile')('hello.json'))",
     }
 
-    result = apply_rule_to_file(rule, file_with_contents, EMPTY_CONFIG, dict(),
-                                None, None)
+    result = rules.apply_rule_to_file(rule, file_with_contents, EMPTY_CONFIG,
+                                      dict(), None, None)
     self.assertEqual(result, [{"col1": "hello", "col2": "world"}])
 
   def test_dump_files(self):
-    bucket = Bucket()
+    bucket = in_memory_storage.Bucket()
     file1_with_content = bucket.register_blob("hello.json",
                                               "hello.json content")
     file2_with_content = bucket.register_blob("world.json",
@@ -123,8 +125,8 @@ class TestApplyRuleToFile(unittest.TestCase):
 
     with tempfile.TemporaryDirectory() as dir:
       temp_dir = pathlib.Path(dir)
-      apply_rule_to_file(rule, file1_with_content, EMPTY_CONFIG, dict(), None,
-                         temp_dir)
+      rules.apply_rule_to_file(rule, file1_with_content, EMPTY_CONFIG, dict(),
+                               None, temp_dir)
 
       path1 = temp_dir / EMPTY_CONFIG["bucket_name"] / "hello.json"
       self.assertTrue(path1.is_file())
@@ -135,7 +137,7 @@ class TestApplyRuleToFile(unittest.TestCase):
       self.assertEqual(path2.read_text(), file2_with_content.contents)
 
   def test_timestamp_to_iso8601(self):
-    empty_file = Bucket().register_blob("hello.json", "")
+    empty_file = in_memory_storage.Bucket().register_blob("hello.json", "")
 
     rule = {
         "filepath_regex":
@@ -149,8 +151,8 @@ class TestApplyRuleToFile(unittest.TestCase):
             """,
     }
 
-    result = apply_rule_to_file(rule, empty_file, EMPTY_CONFIG, dict(), None,
-                                None)
+    result = rules.apply_rule_to_file(rule, empty_file, EMPTY_CONFIG, dict(),
+                                      None, None)
     self.assertEqual(
         result,
         {
@@ -160,7 +162,7 @@ class TestApplyRuleToFile(unittest.TestCase):
     )
 
   def test_parse_numbers(self):
-    empty_file = Bucket().register_blob("hello.json", "")
+    empty_file = in_memory_storage.Bucket().register_blob("hello.json", "")
 
     rule = {
         "filepath_regex":
@@ -186,10 +188,10 @@ class TestApplyRuleToFile(unittest.TestCase):
             """,
     }
 
-    apply_rule_to_file(rule, empty_file, EMPTY_CONFIG, dict(), None, None)
+    rules.apply_rule_to_file(rule, empty_file, EMPTY_CONFIG, dict(), None, None)
 
   def test_try_reading_files_until_success(self):
-    bucket = Bucket()
+    bucket = in_memory_storage.Bucket()
     file1_with_content = bucket.register_blob("hello.json",
                                               "hello.json content")
     bucket.register_blob("world.json", "world.json content")
@@ -207,6 +209,6 @@ class TestApplyRuleToFile(unittest.TestCase):
               ])""",
     }
 
-    result = apply_rule_to_file(rule, file1_with_content, EMPTY_CONFIG, dict(),
-                                None, None)
+    result = rules.apply_rule_to_file(rule, file1_with_content, EMPTY_CONFIG,
+                                      dict(), None, None)
     self.assertEqual(result, file1_with_content.contents)

@@ -15,7 +15,7 @@ import rjsonnet
 from google.cloud import storage
 from typing import Any, Callable, Dict, Optional
 
-from db_import.utils import first_no_except
+from db_import import utils
 
 
 class BenchmarkRunAlreadyPresentError(Exception):
@@ -78,7 +78,7 @@ def apply_rule_to_file(
     return contents
 
   def try_reading_files_until_success(filepaths):
-    return first_no_except(read_file, filepaths)
+    return utils.first_no_except(read_file, filepaths)
 
   native_callbacks = {
       "timestampToIso8601": (("timestamp",), timestamp_to_iso8601),
