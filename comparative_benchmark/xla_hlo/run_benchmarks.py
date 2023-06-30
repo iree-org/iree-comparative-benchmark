@@ -101,10 +101,10 @@ def _parse_log_size(size_str: str) -> float:
   return float(match.group(1)) * 1e-6
 
 
-def _parse_gpu_compile_time(raw_output: str) -> float:
+def _parse_gpu_compile_time_ms(raw_output: str) -> float:
   matches = GPU_COMPILE_TIME_REGEXP.findall(raw_output)
   total_compile_time_ms = sum([_parse_log_duration(t1) for t1 in matches])
-  return total_compile_time_ms * 1e-3
+  return total_compile_time_ms
 
 
 def _parse_gpu_peak_memory(raw_output: str) -> float:
@@ -146,11 +146,11 @@ def _run_compiler_benchmark_gpu(
   result_text = result.stdout.decode("utf-8")
 
   latencies = _parse_gpu_latencies(result_text, benchmark_iterations)
-  compile_time_s = _parse_gpu_compile_time(result_text)
+  compile_time_ms = _parse_gpu_compile_time_ms(result_text)
   peak_memory_usage = _parse_gpu_peak_memory(result_text)
 
   results_dict = {
-      "compile_time_s": compile_time_s,
+      "compile_time_ms": compile_time_ms,
       "min_latency_ms": min(latencies, default=None),
       "max_latency_ms": max(latencies, default=None),
       "mean_latency_ms": statistics.mean(latencies) if latencies else None,
