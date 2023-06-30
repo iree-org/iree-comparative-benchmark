@@ -15,6 +15,7 @@ from db_import import deploy
 from db_import import download
 from db_import import batch_import
 from db_import import process
+from db_import import verify
 
 parser = argparse.ArgumentParser(prog="cli",
                                  description="Manages the cloud functions")
@@ -43,6 +44,10 @@ batch_import.configure_parser(batch_import_parser)
 process_parser = subparsers.add_parser(
     "process", help="Process a single file from a bucket")
 process.configure_parser(process_parser)
+
+verify_parser = subparsers.add_parser(
+    "verify", help="Runs integration tests for a given pipeline")
+verify.configure_parser(verify_parser)
 
 args = parser.parse_args()
 
