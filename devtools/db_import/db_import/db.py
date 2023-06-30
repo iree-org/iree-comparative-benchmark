@@ -7,7 +7,7 @@
    Check out in_memory_database for an alternative implementation of these protocols.
 """
 
-from typing import Any, Protocol, Mapping, Optional, Iterable, Union, runtime_checkable
+from typing import Any, Dict, Protocol, Mapping, Optional, Iterable, Union, runtime_checkable
 from google.cloud import bigquery
 
 
@@ -52,7 +52,7 @@ class Client(Protocol):
 def query_returns_non_empty_result(
     client: Client,
     sql: str,
-    parameters: dict[str, str],
+    parameters: Dict[str, str],
 ) -> bool:
   job_config = bigquery.QueryJobConfig(query_parameters=[
       bigquery.ScalarQueryParameter(key, "STRING", value)
@@ -68,7 +68,7 @@ def query_returns_non_empty_result(
   return rows[0].get("count") > 0
 
 
-def delete_all_preexisting_data(client: Client, config: dict[str, Any]):
+def delete_all_preexisting_data(client: Client, config: Dict[str, Any]):
   table = client.get_table(config["table_name"])
 
   job_config = bigquery.QueryJobConfig(query_parameters=[

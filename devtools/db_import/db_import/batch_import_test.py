@@ -8,7 +8,7 @@ import contextlib
 import io
 import unittest
 
-from db_import.batch_import import import_entire_bucket
+from db_import import batch_import
 from db_import import in_memory_storage
 from db_import import in_memory_database
 
@@ -30,11 +30,11 @@ class TestImportEntireBucket(unittest.TestCase):
     storage_client = in_memory_storage.Client()
     storage_client.register_bucket("random_bucket_name")
 
-    import_entire_bucket(db_client,
-                         storage_client,
-                         config,
-                         snippets={},
-                         check_for_presence=False)
+    batch_import.import_entire_bucket(db_client,
+                                      storage_client,
+                                      config,
+                                      snippets={},
+                                      check_for_presence=False)
     self.assertEqual(table.rows, [])
 
   def test_no_match(self):
@@ -53,11 +53,11 @@ class TestImportEntireBucket(unittest.TestCase):
     storage_client.register_bucket("random_bucket_name").register_blob(
         "hello.json", "")
 
-    import_entire_bucket(db_client,
-                         storage_client,
-                         config,
-                         snippets={},
-                         check_for_presence=False)
+    batch_import.import_entire_bucket(db_client,
+                                      storage_client,
+                                      config,
+                                      snippets={},
+                                      check_for_presence=False)
     self.assertEqual(table.rows, [])
 
   def test_single_file(self):
@@ -77,11 +77,11 @@ class TestImportEntireBucket(unittest.TestCase):
         "hello.json", "")
 
     with contextlib.redirect_stdout(io.StringIO()):
-      import_entire_bucket(db_client,
-                           storage_client,
-                           config,
-                           snippets={},
-                           check_for_presence=False)
+      batch_import.import_entire_bucket(db_client,
+                                        storage_client,
+                                        config,
+                                        snippets={},
+                                        check_for_presence=False)
 
     self.assertEqual(table.rows, [{}])
 
@@ -104,10 +104,10 @@ class TestImportEntireBucket(unittest.TestCase):
     bucket.register_blob("hello3.json", "")
 
     with contextlib.redirect_stdout(io.StringIO()):
-      import_entire_bucket(db_client,
-                           storage_client,
-                           config,
-                           snippets={},
-                           check_for_presence=False)
+      batch_import.import_entire_bucket(db_client,
+                                        storage_client,
+                                        config,
+                                        snippets={},
+                                        check_for_presence=False)
 
     self.assertEqual(table.rows, [{}, {}, {}])

@@ -28,7 +28,7 @@ class Bucket:
   """
 
   def __init__(self):
-    self.contents: dict[str, str] = {}
+    self.contents: Dict[str, str] = {}
 
   def blob(self, name: str) -> Blob:
     return Blob(name, self, self.contents[name])

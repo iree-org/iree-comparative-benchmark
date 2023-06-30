@@ -11,9 +11,8 @@ from google.cloud import bigquery
 from google.cloud import storage
 from typing import Optional, Any, Dict
 
-from db_import.process import process_single_file
-from db_import.process import NoRuleAppliesError
-from db_import.rules import BenchmarkRunAlreadyPresentError
+from db_import import process
+from db_import import rules
 from db_import import db
 
 
@@ -72,7 +71,7 @@ def import_entire_bucket(
     try:
       print(f"Processing {file.name}... ", end="")
 
-      rows = process_single_file(
+      rows = process.process_single_file(
           config["rules"],
           file,
           config,
@@ -83,11 +82,11 @@ def import_entire_bucket(
       if len(rows) > 0:
         db_client.insert_rows(table, rows)
       print("Done.")
-    except NoRuleAppliesError:
+    except process.NoRuleAppliesError:
       # This happens so often, that we don't wanna clutter the output, so
       # we rather do a carriage return and re-use the same line.
       print("No rule applies.\r" + " " * 250, end="\r")
-    except BenchmarkRunAlreadyPresentError:
+    except process.BenchmarkRunAlreadyPresentError:
       print("Data already present.")
     except Exception as e:
       print("Failure:")
