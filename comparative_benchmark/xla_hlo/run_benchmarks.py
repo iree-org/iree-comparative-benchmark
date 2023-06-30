@@ -136,7 +136,7 @@ def _run_compiler_benchmark_gpu(
       stdout=subprocess.PIPE,
       stderr=subprocess.STDOUT,
       # Timings are logged under VLOG so we need to enable this for the modules
-      # we are intereated in.
+      # we are interested in.
       env={
           "TF_CPP_MIN_LOG_LEVEL":
               "0",
