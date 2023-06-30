@@ -9,7 +9,7 @@ import string
 from openxla.benchmark import def_types, unique_ids
 from openxla.benchmark.comparative_suite import utils
 
-PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752"
+PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/"
 
 T5_LARGE_FP32_JAX_IMPL = def_types.ModelImplementation(
     id=unique_ids.MODEL_T5_LARGE_FP32_JAX,
@@ -45,7 +45,7 @@ T5_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
                 artifact_type=def_types.ModelArtifactType.XLA_HLO_DUMP,
                 source_url=string.Template(
                     PARENT_GCS_DIR +
-                    "T5_LARGE_FP32_JAX_512XI32_BATCH${batch_size}/hlo/jit_forward.before_optimizations.txt"
+                    "T5_LARGE_FP32_JAX_512XI32_BATCH${batch_size}/xla_hlo_before_optimizations.txt"
                 ),
             ),
     },
@@ -79,7 +79,7 @@ T5_LARGE_4CG_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "model_name": "t5-large",
     },
     artifacts={
-        #TODO(mariecwhite): Add artifacts once artifact generation pipeline is implemented.
+        # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
     },
 )
 T5_LARGE_4CG_FP32_JAX_512XI32_BATCHES = utils.build_batch_models(

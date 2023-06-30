@@ -7,11 +7,20 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import concurrent.futures
+import dataclasses
+from dataclasses import dataclass
+import json
 import numpy as np
 import pathlib
 import requests
 import tarfile
-from typing import List, Sequence, Tuple
+from typing import Any, Dict, List, Sequence, Tuple
+
+
+@dataclass
+class BenchmarkResult:
+  definition: Dict[str, Any]
+  metrics: Dict[str, Any]
 
 
 def download_file(source_url: str,
@@ -90,3 +99,14 @@ def compare_tensors(outputs: Sequence[np.ndarray],
     verdicts.append((is_equal, max_diff))
 
   return verdicts
+
+
+def append_benchmark_result(result_path: pathlib.Path, result: BenchmarkResult):
+  result_obj = {}
+  if result_path.exists():
+    result_obj = json.loads(result_path.read_text())
+
+  benchmarks = result_obj.get("benchmarks", [])
+  result_obj["benchmarks"] = benchmarks + [dataclasses.asdict(result)]
+
+  result_path.write_text(json.dumps(result_obj))
