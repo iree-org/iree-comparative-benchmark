@@ -175,7 +175,7 @@ RESNET50_FP32_JAX_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTemplate(
     id=utils.BATCH_ID(unique_ids.MODEL_RESNET50_FP32_JAX_3X224X224XF32),
     name=utils.BATCH_NAME("RESNET50_FP32_JAX_3X224X224XF32"),
     tags=[utils.BATCH_TAG],
-    model_impl=BERT_JAX_IMPL,
+    model_impl=RESNET50_JAX_IMPL,
     model_parameters={
         "batch_size": utils.BATCH_SIZE_PARAM,
         "data_type": "fp32",
@@ -188,7 +188,7 @@ RESNET50_FP16_JAX_3X224X224XF16_BATCH_TEMPLATE = utils.ModelTemplate(
     id=utils.BATCH_ID(unique_ids.MODEL_RESNET50_FP16_JAX_3X224X224XF16),
     name=utils.BATCH_NAME("RESNET50_FP16_JAX_3X224X224XF16"),
     tags=[utils.BATCH_TAG],
-    model_impl=BERT_JAX_IMPL,
+    model_impl=RESNET50_JAX_IMPL,
     model_parameters={
         "batch_size": utils.BATCH_SIZE_PARAM,
         "data_type": "fp16",
@@ -201,7 +201,7 @@ RESNET50_BF16_JAX_3X224X224XBF16_BATCH_TEMPLATE = utils.ModelTemplate(
     id=utils.BATCH_ID(unique_ids.MODEL_RESNET50_BF16_JAX_3X224X224XBF16),
     name=utils.BATCH_NAME("RESNET50_BF16_JAX_3X224X224XBF16"),
     tags=[utils.BATCH_TAG],
-    model_impl=BERT_JAX_IMPL,
+    model_impl=RESNET50_JAX_IMPL,
     model_parameters={
         "batch_size": utils.BATCH_SIZE_PARAM,
         "data_type": "bf16",

@@ -65,7 +65,9 @@ class ResNet50(model_interfaces.InferenceModel):
     return (tensor,)
 
   def forward(self, inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    return self.model(inputs)[0]
+    tensor, = inputs
+    output = self.model(tensor)[0]
+    return (output,)
 
   def postprocess(self, outputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
     # No-op.
