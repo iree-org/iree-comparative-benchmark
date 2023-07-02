@@ -12,6 +12,7 @@ from openxla.benchmark.models.jax import model_interfaces
 
 
 class Bert(model_interfaces.InferenceModel):
+  """See https://huggingface.co/docs/transformers/model_doc/bert for more information."""
 
   def __init__(
       self,
