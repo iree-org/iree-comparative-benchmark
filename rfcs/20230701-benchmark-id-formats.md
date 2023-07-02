@@ -1,35 +1,121 @@
-# RFC: Benchmark ID Format
+# RFC: Stable Benchmark Identifiers
 
 ## Objective
 
-Define the stable ID format for `def_types.BenchmarkCase`, which is the primary key of its benchmark results in the database.
+Define the stable identifiers for benchmarks so benchmark results can be tracked
+in time series in databases even if benchmark names are changed over time.
 
 ## Background
 
-The main purpose of having an ID in benchmark definitions is to help database identify if two benchmark results at different time points reference to the same benchmark, so the dashboard can track performance changes on a benchmark in the time series.
+Tracking performance changes over time is an important aspect in benchmarking,
+which is done by running the same benchmarks periodically and tracking their
+results in a database. A benchmark suite can contain a few dozens or hundreds of
+benchmarks. To form time series of each benchmark, databases group results by
+the benchmark name or identifiable metadata. That is, these metadata are seen as
+the unique "primary key" of benchmarks.
 
-The difference between name and ID is that name consists of human-readable words to help people understand the meaning of a benchmark, while ID is its stable identifier. An ID is intentend to be random and meaningless so there is no need to update it when the benchmark is renamed. It is also required to be stable since the database uses it as priamry key to track becnhmark results. Any change on becnhmark ID will require backfill and migration of old data. 
+Although it doesn't happen frequently, the benchmark name or the values of
+identifiable metadata might change over time. For example, the model name of a
+benchmark might change from `T5_LARGE_FP32` to `T5_LARGE_SEQLEN256_FP32` because
+of new added model variants with different sequence lengths. If the model name
+is part of the benchmark name or identifiable metadata, databases will treat the
+renamed benchmark as a new one. Existing data points from the original benchmark
+will need to backfill with the new name.
 
-For example, we might originally name a benchmark `T5_LARGE_FP32` while later realize there are 256 and 512 seqlen versions, so we want to rename them to `T5_LARGE_256SEQLEN_FP32` and `T5_LARGE_512SEQLEN_FP32` for clarity. As the ID of the original benchmark is a random string, we can simply rename the benchmark and keep the original ID without causing any confusion, because there is no meaningful link between the ID and the name. It also doesn't need to backfill the database because the IDs of existing benchmarks don't change. 
-
-In general, benchmark ID gives us the freedom to update human-readable benchmark names without worrying about breaking the database.
+However, instead of backfilling every time a name is changed, another solution
+is having an ID in addition to the human-readable name. For example, a model can
+have the name to summarize its characteristics while also having a meaningless
+random UUID. This makes it possible to only update the model name while keeping
+the original ID. The database can use IDs as primary key so name changes won't
+affect tracking.
 
 ## Proposal
 
-TODO
+This RFC proposes to use the key-value pairs of sub-components' IDs (e.g., model
+ID, input data ID) of a benchmark as the identifiers. Each distinct benchmark
+will have the unique key-value pairs of identifiers.
 
-### Process to add/remove identifier
+Component's ID can be a random UUID if it is a simple definition (e.g, model,
+input data) or another key-value pairs if the component also consists of
+sub-components. The rule of thumb is that hand-written definitions in the
+benchmark suite usually have hard-coded random UUIDs while generated definitions
+(e.g., combinations of models and input data) are compositions of sub-components
+and combine their IDs as identifiers.
 
-When it is needed to either add or remove identifiers, the database import code and queries are first updated to handle the new or missing identifier fields. On the existing data, for a new field the database can choose a default value for it. This avoids the backfill if all existing benchmark cases also use the same default value for the new identifier field. When removing a field, the database can simply update queries to ignore it on the existing data.
+The identifiers of the current benchmark definition `BenchmarkCase` can be
+written in JSON as:
 
-Once the database can handle the changes in the identifier fields, the benchmark tools can be updated to report the new identifiers.
+```json
+{
+  "model_id": "${model uuid}",
+  "input_id": "${input data uuid}",
+  "expected_output_id": "${expected output uuid}",
+  "target_device_id": "${device spec uuid}",
+}
+```
+
+The Python definitions will be:
+
+```py
+@dataclass(frozen=True)
+class BenchmarkIdentifiers:
+  model_id: str
+  input_id: str
+  expected_output_id: str
+  target_device_id: str
+
+@dataclass(frozen=True)
+class BenchmarkCase:
+  # Unique human-readable name.
+  name: str
+  # Benchmark identifiers
+  identifiers: BenchmarkIdentifiers
+
+  model: Model
+  input_data: ModelTestData
+  expected_output: ModelTestData
+  target_device: DeviceSpec
+
+  @classmethod
+  def build(cls, model, input_data, expected_output, target_device):
+    identifiers = BenchmarkIdentifiers(
+      model.id,
+      input_data.id,
+      expected_output.id,
+      target_device.id,
+    )
+    return cls(identifiers=identifiers, ...)
+```
+
+### Identify benchmarks in databases
+
+The benchmark identifiers are reported in benchmark results and uploaded to the
+database. It can be directly stored as a JSON field if the database supports
+querying JSON, or stored in multiple columns.
+
+### Process to add and remove identifiers
+
+To add or remove an identifier, the database is first updated to handle the
+added or deleted identifier field. For the new field on the existing data, the
+database can choose a default value for it. Backfills can be avoided if all
+existing benchmarks also use the same default value for the new identifier. When
+removing an identifier, the database can simply update queries to ignore it in
+the existing data.
+
+Once the database can handle the changes in the identifier fields, benchmark
+tools are updated to report the new identifiers.
 
 ## Alternatives Considered
 
-The initial prototype used a single string `benchmark_id` to identify a benchmark case. The format was:
+The initial prototype of common benchmark suite used a string field
+`benchmark_id` to identify a benchmark. The format was:
 
 ```
 models/${model_id}/inputs/${input_id}/expected_outputs/${expected_output_id}/target_devices/${device_spec_id}
 ```
 
-The single string ID is nice to be used as a key of maps (dictionaries) in codes and stored in database as a primary key. The downside is that when adding/removing identifiers from the ID, it's more complicated to update the existing data in the database. Becuase that means the changes in the string order/format of the ID, which requires a backfill in all existing data.
+String ID plays nicely as the keys of maps (dictionaries) in codes and the
+primary key in databases. The downside is that when adding or removing
+identifiers from the ID, it's more complicated to update the existing data in
+the database. Because that changes the string order/format of the ID, which
+requires to backfill the `benchmark_id` field on existing data.
