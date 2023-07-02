@@ -85,3 +85,73 @@ T5_LARGE_4CG_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
 T5_LARGE_4CG_FP32_JAX_512XI32_BATCHES = utils.build_batch_models(
     template=T5_LARGE_4CG_FP32_JAX_512XI32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512])
+
+# Bert-Large models.
+# Model implementation from https://huggingface.co/docs/transformers/model_doc/bert#transformers.FlaxBertModel.
+# Batch sizes from MLPerf A100 Configs: https://github.com/mlcommons/inference_results_v2.1/tree/master/closed/NVIDIA/configs/bert
+BERT_JAX_IMPL = def_types.ModelImplementation(
+    id=unique_ids.MODEL_IMPL_BERT_JAX,
+    name="BERT_JAX",
+    tags=["transformer-encoder", "bert"],
+    framework_type=def_types.ModelFrameworkType.JAX,
+    module_path=f"{utils.MODELS_MODULE_PATH}.jax.bert.bert_model",
+    source_info=
+    "https://huggingface.co/docs/transformers/model_doc/bert#transformers.FlaxBertModel",
+)
+
+BERT_LARGE_FP32_JAX_384XI32_BATCH_TEMPALTE = utils.ModelTemplate(
+    id=utils.BATCH_ID(unique_ids.MODEL_BERT_LARGE_FP32_JAX_384XI32),
+    name=utils.BATCH_NAME("BERT_LARGE_FP32_JAX_384XI32"),
+    tags=[utils.BATCH_TAG],
+    model_impl=BERT_JAX_IMPL,
+    model_parameters={
+        "batch_size": utils.BATCH_SIZE_PARAM,
+        "data_type": "fp32",
+        "seq_len": 384,
+        "model_name": "bert-large-uncased",
+    },
+    artifacts={
+        # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+    })
+
+BERT_LARGE_FP16_JAX_384XI32_BATCH_TEMPALTE = utils.ModelTemplate(
+    id=utils.BATCH_ID(unique_ids.MODEL_BERT_LARGE_FP16_JAX_384XI32),
+    name=utils.BATCH_NAME("BERT_LARGE_FP16_JAX_384XI32"),
+    tags=[utils.BATCH_TAG],
+    model_impl=BERT_JAX_IMPL,
+    model_parameters={
+        "batch_size": utils.BATCH_SIZE_PARAM,
+        "data_type": "fp16",
+        "seq_len": 384,
+        "model_name": "bert-large-uncased",
+    },
+    artifacts={
+        # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+    })
+
+BERT_LARGE_BF16_JAX_384XI32_BATCH_TEMPALTE = utils.ModelTemplate(
+    id=utils.BATCH_ID(unique_ids.MODEL_BERT_LARGE_BF16_JAX_384XI32),
+    name=utils.BATCH_NAME("BERT_LARGE_BF16_JAX_384XI32"),
+    tags=[utils.BATCH_TAG],
+    model_impl=BERT_JAX_IMPL,
+    model_parameters={
+        "batch_size": utils.BATCH_SIZE_PARAM,
+        "data_type": "bf16",
+        "seq_len": 384,
+        "model_name": "bert-large-uncased",
+    },
+    artifacts={
+        # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+    })
+
+BERT_LARGE_FP32_JAX_384XI32_BATCHES = utils.build_batch_models(
+    template=BERT_LARGE_FP32_JAX_384XI32_BATCH_TEMPALTE,
+    batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280])
+
+BERT_LARGE_FP16_JAX_384XI32_BATCHES = utils.build_batch_models(
+    template=BERT_LARGE_FP16_JAX_384XI32_BATCH_TEMPALTE,
+    batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280])
+
+BERT_LARGE_BF16_JAX_384XI32_BATCHES = utils.build_batch_models(
+    template=BERT_LARGE_BF16_JAX_384XI32_BATCH_TEMPALTE,
+    batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280])

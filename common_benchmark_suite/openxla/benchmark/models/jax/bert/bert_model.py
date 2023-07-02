@@ -55,9 +55,16 @@ class Bert(model_interfaces.InferenceModel):
     return outputs
 
 
+DTYPE_MAP = {
+    "fp32": jnp.float32,
+    "fp16": jnp.float16,
+    "bf16": jnp.bfloat16,
+}
+
+
 def create_model(batch_size: int = 1,
                  seq_len: int = 384,
-                 dtype: Any = jnp.float32,
+                 data_type: str = "fp32",
                  model_name: str = "bert-large-uncased",
                  **_unused_params) -> Bert:
   """Configure and create a JAX Bert model instance.
@@ -65,7 +72,7 @@ def create_model(batch_size: int = 1,
   Args:
     batch_size: input batch size.
     seq_len: input sequence length.
-    dtype: model data type.
+    data_type: model data type. Supported options include: fp32, fp16, bf16.
     model_name: The name of the Bert variant to use. Supported variants include:
       bert-large-uncased.
   Returns:
@@ -73,5 +80,5 @@ def create_model(batch_size: int = 1,
   """
   return Bert(batch_size=batch_size,
               seq_len=seq_len,
-              dtype=dtype,
+              dtype=DTYPE_MAP[data_type],
               model_name=model_name)
