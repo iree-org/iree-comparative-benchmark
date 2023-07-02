@@ -30,7 +30,7 @@ def _get_image_input(width=224, height=224):
 
 
 class ResNet50(model_interfaces.InferenceModel):
-  """See https://huggingface.co/microsoft/resnet-50 for more information."""
+  """See https://huggingface.co/docs/transformers/model_doc/resnet for more information."""
 
   def __init__(
       self,
