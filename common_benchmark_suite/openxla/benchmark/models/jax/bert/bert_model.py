@@ -21,7 +21,10 @@ class Bert(model_interfaces.InferenceModel):
       model_name: str,
   ):
     self.model = FlaxBertModel.from_pretrained(model_name, dtype=dtype)
-    if dtype == jnp.float16:
+    if dtype == jnp.float32:
+      # The original model is fp32.
+      pass
+    elif dtype == jnp.float16:
       self.model.params = self.model.to_fp16(self.model.params)
     elif dtype == jnp.bfloat16:
       self.model.params = self.model.to_bf16(self.model.params)

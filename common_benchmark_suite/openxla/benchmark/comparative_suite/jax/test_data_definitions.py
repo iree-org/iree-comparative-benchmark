@@ -82,7 +82,7 @@ INPUT_DATA_BERT_LARGE_JAX_SEQLEN384_I32_BATCH_TEMPLATE = utils.ModelTestDataTemp
                 },
                 verify_parameters={},
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/BERT_LARGE_FP32_JAX_384XI32_BATCH${batch_size}/inputs_npy.tgz"
+                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/BERT_LARGE_JAX_SEQLEN384_I32_BATCH${batch_size}/input_npy.tgz"
                 ),
             )
     })
@@ -111,7 +111,7 @@ OUTPUT_DATA_BERT_LARGE_FP32_JAX_384X1024XF32_BATCH_TEMPLATE = utils.ModelTestDat
                     "absolute_tolerance": 0.5,
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/BERT_LARGE_FP32_JAX_384XI32_BATCH${batch_size}/outputs_npy.tgz"
+                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/BERT_LARGE_FP32_JAX_384XI32_BATCH${batch_size}/output_npy.tgz"
                 ))
     })
 
@@ -134,7 +134,7 @@ OUTPUT_DATA_BERT_LARGE_FP16_JAX_384X1024XF16_BATCH_TEMPLATE = utils.ModelTestDat
                     "absolute_tolerance": 0.5,
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/BERT_LARGE_FP16_JAX_384XI32_BATCH${batch_size}/outputs_npy.tgz"
+                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/BERT_LARGE_FP16_JAX_384XI32_BATCH${batch_size}/output_npy.tgz"
                 ))
     })
 
@@ -157,7 +157,7 @@ OUTPUT_DATA_BERT_LARGE_BF16_JAX_384X1024XBF16_BATCH_TEMPLATE = utils.ModelTestDa
                     "absolute_tolerance": 0.5,
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/BERT_LARGE_BF16_JAX_384XI32_BATCH${batch_size}/outputs_npy.tgz"
+                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/BERT_LARGE_BF16_JAX_384XI32_BATCH${batch_size}/output_npy.tgz"
                 ))
     })
 
