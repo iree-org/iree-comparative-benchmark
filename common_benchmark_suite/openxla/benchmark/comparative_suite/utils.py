@@ -6,6 +6,7 @@
 """Common utilities to define comparative benchmarks."""
 
 import string
+import dataclasses
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Union, Sequence, Tuple
 
@@ -112,8 +113,8 @@ class ModelTestDataArtifactTemplate:
   """Template of def_types.ModelTestDataArtifact."""
   data_format: def_types.ModelTestDataFormat
   data_parameters: Dict[str, Any]
-  verify_parameters: Dict[str, Any]
   source_url: string.Template
+  verify_parameters: Dict[str, Any] = dataclasses.field(default_factory=dict)
 
 
 @dataclass(frozen=True)

@@ -64,9 +64,9 @@ OUTPUT_DATA_T5_LARGE_FP32_JAX_512X1024XF32_BATCHES = utils.build_batch_model_tes
     batch_sizes=[1, 16, 24, 32, 48, 64, 512])
 
 # Bert large inputs.
-INPUT_DATA_BERT_LARGE_JAX_SEQLEN384_I32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.INPUT_DATA_BERT_LARGE_JAX_SEQLEN384_I32),
-    name=utils.BATCH_NAME("INPUT_DATA_BERT_LARGE_JAX_SEQLEN384_I32"),
+INPUT_DATA_BERT_LARGE_FP32_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
+    id=utils.BATCH_ID(unique_ids.INPUT_DATA_BERT_LARGE_FP32_JAX_384XI32),
+    name=utils.BATCH_NAME("INPUT_DATA_BERT_LARGE_FP32_JAX_384XI32"),
     tags=["input-data", "seqlen384", utils.BATCH_TAG],
     source_info="Original text: 'a photo of a cat'.",
     artifacts={
@@ -80,18 +80,65 @@ INPUT_DATA_BERT_LARGE_JAX_SEQLEN384_I32_BATCH_TEMPLATE = utils.ModelTestDataTemp
                         utils.BATCH_TENSOR_DIMS("384xi32"),
                     ],
                 },
-                verify_parameters={},
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/BERT_LARGE_JAX_SEQLEN384_I32_BATCH${batch_size}/input_npy.tgz"
+                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/BERT_LARGE_FP32_JAX_384XI32_BATCH${batch_size}/input_npy.tgz"
                 ),
             )
     })
 
-INPUT_DATA_BERT_LARGE_JAX_SEQLEN384_I32_BATCHES = utils.build_batch_model_test_data(
-    template=INPUT_DATA_BERT_LARGE_JAX_SEQLEN384_I32_BATCH_TEMPLATE,
+INPUT_DATA_BERT_LARGE_FP16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
+    id=utils.BATCH_ID(unique_ids.INPUT_DATA_BERT_LARGE_FP16_JAX_384XI32),
+    name=utils.BATCH_NAME("INPUT_DATA_BERT_LARGE_FP16_JAX_384XI32"),
+    tags=["input-data", "seqlen384", utils.BATCH_TAG],
+    source_info="Original text: 'a photo of a cat'.",
+    artifacts={
+        def_types.ModelTestDataFormat.NUMPY_TENSORS:
+            utils.ModelTestDataArtifactTemplate(
+                data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
+                data_parameters={
+                    "tensor_names": ["input_ids", "attention_mask"],
+                    "tensor_dimensions": [
+                        utils.BATCH_TENSOR_DIMS("384xi32"),
+                        utils.BATCH_TENSOR_DIMS("384xi32"),
+                    ],
+                },
+                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+                source_url=string.Template("TODO"),
+            )
+    })
+
+INPUT_DATA_BERT_LARGE_BF16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
+    id=utils.BATCH_ID(unique_ids.INPUT_DATA_BERT_LARGE_BF16_JAX_384XI32),
+    name=utils.BATCH_NAME("INPUT_DATA_BERT_LARGE_BF16_JAX_384XI32"),
+    tags=["input-data", "seqlen384", utils.BATCH_TAG],
+    source_info="Original text: 'a photo of a cat'.",
+    artifacts={
+        def_types.ModelTestDataFormat.NUMPY_TENSORS:
+            utils.ModelTestDataArtifactTemplate(
+                data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
+                data_parameters={
+                    "tensor_names": ["input_ids", "attention_mask"],
+                    "tensor_dimensions": [
+                        utils.BATCH_TENSOR_DIMS("384xi32"),
+                        utils.BATCH_TENSOR_DIMS("384xi32"),
+                    ],
+                },
+                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+                source_url=string.Template("TODO"),
+            )
+    })
+
+INPUT_DATA_BERT_LARGE_FP32_JAX_384XI32_BATCHES = utils.build_batch_model_test_data(
+    template=INPUT_DATA_BERT_LARGE_FP32_JAX_384XI32_BATCH_TEMPLATE,
+    batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280])
+INPUT_DATA_BERT_LARGE_FP16_JAX_384XI32_BATCHES = utils.build_batch_model_test_data(
+    template=INPUT_DATA_BERT_LARGE_FP16_JAX_384XI32_BATCH_TEMPLATE,
+    batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280])
+INPUT_DATA_BERT_LARGE_BF16_JAX_384XI32_BATCHES = utils.build_batch_model_test_data(
+    template=INPUT_DATA_BERT_LARGE_BF16_JAX_384XI32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280])
 
-# Bert-Large Outputs.
+# Bert large Outputs.
 OUTPUT_DATA_BERT_LARGE_FP32_JAX_384X1024XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
     id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_BERT_LARGE_FP32_JAX_384X1024XF32),
     name=utils.BATCH_NAME("OUTPUT_DATA_BERT_LARGE_FP32_JAX_384X1024XF32"),
@@ -133,9 +180,8 @@ OUTPUT_DATA_BERT_LARGE_FP16_JAX_384X1024XF16_BATCH_TEMPLATE = utils.ModelTestDat
                 verify_parameters={
                     "absolute_tolerance": 0.5,
                 },
-                source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/BERT_LARGE_FP16_JAX_384XI32_BATCH${batch_size}/output_npy.tgz"
-                ))
+                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+                source_url=string.Template("TODO"))
     })
 
 OUTPUT_DATA_BERT_LARGE_BF16_JAX_384X1024XBF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
@@ -156,9 +202,8 @@ OUTPUT_DATA_BERT_LARGE_BF16_JAX_384X1024XBF16_BATCH_TEMPLATE = utils.ModelTestDa
                 verify_parameters={
                     "absolute_tolerance": 0.5,
                 },
-                source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/BERT_LARGE_BF16_JAX_384XI32_BATCH${batch_size}/output_npy.tgz"
-                ))
+                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+                source_url=string.Template("TODO"))
     })
 
 OUTPUT_DATA_BERT_LARGE_FP32_JAX_384X1024XF32_BATCHES = utils.build_batch_model_test_data(

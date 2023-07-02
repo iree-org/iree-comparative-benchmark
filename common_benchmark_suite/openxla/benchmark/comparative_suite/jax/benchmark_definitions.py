@@ -38,7 +38,7 @@ T5_LARGE_4CG_FP32_JAX_512XI32_CASES = utils.build_batch_benchmark_cases(
 BERT_LARGE_FP32_JAX_384XI32_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.BERT_LARGE_FP32_JAX_384XI32_BATCHES,
     batch_inputs=test_data_definitions.
-    INPUT_DATA_BERT_LARGE_JAX_SEQLEN384_I32_BATCHES,
+    INPUT_DATA_BERT_LARGE_FP32_JAX_384XI32_BATCHES,
     batch_expected_outputs=test_data_definitions.
     OUTPUT_DATA_BERT_LARGE_FP32_JAX_384X1024XF32_BATCHES,
     target_devices=[
@@ -49,7 +49,7 @@ BERT_LARGE_FP32_JAX_384XI32_CASES = utils.build_batch_benchmark_cases(
 BERT_LARGE_FP16_JAX_384XI32_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.BERT_LARGE_FP16_JAX_384XI32_BATCHES,
     batch_inputs=test_data_definitions.
-    INPUT_DATA_BERT_LARGE_JAX_SEQLEN384_I32_BATCHES,
+    INPUT_DATA_BERT_LARGE_FP16_JAX_384XI32_BATCHES,
     batch_expected_outputs=test_data_definitions.
     OUTPUT_DATA_BERT_LARGE_FP16_JAX_384X1024XF16_BATCHES,
     target_devices=[
@@ -60,7 +60,7 @@ BERT_LARGE_FP16_JAX_384XI32_CASES = utils.build_batch_benchmark_cases(
 BERT_LARGE_BF16_JAX_384XI32_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.BERT_LARGE_BF16_JAX_384XI32_BATCHES,
     batch_inputs=test_data_definitions.
-    INPUT_DATA_BERT_LARGE_JAX_SEQLEN384_I32_BATCHES,
+    INPUT_DATA_BERT_LARGE_BF16_JAX_384XI32_BATCHES,
     batch_expected_outputs=test_data_definitions.
     OUTPUT_DATA_BERT_LARGE_BF16_JAX_384X1024XBF16_BATCHES,
     target_devices=[
