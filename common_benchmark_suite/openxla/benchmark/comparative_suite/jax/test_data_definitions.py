@@ -237,7 +237,7 @@ INPUT_DATA_RESNET50_FP32_JAX_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTestDataT
                 },
                 verify_parameters={},
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/RESNET50_FP32_JAX_3X224X224XF32${batch_size}/input_npy.tgz"
+                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/RESNET50_FP32_JAX_3X224X224XF32_BATCH${batch_size}/input_npy.tgz"
                 ))
     })
 
@@ -259,7 +259,7 @@ INPUT_DATA_RESNET50_FP16_JAX_3X224X224XF16_BATCH_TEMPLATE = utils.ModelTestDataT
                 },
                 verify_parameters={},
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/RESNET50_FP16_JAX_3X224X224XF16${batch_size}/input_npy.tgz"
+                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/RESNET50_FP16_JAX_3X224X224XF16_BATCH${batch_size}/input_npy.tgz"
                 ))
     })
 
@@ -281,7 +281,7 @@ INPUT_DATA_RESNET50_BF16_JAX_3X224X224XBF16_BATCH_TEMPLATE = utils.ModelTestData
                 },
                 verify_parameters={},
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/RESNET50_FP16_JAX_3X224X224XBF16${batch_size}/input_npy.tgz"
+                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/RESNET50_FP16_JAX_3X224X224XBF16_BATCH${batch_size}/input_npy.tgz"
                 ))
     })
 
@@ -315,7 +315,7 @@ OUTPUT_DATA_RESNET50_FP32_JAX_2048X7X7XF32_BATCH_TEMPLATE = utils.ModelTestDataT
                 },
                 verify_parameters={},
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/RESNET50_FP32_JAX_3X224X224XF32${batch_size}/output_npy.tgz"
+                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/RESNET50_FP32_JAX_3X224X224XF32_BATCH${batch_size}/output_npy.tgz"
                 ))
     })
 
@@ -336,7 +336,7 @@ OUTPUT_DATA_RESNET50_FP16_JAX_2048X7X7XF16_BATCH_TEMPLATE = utils.ModelTestDataT
                 },
                 verify_parameters={},
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/RESNET50_FP16_JAX_3X224X224XF16${batch_size}/output_npy.tgz"
+                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/RESNET50_FP16_JAX_3X224X224XF16_BATCH${batch_size}/output_npy.tgz"
                 ))
     })
 
@@ -357,7 +357,7 @@ OUTPUT_DATA_RESNET50_BF16_JAX_2048X7X7XBF16_BATCH_TEMPLATE = utils.ModelTestData
                 },
                 verify_parameters={},
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/RESNET50_FP16_JAX_3X224X224XBF16${batch_size}/output_npy.tgz"
+                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/RESNET50_FP16_JAX_3X224X224XBF16_BATCH${batch_size}/output_npy.tgz"
                 ))
     })
 
