@@ -17,3 +17,19 @@ In general, benchmark ID gives us the freedom to update human-readable benchmark
 ## Proposal
 
 TODO
+
+### Process to add/remove identifier
+
+When it is needed to either add or remove identifiers, the database import code and queries are first updated to handle the new or missing identifier fields. On the existing data, for a new field the database can choose a default value for it. This avoids the backfill if all existing benchmark cases also use the same default value for the new identifier field. When removing a field, the database can simply update queries to ignore it on the existing data.
+
+Once the database can handle the changes in the identifier fields, the benchmark tools can be updated to report the new identifiers.
+
+## Alternatives Considered
+
+The initial prototype used a single string `benchmark_id` to identify a benchmark case. The format was:
+
+```
+models/${model_id}/inputs/${input_id}/expected_outputs/${expected_output_id}/target_devices/${device_spec_id}
+```
+
+The single string ID is nice to be used as a key of maps (dictionaries) in codes and stored in database as a primary key. The downside is that when adding/removing identifiers from the ID, it's more complicated to update the existing data in the database. Becuase that means the changes in the string order/format of the ID, which requires a backfill in all existing data.
