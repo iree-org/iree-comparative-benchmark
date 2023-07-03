@@ -106,7 +106,7 @@ T5_4CG_JAX_IMPL = def_types.ModelImplementation(
 )
 
 T5_4CG_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
-    id=utils.BATCH_ID(unique_ids.MODEL_T5_LARGE_4CG_FP32_JAX),
+    id=utils.BATCH_ID(unique_ids.MODEL_T5_4CG_LARGE_FP32_JAX),
     name=utils.BATCH_NAME("T5_4CG_LARGE_FP32_JAX_512XI32"),
     tags=[utils.BATCH_TAG, "fp32"],
     model_impl=T5_4CG_JAX_IMPL,

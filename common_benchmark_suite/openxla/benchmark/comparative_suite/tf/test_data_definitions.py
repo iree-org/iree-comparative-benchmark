@@ -9,7 +9,9 @@ import string
 from openxla.benchmark.comparative_suite import utils
 from openxla.benchmark import def_types, unique_ids
 
-# T5 large inputs.
+PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/tensorflow/tf_models_2.13.0rc2_1688540251/"
+
+# T5-Large inputs.
 INPUT_DATA_T5_LARGE_FP32_TF_512XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
     id=utils.BATCH_ID(unique_ids.INPUT_DATA_T5_LARGE_FP32_TF_512XI32),
     name=utils.BATCH_NAME("INPUT_DATA_T5_LARGE_FP32_TF_512XI32"),
@@ -31,7 +33,8 @@ INPUT_DATA_T5_LARGE_FP32_TF_512XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate
                     ]
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/tensorflow/tf_models_2.12.0_1681767794/T5_LARGE_FP32_TF_512XI32_BATCH${batch_size}/input_npy.tgz"
+                    PARENT_GCS_DIR +
+                    "T5_LARGE_FP32_TF_512XI32_BATCH${batch_size}/inputs_npy.tgz"
                 ),
             )
     })
@@ -39,7 +42,7 @@ INPUT_DATA_T5_LARGE_FP32_TF_512XI32_BATCHES = utils.build_batch_model_test_data(
     template=INPUT_DATA_T5_LARGE_FP32_TF_512XI32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512])
 
-# T5 large outputs.
+# T5-Large outputs.
 OUTPUT_DATA_T5_LARGE_FP32_TF_512X1024XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
     id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_T5_LARGE_FP32_TF_512X1024XF32),
     name=utils.BATCH_NAME("OUTPUT_DATA_T5_LARGE_FP32_TF_512X1024XF32"),
@@ -59,7 +62,8 @@ OUTPUT_DATA_T5_LARGE_FP32_TF_512X1024XF32_BATCH_TEMPLATE = utils.ModelTestDataTe
                     "absolute_tolerance": 0.5,
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/tensorflow/tf_models_2.12.0_1681767794/T5_LARGE_FP32_TF_512XI32_BATCH${batch_size}/output_npy.tgz"
+                    PARENT_GCS_DIR +
+                    "T5_LARGE_FP32_TF_512XI32_BATCH${batch_size}/outputs_npy.tgz"
                 ),
             )
     })
@@ -67,7 +71,7 @@ OUTPUT_DATA_T5_LARGE_FP32_TF_512X1024XF32_BATCHES = utils.build_batch_model_test
     template=OUTPUT_DATA_T5_LARGE_FP32_TF_512X1024XF32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512])
 
-# Bert large inputs.
+# Bert-Large inputs.
 INPUT_DATA_BERT_LARGE_FP32_TF_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
     id=utils.BATCH_ID(unique_ids.INPUT_DATA_BERT_LARGE_FP32_TF_384XI32),
     name=utils.BATCH_NAME("INPUT_DATA_BERT_LARGE_FP32_TF_384XI32"),
@@ -88,7 +92,8 @@ INPUT_DATA_BERT_LARGE_FP32_TF_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTempla
                     ],
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/tensorflow/tf_models_2.12.0_1681767794/BERT_LARGE_FP32_TF_384XI32_BATCH${batch_size}/input_npy.tgz"
+                    PARENT_GCS_DIR +
+                    "BERT_LARGE_FP32_TF_384XI32_BATCH${batch_size}/inputs_npy.tgz"
                 ),
             )
     })
@@ -96,6 +101,7 @@ INPUT_DATA_BERT_LARGE_FP32_TF_384XI32_BATCHES = utils.build_batch_model_test_dat
     template=INPUT_DATA_BERT_LARGE_FP32_TF_384XI32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280])
 
+# Bert-Large outputs.
 OUTPUT_DATA_BERT_LARGE_FP32_TF_384X1024XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
     id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_BERT_LARGE_FP32_TF_384X1024XF32),
     name=utils.BATCH_NAME("OUTPUT_DATA_BERT_LARGE_FP32_TF_384X1024XF32"),
@@ -115,9 +121,65 @@ OUTPUT_DATA_BERT_LARGE_FP32_TF_384X1024XF32_BATCH_TEMPLATE = utils.ModelTestData
                     "absolute_tolerance": 0.5,
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/tensorflow/tf_models_2.12.0_1681767794/BERT_LARGE_FP32_TF_384XI32_BATCH${batch_size}/output_npy.tgz"
+                    PARENT_GCS_DIR +
+                    "BERT_LARGE_FP32_TF_384XI32_BATCH${batch_size}/outputs_npy.tgz"
                 ))
     })
 OUTPUT_DATA_BERT_LARGE_FP32_TF_384X1024XF32_BATCHES = utils.build_batch_model_test_data(
     template=OUTPUT_DATA_BERT_LARGE_FP32_TF_384X1024XF32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280])
+
+# ResNet50 inputs.
+INPUT_DATA_RESNET50_FP32_TF_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
+    id=utils.BATCH_ID(unique_ids.INPUT_DATA_RESNET50_FP32_TF_3X224X224XF32),
+    name=utils.BATCH_NAME("INPUT_DATA_RESNET50_FP32_TF_3X224X224XF32"),
+    tags=["input-data", "imagenet", utils.BATCH_TAG],
+    source_info=
+    "Original image: https://storage.googleapis.com/iree-model-artifacts/ILSVRC2012_val_00000023.JPEG",
+    artifacts={
+        def_types.ModelTestDataFormat.NUMPY_TENSORS:
+            utils.ModelTestDataArtifactTemplate(
+                data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
+                data_parameters={
+                    "tensor_names": ["pixel_values"],
+                    "tensor_dimensions": [
+                        utils.BATCH_TENSOR_DIMS("3x224x224xf32")
+                    ],
+                },
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "RESNET50_FP32_TF_224X224X3XF32_BATCH${batch_size}/inputs_npy.tgz"
+                ))
+    })
+INPUT_DATA_RESNET50_FP32_TF_3X224X224XF32_BATCHES = utils.build_batch_model_test_data(
+    template=INPUT_DATA_RESNET50_FP32_TF_3X224X224XF32_BATCH_TEMPLATE,
+    batch_sizes=[1, 8, 64, 128, 256, 2048])
+
+# ResNet50 outputs.
+OUTPUT_DATA_RESNET50_FP32_TF_2048X7X7XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
+    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_RESNET50_FP32_TF_2048X7X7XF32),
+    name=utils.BATCH_NAME("OUTPUT_DATA_RESNET50_FP32_TF_2048X7X7XF32"),
+    tags=["input-data", "imagenet", utils.BATCH_TAG],
+    source_info="",
+    artifacts={
+        def_types.ModelTestDataFormat.NUMPY_TENSORS:
+            utils.ModelTestDataArtifactTemplate(
+                data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
+                data_parameters={
+                    "tensor_names": ["output_0"],
+                    "tensor_dimensions": [
+                        utils.BATCH_TENSOR_DIMS("2048x7x7xf32")
+                    ],
+                },
+                verify_parameters={
+                    "absolute_tolerance": 0.5,
+                },
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "RESNET50_FP32_TF_224X224X3XF32_BATCH${batch_size}/outputs_npy.tgz"
+                ))
+    })
+
+OUTPUT_DATA_RESNET50_FP32_TF_2048X7X7XF32_BATCHES = utils.build_batch_model_test_data(
+    template=OUTPUT_DATA_RESNET50_FP32_TF_2048X7X7XF32_BATCH_TEMPLATE,
+    batch_sizes=[1, 8, 64, 128, 256, 2048])
