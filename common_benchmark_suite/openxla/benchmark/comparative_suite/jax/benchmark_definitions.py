@@ -43,8 +43,8 @@ T5_LARGE_BF16_JAX_512XI32_CASES = utils.build_batch_benchmark_cases(
     ],
     batch_sizes=[1, 16, 24, 32, 48, 64, 512],
 )
-T5_LARGE_4CG_FP32_JAX_512XI32_CASES = utils.build_batch_benchmark_cases(
-    batch_models=model_definitions.T5_LARGE_4CG_FP32_JAX_512XI32_BATCHES,
+T5_4CG_LARGE_FP32_JAX_512XI32_CASES = utils.build_batch_benchmark_cases(
+    batch_models=model_definitions.T5_4CG_LARGE_FP32_JAX_512XI32_BATCHES,
     # TODO(mariecwhite): For now we use existing data definitions. Add correct
     # artifacts once artifact generation pipeline is implemented.
     batch_inputs=test_data_definitions.
@@ -130,7 +130,7 @@ ALL_BENCHMARKS = list(
         T5_LARGE_FP32_JAX_512XI32_CASES.values(),
         T5_LARGE_FP16_JAX_512XI32_CASES.values(),
         T5_LARGE_BF16_JAX_512XI32_CASES.values(),
-        T5_LARGE_4CG_FP32_JAX_512XI32_CASES.values(),
+        T5_4CG_LARGE_FP32_JAX_512XI32_CASES.values(),
         BERT_LARGE_FP32_JAX_384XI32_CASES.values(),
         BERT_LARGE_FP16_JAX_384XI32_CASES.values(),
         BERT_LARGE_BF16_JAX_384XI32_CASES.values(),

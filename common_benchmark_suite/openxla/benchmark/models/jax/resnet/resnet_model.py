@@ -11,7 +11,7 @@ import requests
 from transformers import AutoImageProcessor, FlaxResNetModel
 from typing import Any, Tuple
 
-from openxla.benchmark.models.jax import model_interfaces
+from openxla.benchmark.models import model_interfaces
 
 
 def _get_image_input(width=224, height=224):
