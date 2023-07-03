@@ -23,7 +23,7 @@ from typing import Any, Optional, Tuple, Union
 sys.path.insert(0, str(pathlib.Path(__file__).parents[5]))
 from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite.jax import model_definitions
-from openxla.benchmark.models.jax import model_interfaces
+from openxla.benchmark.models import model_interfaces
 
 HLO_FILENAME_REGEX = r".*jit_forward.before_optimizations.txt"
 HLO_STATIC_FILENAME = "xla_hlo_before_optimizations.txt"

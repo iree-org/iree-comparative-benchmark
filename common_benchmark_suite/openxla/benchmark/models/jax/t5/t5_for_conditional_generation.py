@@ -7,7 +7,7 @@
 from transformers import AutoTokenizer, FlaxT5ForConditionalGeneration, T5Tokenizer
 from typing import Any, Tuple
 
-from openxla.benchmark.models.jax import model_interfaces
+from openxla.benchmark.models import model_interfaces
 
 
 class T5ForConditionalGeneration(model_interfaces.InferenceModel):

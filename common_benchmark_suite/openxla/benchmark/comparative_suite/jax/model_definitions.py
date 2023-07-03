@@ -25,12 +25,13 @@ T5_JAX_IMPL = def_types.ModelImplementation(
 T5_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
     id=utils.BATCH_ID(unique_ids.MODEL_T5_LARGE_FP32_JAX_512XI32),
     name=utils.BATCH_NAME("T5_LARGE_FP32_JAX_512XI32"),
-    tags=[utils.BATCH_TAG],
+    tags=[utils.BATCH_TAG, "fp32"],
     model_impl=T5_JAX_IMPL,
     model_parameters={
         "batch_size": utils.BATCH_SIZE_PARAM,
         "data_type": "fp32",
         "model_name": "t5-large",
+        "seq_len": 512,
     },
     artifacts={
         def_types.ModelArtifactType.STABLEHLO:
@@ -91,12 +92,11 @@ T5_LARGE_BF16_JAX_512XI32_BATCHES = utils.build_batch_models(
     template=T5_LARGE_BF16_JAX_512XI32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512])
 
-T5_LARGE_4CG_FP32_JAX_IMPL = def_types.ModelImplementation(
-    id=unique_ids.MODEL_T5_LARGE_4CG_FP32_JAX,
-    name="T5_LARGE_4CG_FP32_JAX",
+T5_4CG_JAX_IMPL = def_types.ModelImplementation(
+    id=unique_ids.MODEL_IMPL_T5_4CG_JAX,
+    name="T5_4CG_JAX",
     tags=[
-        "fp32", "transformer-encoder", "transformer-decoder", "t5",
-        "auto-regressive"
+        "transformer-encoder", "transformer-decoder", "t5", "auto-regressive"
     ],
     framework_type=def_types.ModelFrameworkType.JAX,
     module_path=
@@ -105,22 +105,23 @@ T5_LARGE_4CG_FP32_JAX_IMPL = def_types.ModelImplementation(
     "https://huggingface.co/docs/transformers/model_doc/t5#transformers.FlaxT5ForConditionalGeneration",
 )
 
-T5_LARGE_4CG_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
+T5_4CG_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
     id=utils.BATCH_ID(unique_ids.MODEL_T5_LARGE_4CG_FP32_JAX),
-    name=utils.BATCH_NAME("T5_LARGE_4CG_FP32_JAX_512XI32"),
-    tags=[utils.BATCH_TAG],
-    model_impl=T5_LARGE_4CG_FP32_JAX_IMPL,
+    name=utils.BATCH_NAME("T5_4CG_LARGE_FP32_JAX_512XI32"),
+    tags=[utils.BATCH_TAG, "fp32"],
+    model_impl=T5_4CG_JAX_IMPL,
     model_parameters={
         "batch_size": utils.BATCH_SIZE_PARAM,
         "data_type": "fp32",
         "model_name": "t5-large",
+        "seq_len": 512
     },
     artifacts={
         # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
     },
 )
-T5_LARGE_4CG_FP32_JAX_512XI32_BATCHES = utils.build_batch_models(
-    template=T5_LARGE_4CG_FP32_JAX_512XI32_BATCH_TEMPLATE,
+T5_4CG_LARGE_FP32_JAX_512XI32_BATCHES = utils.build_batch_models(
+    template=T5_4CG_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512])
 
 # Bert-Large models.
@@ -136,7 +137,7 @@ BERT_JAX_IMPL = def_types.ModelImplementation(
     "https://huggingface.co/docs/transformers/model_doc/bert#transformers.FlaxBertModel",
 )
 
-BERT_LARGE_FP32_JAX_384XI32_BATCH_TEMPALTE = utils.ModelTemplate(
+BERT_LARGE_FP32_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
     id=utils.BATCH_ID(unique_ids.MODEL_BERT_LARGE_FP32_JAX_384XI32),
     name=utils.BATCH_NAME("BERT_LARGE_FP32_JAX_384XI32"),
     tags=[utils.BATCH_TAG],
@@ -151,7 +152,7 @@ BERT_LARGE_FP32_JAX_384XI32_BATCH_TEMPALTE = utils.ModelTemplate(
         # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
     })
 
-BERT_LARGE_FP16_JAX_384XI32_BATCH_TEMPALTE = utils.ModelTemplate(
+BERT_LARGE_FP16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
     id=utils.BATCH_ID(unique_ids.MODEL_BERT_LARGE_FP16_JAX_384XI32),
     name=utils.BATCH_NAME("BERT_LARGE_FP16_JAX_384XI32"),
     tags=[utils.BATCH_TAG],
@@ -166,7 +167,7 @@ BERT_LARGE_FP16_JAX_384XI32_BATCH_TEMPALTE = utils.ModelTemplate(
         # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
     })
 
-BERT_LARGE_BF16_JAX_384XI32_BATCH_TEMPALTE = utils.ModelTemplate(
+BERT_LARGE_BF16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
     id=utils.BATCH_ID(unique_ids.MODEL_BERT_LARGE_BF16_JAX_384XI32),
     name=utils.BATCH_NAME("BERT_LARGE_BF16_JAX_384XI32"),
     tags=[utils.BATCH_TAG],
@@ -182,15 +183,15 @@ BERT_LARGE_BF16_JAX_384XI32_BATCH_TEMPALTE = utils.ModelTemplate(
     })
 
 BERT_LARGE_FP32_JAX_384XI32_BATCHES = utils.build_batch_models(
-    template=BERT_LARGE_FP32_JAX_384XI32_BATCH_TEMPALTE,
+    template=BERT_LARGE_FP32_JAX_384XI32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280])
 
 BERT_LARGE_FP16_JAX_384XI32_BATCHES = utils.build_batch_models(
-    template=BERT_LARGE_FP16_JAX_384XI32_BATCH_TEMPALTE,
+    template=BERT_LARGE_FP16_JAX_384XI32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280])
 
 BERT_LARGE_BF16_JAX_384XI32_BATCHES = utils.build_batch_models(
-    template=BERT_LARGE_BF16_JAX_384XI32_BATCH_TEMPALTE,
+    template=BERT_LARGE_BF16_JAX_384XI32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280])
 
 # ResNet models.
@@ -266,7 +267,7 @@ ALL_MODELS = list(
         T5_LARGE_FP32_JAX_512XI32_BATCHES.values(),
         T5_LARGE_FP16_JAX_512XI32_BATCHES.values(),
         T5_LARGE_BF16_JAX_512XI32_BATCHES.values(),
-        T5_LARGE_4CG_FP32_JAX_512XI32_BATCHES.values(),
+        T5_4CG_LARGE_FP32_JAX_512XI32_BATCHES.values(),
         BERT_LARGE_FP32_JAX_384XI32_BATCHES.values(),
         BERT_LARGE_FP16_JAX_384XI32_BATCHES.values(),
         BERT_LARGE_BF16_JAX_384XI32_BATCHES.values(),

@@ -4,7 +4,9 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-from transformers import AutoTokenizer, FlaxT5Model, T5Tokenizer
+import tensorflow as tf
+
+from transformers import AutoTokenizer, TFT5Model, T5Tokenizer
 from typing import Any, Tuple
 
 from openxla.benchmark.models import model_interfaces
@@ -15,7 +17,7 @@ class T5(model_interfaces.InferenceModel):
 
   batch_size: int
   seq_len: int
-  model: FlaxT5Model
+  model: TFT5Model
   model_name: str
   tokenizer: T5Tokenizer
   tokenization_kwargs: dict[str, Any]
@@ -24,13 +26,13 @@ class T5(model_interfaces.InferenceModel):
     self.batch_size = batch_size
     self.seq_len = seq_len
     self.model_name = model_name
-    self.model = FlaxT5Model.from_pretrained(model_name, return_dict=True)
+    self.model = TFT5Model.from_pretrained(model_name, return_dict=True)
     self.tokenizer = AutoTokenizer.from_pretrained(
         model_name, model_max_length=self.seq_len)
     self.tokenization_kwargs = {
         "pad_to_multiple_of": self.seq_len,
         "padding": True,
-        "return_tensors": "jax",
+        "return_tensors": "tf",
     }
 
   def generate_default_inputs(self) -> Tuple[Any, ...]:
@@ -45,12 +47,11 @@ class T5(model_interfaces.InferenceModel):
 
     decoder_input_ids = self.tokenizer(decoder_text,
                                        **self.tokenization_kwargs).input_ids
-    # The HuggingFace documentation reports that _shift_right() exists for
-    # `FlaxT5Model` but we get an attribute does not exist error. Disabling for
-    # now.
-    # decoder_input_ids = self.model._shift_right(decoder_input_ids)
+    decoder_input_ids = self.model._shift_right(decoder_input_ids)
+
     return (encoder_input_ids, decoder_input_ids)
 
+  @tf.function(jit_compile=True)
   def forward(self, inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
     encoder_input_ids, decoder_input_ids = inputs
     output = self.model(
@@ -59,7 +60,7 @@ class T5(model_interfaces.InferenceModel):
     ).last_hidden_state
     return (output,)
 
-  def postprocess(self, outputs: Any) -> Any:
+  def postprocess(self, outputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
     # No-op.
     return outputs
 
@@ -68,8 +69,8 @@ def create_model(batch_size: int = 1,
                  seq_len: int = 512,
                  model_name: str = "t5-large",
                  **_unused_params) -> T5:
-  """Configure and create a JAX T5 model instance.
-  
+  """Configure and create a TF T5 model instance.
+
   Args:
     batch_size: input batch size.
     seq_len: input sequence length. Default to 512, which is the default in the
@@ -77,6 +78,6 @@ def create_model(batch_size: int = 1,
     model_name: The name of the T5 variant to use. Supported variants include:
       t5-small, t5-base, t5-large, t5-3b and t5-11b.
   Returns:
-    A JAX T5 model.
+    A TF T5 model.
   """
   return T5(batch_size=batch_size, seq_len=seq_len, model_name=model_name)

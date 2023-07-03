@@ -8,13 +8,14 @@
 
 import argparse
 import importlib
-import jax
 import numpy as np
 import pathlib
 import statistics
 import sys
+import tensorflow as tf
 import time
-from typing import Any, Dict, Sequence
+
+from typing import Any, Dict, Optional, Sequence
 
 # Add common_benchmark_suite dir to the search path.
 sys.path.insert(
@@ -24,9 +25,17 @@ sys.path.insert(
     0, str(pathlib.Path(__file__).parents[2] / "comparative_benchmark"))
 
 from openxla.benchmark import def_types
-from openxla.benchmark.comparative_suite.jax import benchmark_definitions
+from openxla.benchmark.comparative_suite.tf import benchmark_definitions
 from openxla.benchmark.models import model_interfaces
 import benchmark_lib, utils
+
+_HLO_DUMP_DIR = "/tmp/hlo_dump"
+_TF_CPU_DEVICE = "/CPU:0"
+_TF_GPU_DEVICE = "/GPU:0"
+
+
+def bytes_to_mb(bytes: Optional[int]) -> Optional[float]:
+  return None if bytes is None else bytes / 1e6
 
 
 def _run_framework_benchmark(
@@ -38,44 +47,36 @@ def _run_framework_benchmark(
     benchmark_iterations: int,
     backend: str,
 ) -> Dict[str, Any]:
-
-  model_module = importlib.import_module(model.model_impl.module_path)
-  model_obj: model_interfaces.InferenceModel = model_module.create_model(
-      **model.model_parameters)
-
-  inputs = [np.load(path) for path in input_npys]
-  expects = [np.load(path) for path in expect_npys]
+  tf_device = _TF_GPU_DEVICE if backend == "gpu" else _TF_CPU_DEVICE
 
   try:
-    with jax.default_device(jax.devices(backend)[0]):
+    with tf.device(tf_device):
+      if tf_device == _TF_GPU_DEVICE:
+        tf.config.experimental.reset_memory_stats(tf_device)
 
-      # Create jits.
-      start = time.perf_counter()
-      jit_inputs = jax.device_put(inputs)
-      end = time.perf_counter()
-      input_data_transfer_ms = 1000 * (end - start)
+      model_module = importlib.import_module(model.model_impl.module_path)
+      model_obj: model_interfaces.InferenceModel = model_module.create_model(
+          **model.model_parameters)
 
-      jit_function = jax.jit(model_obj.forward)
+      inputs = [np.load(path) for path in input_npys]
+      expects = [np.load(path) for path in expect_npys]
 
       # Run warmup.
       warmup_latencies = []
-      compile_time_s = -1
       for i in range(warmup_iterations):
         start = time.perf_counter()
-        jax.block_until_ready(jit_function(jit_inputs))
+        outputs = model_obj.forward(inputs)
+        tf.test.experimental.sync_devices()
         end = time.perf_counter()
-        latency = 1000 * (end - start)
-        if i == 0:
-          compile_time_s = latency / 1000
-        warmup_latencies.append(latency)
+        warmup_latencies.append(1000 * (end - start))
 
       # Run benchmark.
       latencies = []
       last_outputs = None
       for i in range(benchmark_iterations):
         start = time.perf_counter()
-        last_outputs = jit_function(jit_inputs)
-        jax.block_until_ready(last_outputs)
+        last_outputs = model_obj.forward(inputs)
+        tf.test.experimental.sync_devices()
         end = time.perf_counter()
         latencies.append(1000 * (end - start))
 
@@ -94,6 +95,19 @@ def _run_framework_benchmark(
 
       if not all_equal:
         raise ValueError("Output verification failed.")
+
+      # Retrieve memory stats.
+      if tf_device == _TF_GPU_DEVICE:
+        memory_info = tf.config.experimental.get_memory_info(tf_device)
+        device_peak_b = memory_info["peak"]
+      else:
+        # tf.config.experimental does not currently support measuring CPU memory usage.
+        device_peak_b = None
+      device_peak_mb = bytes_to_mb(device_peak_b)
+
+      # Roughly calculate compile time.
+      compile_time_ms = None if not warmup_latencies else (
+          max(warmup_latencies) - statistics.median(latencies))
 
   except Exception as e:
     print(f"Failed to benchmark model {model.name}. Exception: {e}")
@@ -124,16 +138,16 @@ def _run_framework_benchmark(
           None if not latencies else statistics.stdev(latencies),
       "benchmark_iterations":
           benchmark_iterations,
-      "compile_time_s":
-          compile_time_s,
-      "input_data_transfer_ms":
-          input_data_transfer_ms,
+      "compile_time_ms":
+          compile_time_ms,
+      "device_memory_peak_mb":
+          device_peak_mb,
   }
 
 
 def _parse_arguments() -> argparse.Namespace:
   parser = argparse.ArgumentParser(
-      description="Run JAX benchmarks with XLA backend.")
+      description="Run TF benchmarks with XLA backend.")
   benchmark_lib.configure_parser(parser)
   return parser.parse_args()
 
