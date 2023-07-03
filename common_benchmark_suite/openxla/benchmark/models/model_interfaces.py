@@ -31,6 +31,7 @@ class InferenceModel(abc.ABC, typing.Generic[T, U, V]):
   @abc.abstractmethod
   def forward(self, inputs: U) -> V:
     """Model inference function."""
+    # TODO(#60): Refactor to not use a tuple as inputs.
     pass
 
   @abc.abstractmethod

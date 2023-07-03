@@ -12,7 +12,7 @@ from typing import Any, Tuple
 from openxla.benchmark.models import model_interfaces
 
 
-class T5(model_interfaces.InferenceModel):
+class T5(model_interfaces.InferenceModel, tf.Module):
   """See https://huggingface.co/docs/transformers/model_doc/t5 for more information."""
 
   batch_size: int
@@ -59,6 +59,14 @@ class T5(model_interfaces.InferenceModel):
         decoder_input_ids=decoder_input_ids,
     ).last_hidden_state
     return (output,)
+
+  @tf.function(jit_compile=True)
+  def forward_sm(self, input_ids, decoder_input_ids):
+    """ Provides an inference interface amenable to generating a TF SavedModel
+    and lowering to MLIR.
+    """
+    return self.model(input_ids,
+                      decoder_input_ids=decoder_input_ids).last_hidden_state
 
   def postprocess(self, outputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
     # No-op.
