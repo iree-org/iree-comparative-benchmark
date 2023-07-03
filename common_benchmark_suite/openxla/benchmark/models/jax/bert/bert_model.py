@@ -51,7 +51,7 @@ class Bert(model_interfaces.InferenceModel):
 
   def forward(self, inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
     input_ids, attention_mask = inputs
-    output = self.model(input_ids, attention_mask)[0]
+    output = self.model(input_ids, attention_mask).last_hidden_state
     return (output,)
 
   def postprocess(self, outputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
