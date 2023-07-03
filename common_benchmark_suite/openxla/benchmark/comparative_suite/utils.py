@@ -6,8 +6,9 @@
 """Common utilities to define comparative benchmarks."""
 
 import string
+import dataclasses
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Union, Sequence
+from typing import Any, Callable, Dict, List, Union, Sequence, Tuple
 
 from openxla.benchmark import def_types
 
@@ -112,8 +113,8 @@ class ModelTestDataArtifactTemplate:
   """Template of def_types.ModelTestDataArtifact."""
   data_format: def_types.ModelTestDataFormat
   data_parameters: Dict[str, Any]
-  verify_parameters: Dict[str, Any]
   source_url: string.Template
+  verify_parameters: Dict[str, Any] = dataclasses.field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -167,17 +168,19 @@ def build_batch_benchmark_cases(
     batch_models: Dict[int, def_types.Model],
     batch_inputs: Dict[int, def_types.ModelTestData],
     batch_expected_outputs: Dict[int, def_types.ModelTestData],
-    target_device: def_types.DeviceSpec,
-    batch_sizes: Sequence[int]) -> Dict[int, def_types.BenchmarkCase]:
+    target_devices: Sequence[def_types.DeviceSpec],
+    batch_sizes: Sequence[int],
+) -> Dict[Tuple[str, int], def_types.BenchmarkCase]:
   """Build benchmark cases for multiple batch sizes."""
-  benchmark_cases = {}
-  for batch_size in batch_sizes:
-    benchmark_case = def_types.BenchmarkCase.build(
-        model=batch_models[batch_size],
-        input_data=batch_inputs[batch_size],
-        expected_output=batch_expected_outputs[batch_size],
-        target_device=target_device,
-    )
-    benchmark_cases[batch_size] = benchmark_case
+  benchmark_cases: Dict[Tuple[str, int], def_types.BenchmarkCase] = {}
+  for target_device in target_devices:
+    for batch_size in batch_sizes:
+      benchmark_case = def_types.BenchmarkCase.build(
+          model=batch_models[batch_size],
+          input_data=batch_inputs[batch_size],
+          expected_output=batch_expected_outputs[batch_size],
+          target_device=target_device,
+      )
+      benchmark_cases[(target_device.id, batch_size)] = benchmark_case
 
   return benchmark_cases
