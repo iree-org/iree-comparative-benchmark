@@ -7,6 +7,7 @@
 import argparse
 import json
 import sys
+import pathlib
 
 from google.cloud import bigquery, storage as CloudStorage
 from typing import Optional, Any, Callable, Dict, List
@@ -91,7 +92,7 @@ def process_single_file(
     config: Dict,
     snippets: Dict[str, str],
     presence_check: Optional[Callable[[Dict, Dict], bool]] = None,
-    dump_files_to: Optional[str] = None,
+    dump_files_to: Optional[pathlib.Path] = None,
 ) -> List[Any]:
 
   for rule in rules:
