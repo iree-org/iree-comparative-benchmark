@@ -51,7 +51,7 @@ class ResNet50(model_interfaces.InferenceModel):
     self.batch_size = batch_size
 
   def generate_default_inputs(self) -> Tuple[Any, ...]:
-    # TODO(#12): This should go away once we have the artifact generator.
+    # TODO(#44): This should go away once we support different raw inputs.
     image = _get_image_input()
     return (image,)
 
