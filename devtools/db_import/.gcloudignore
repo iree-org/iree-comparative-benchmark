@@ -11,7 +11,9 @@
 # except ...
 !.
 !/db_import
-!/db_import/*
+/db_import/*
+!/db_import/*.py
+/db_import/*_test.py
 !/config.yml
 !/main.py
 !/requirements.txt
