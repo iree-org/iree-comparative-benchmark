@@ -79,6 +79,8 @@ T5_LARGE_BF16_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
     },
 )
+# TODO(#54): Template should also support data types so we don't need to define
+# for each data types.
 T5_LARGE_FP32_JAX_512XI32_BATCHES = utils.build_batch_models(
     template=T5_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512])
