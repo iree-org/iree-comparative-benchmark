@@ -36,7 +36,7 @@ class ResNet(model_interfaces.InferenceModel):
       batch_size: int,
       dtype: Any,
   ):
-    self.model = FlaxResNetModel.from_pretrained(self.model_name, dtype=dtype)
+    self.model = FlaxResNetModel.from_pretrained(model_name, dtype=dtype)
     if dtype == jnp.float32:
       # The original model is fp32.
       pass
