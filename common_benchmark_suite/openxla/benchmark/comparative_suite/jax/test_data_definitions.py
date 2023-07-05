@@ -306,7 +306,7 @@ OUTPUT_DATA_RESNET50_FP32_JAX_2048X7X7XF32_BATCH_TEMPLATE = utils.ModelTestDataT
             utils.ModelTestDataArtifactTemplate(
                 data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
                 data_parameters={
-                    "tensor_names": ["pixel_values"],
+                    "tensor_names": ["output_0"],
                     "tensor_dimensions": [
                         utils.BATCH_TENSOR_DIMS("2048x7x7xf32")
                     ],
@@ -328,7 +328,7 @@ OUTPUT_DATA_RESNET50_FP16_JAX_2048X7X7XF16_BATCH_TEMPLATE = utils.ModelTestDataT
             utils.ModelTestDataArtifactTemplate(
                 data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
                 data_parameters={
-                    "tensor_names": ["pixel_values"],
+                    "tensor_names": ["output_0"],
                     "tensor_dimensions": [
                         utils.BATCH_TENSOR_DIMS("2048x7x7xf16")
                     ],
@@ -350,7 +350,7 @@ OUTPUT_DATA_RESNET50_BF16_JAX_2048X7X7XBF16_BATCH_TEMPLATE = utils.ModelTestData
             utils.ModelTestDataArtifactTemplate(
                 data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
                 data_parameters={
-                    "tensor_names": ["pixel_values"],
+                    "tensor_names": ["output_0"],
                     "tensor_dimensions": [
                         utils.BATCH_TENSOR_DIMS("2048x7x7xbf16")
                     ],

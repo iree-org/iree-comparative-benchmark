@@ -59,7 +59,7 @@ OUTPUT_DATA_BERT_LARGE_BF16_JAX_384X1024XBF16 = f"{OUTPUT_DATA_BERT_LARGE_JAX_38
 ################################################################################
 # ResNet50 models                                                              #
 ################################################################################
-MODEL_IMPL_RESNET50 = f"aff75509-4420-40a8-844e-dbfc48494fe6-MODEL_IMPL"
+MODEL_IMPL_RESNET = f"aff75509-4420-40a8-844e-dbfc48494fe6-MODEL_IMPL"
 MODEL_RESNET50 = "aff75509-4420-40a8-844e-dbfc48494fe6-MODEL_RESNET50"
 MODEL_RESNET50_FP32 = f"{MODEL_RESNET50}-fp32"
 MODEL_RESNET50_FP16 = f"{MODEL_RESNET50}-fp16"

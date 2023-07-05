@@ -66,7 +66,7 @@ class ResNet50(model_interfaces.InferenceModel):
 
   def forward(self, inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
     tensor, = inputs
-    output = self.model(tensor)[0]
+    output = self.model(tensor).last_hidden_state
     return (output,)
 
   def postprocess(self, outputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
