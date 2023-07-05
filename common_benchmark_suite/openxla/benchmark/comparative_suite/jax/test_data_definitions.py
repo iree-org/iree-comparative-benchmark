@@ -314,8 +314,9 @@ OUTPUT_DATA_RESNET50_FP32_JAX_2048X7X7XF32_BATCH_TEMPLATE = utils.ModelTestDataT
                 verify_parameters={
                     "absolute_tolerance": 0.5,
                 },
-                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
-                source_url=string.Template("TODO"))
+                source_url=string.Template(
+                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/RESNET50_FP32_JAX_3X224X224XF32_BATCH${batch_size}/output_npy.tgz"
+                ))
     })
 
 OUTPUT_DATA_RESNET50_FP16_JAX_2048X7X7XF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
