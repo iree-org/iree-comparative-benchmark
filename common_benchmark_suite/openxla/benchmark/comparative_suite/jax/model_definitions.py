@@ -23,7 +23,7 @@ T5_JAX_IMPL = def_types.ModelImplementation(
 )
 
 T5_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
-    id=utils.BATCH_ID(unique_ids.MODEL_T5_LARGE_FP32_JAX),
+    id=utils.BATCH_ID(unique_ids.MODEL_T5_LARGE_FP32_JAX_512XI32),
     name=utils.BATCH_NAME("T5_LARGE_FP32_JAX_512XI32"),
     tags=[utils.BATCH_TAG],
     model_impl=T5_JAX_IMPL,
@@ -52,7 +52,7 @@ T5_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
     },
 )
 T5_LARGE_FP16_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
-    id=utils.BATCH_ID(unique_ids.MODEL_T5_LARGE_FP16_JAX),
+    id=utils.BATCH_ID(unique_ids.MODEL_T5_LARGE_FP16_JAX_512XI32),
     name=utils.BATCH_NAME("T5_LARGE_FP16_JAX_512XI32"),
     tags=[utils.BATCH_TAG],
     model_impl=T5_JAX_IMPL,
@@ -66,7 +66,7 @@ T5_LARGE_FP16_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
     },
 )
 T5_LARGE_BF16_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
-    id=utils.BATCH_ID(unique_ids.MODEL_T5_LARGE_BF16_JAX),
+    id=utils.BATCH_ID(unique_ids.MODEL_T5_LARGE_BF16_JAX_512XI32),
     name=utils.BATCH_NAME("T5_LARGE_BF16_JAX_512XI32"),
     tags=[utils.BATCH_TAG],
     model_impl=T5_JAX_IMPL,
@@ -194,6 +194,8 @@ BERT_LARGE_BF16_JAX_384XI32_BATCHES = utils.build_batch_models(
 ALL_MODELS = list(
     itertools.chain(
         T5_LARGE_FP32_JAX_512XI32_BATCHES.values(),
+        T5_LARGE_FP16_JAX_512XI32_BATCHES.values(),
+        T5_LARGE_BF16_JAX_512XI32_BATCHES.values(),
         T5_LARGE_4CG_FP32_JAX_512XI32_BATCHES.values(),
         BERT_LARGE_FP32_JAX_384XI32_BATCHES.values(),
         BERT_LARGE_FP16_JAX_384XI32_BATCHES.values(),
