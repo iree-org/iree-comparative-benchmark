@@ -217,3 +217,160 @@ OUTPUT_DATA_BERT_LARGE_FP16_JAX_384X1024XF16_BATCHES = utils.build_batch_model_t
 OUTPUT_DATA_BERT_LARGE_BF16_JAX_384X1024XBF16_BATCHES = utils.build_batch_model_test_data(
     template=OUTPUT_DATA_BERT_LARGE_BF16_JAX_384X1024XBF16_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280])
+
+# ResNet50 inputs.
+INPUT_DATA_RESNET50_FP32_JAX_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
+    id=utils.BATCH_ID(unique_ids.INPUT_DATA_RESNET50_FP32_JAX_3X224X224XF32),
+    name=utils.BATCH_NAME("INPUT_DATA_RESNET50_FP32_JAX_3X224X224XF32"),
+    tags=["input-data", "imagenet", utils.BATCH_TAG],
+    source_info=
+    "Original image: https://storage.googleapis.com/iree-model-artifacts/ILSVRC2012_val_00000023.JPEG",
+    artifacts={
+        def_types.ModelTestDataFormat.NUMPY_TENSORS:
+            utils.ModelTestDataArtifactTemplate(
+                data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
+                data_parameters={
+                    "tensor_names": ["pixel_values"],
+                    "tensor_dimensions": [
+                        utils.BATCH_TENSOR_DIMS("3x224x224xf32")
+                    ],
+                },
+                verify_parameters={},
+                source_url=string.Template(
+                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/RESNET50_FP32_JAX_3X224X224XF32_BATCH${batch_size}/input_npy.tgz"
+                ))
+    })
+
+INPUT_DATA_RESNET50_FP16_JAX_3X224X224XF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
+    id=utils.BATCH_ID(unique_ids.INPUT_DATA_RESNET50_FP16_JAX_3X224X224XF16),
+    name=utils.BATCH_NAME("INPUT_DATA_RESNET50_FP16_JAX_3X224X224XF16"),
+    tags=["input-data", "imagenet", utils.BATCH_TAG],
+    source_info=
+    "Original image: https://storage.googleapis.com/iree-model-artifacts/ILSVRC2012_val_00000023.JPEG",
+    artifacts={
+        def_types.ModelTestDataFormat.NUMPY_TENSORS:
+            utils.ModelTestDataArtifactTemplate(
+                data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
+                data_parameters={
+                    "tensor_names": ["pixel_values"],
+                    "tensor_dimensions": [
+                        utils.BATCH_TENSOR_DIMS("3x224x224xf16")
+                    ],
+                },
+                verify_parameters={},
+                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+                source_url=string.Template("TODO"))
+    })
+
+INPUT_DATA_RESNET50_BF16_JAX_3X224X224XBF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
+    id=utils.BATCH_ID(unique_ids.INPUT_DATA_RESNET50_BF16_JAX_3X224X224XBF16),
+    name=utils.BATCH_NAME("INPUT_DATA_RESNET50_BF16_JAX_3X224X224XBF16"),
+    tags=["input-data", "imagenet", utils.BATCH_TAG],
+    source_info=
+    "Original image: https://storage.googleapis.com/iree-model-artifacts/ILSVRC2012_val_00000023.JPEG",
+    artifacts={
+        def_types.ModelTestDataFormat.NUMPY_TENSORS:
+            utils.ModelTestDataArtifactTemplate(
+                data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
+                data_parameters={
+                    "tensor_names": ["pixel_values"],
+                    "tensor_dimensions": [
+                        utils.BATCH_TENSOR_DIMS("3x224x224xbf16")
+                    ],
+                },
+                verify_parameters={},
+                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+                source_url=string.Template("TODO"))
+    })
+
+INPUT_DATA_RESNET50_FP32_JAX_3X224X224XF32_BATCHES = utils.build_batch_model_test_data(
+    template=INPUT_DATA_RESNET50_FP32_JAX_3X224X224XF32_BATCH_TEMPLATE,
+    batch_sizes=[1, 8, 64, 128, 256, 2048])
+
+INPUT_DATA_RESNET50_FP16_JAX_3X224X224XF16_BATCHES = utils.build_batch_model_test_data(
+    template=INPUT_DATA_RESNET50_FP16_JAX_3X224X224XF16_BATCH_TEMPLATE,
+    batch_sizes=[1, 8, 64, 128, 256, 2048])
+
+INPUT_DATA_RESNET50_BF16_JAX_3X224X224XBF16_BATCHES = utils.build_batch_model_test_data(
+    template=INPUT_DATA_RESNET50_BF16_JAX_3X224X224XBF16_BATCH_TEMPLATE,
+    batch_sizes=[1, 8, 64, 128, 256, 2048])
+
+# ResNet50 outputs.
+OUTPUT_DATA_RESNET50_FP32_JAX_2048X7X7XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
+    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_RESNET50_FP32_JAX_2048X7X7XF32),
+    name=utils.BATCH_NAME("OUTPUT_DATA_RESNET50_FP32_JAX_2048X7X7XF32"),
+    tags=["input-data", "imagenet", utils.BATCH_TAG],
+    source_info="",
+    artifacts={
+        def_types.ModelTestDataFormat.NUMPY_TENSORS:
+            utils.ModelTestDataArtifactTemplate(
+                data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
+                data_parameters={
+                    "tensor_names": ["output_0"],
+                    "tensor_dimensions": [
+                        utils.BATCH_TENSOR_DIMS("2048x7x7xf32")
+                    ],
+                },
+                verify_parameters={
+                    "absolute_tolerance": 0.5,
+                },
+                source_url=string.Template(
+                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/RESNET50_FP32_JAX_3X224X224XF32_BATCH${batch_size}/output_npy.tgz"
+                ))
+    })
+
+OUTPUT_DATA_RESNET50_FP16_JAX_2048X7X7XF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
+    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_RESNET50_FP16_JAX_2048X7X7XF16),
+    name=utils.BATCH_NAME("OUTPUT_DATA_RESNET50_FP16_JAX_2048X7X7XF16"),
+    tags=["input-data", "imagenet", utils.BATCH_TAG],
+    source_info="",
+    artifacts={
+        def_types.ModelTestDataFormat.NUMPY_TENSORS:
+            utils.ModelTestDataArtifactTemplate(
+                data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
+                data_parameters={
+                    "tensor_names": ["output_0"],
+                    "tensor_dimensions": [
+                        utils.BATCH_TENSOR_DIMS("2048x7x7xf16")
+                    ],
+                },
+                verify_parameters={
+                    "absolute_tolerance": 0.5,
+                },
+                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+                source_url=string.Template("TODO"))
+    })
+
+OUTPUT_DATA_RESNET50_BF16_JAX_2048X7X7XBF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
+    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_RESNET50_BF16_JAX_2048X7X7XBF16),
+    name=utils.BATCH_NAME("OUTPUT_DATA_RESNET50_BF16_JAX_2048X7X7XBF16"),
+    tags=["input-data", "imagenet", utils.BATCH_TAG],
+    source_info="",
+    artifacts={
+        def_types.ModelTestDataFormat.NUMPY_TENSORS:
+            utils.ModelTestDataArtifactTemplate(
+                data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
+                data_parameters={
+                    "tensor_names": ["output_0"],
+                    "tensor_dimensions": [
+                        utils.BATCH_TENSOR_DIMS("2048x7x7xbf16")
+                    ],
+                },
+                verify_parameters={
+                    "absolute_tolerance": 0.5,
+                },
+                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+                source_url=string.Template("TODO"))
+    })
+
+OUTPUT_DATA_RESNET50_FP32_JAX_2048X7X7XF32_BATCHES = utils.build_batch_model_test_data(
+    template=OUTPUT_DATA_RESNET50_FP32_JAX_2048X7X7XF32_BATCH_TEMPLATE,
+    batch_sizes=[1, 8, 64, 128, 256, 2048])
+
+OUTPUT_DATA_RESNET50_FP16_JAX_2048X7X7XF16_BATCHES = utils.build_batch_model_test_data(
+    template=OUTPUT_DATA_RESNET50_FP16_JAX_2048X7X7XF16_BATCH_TEMPLATE,
+    batch_sizes=[1, 8, 64, 128, 256, 2048])
+
+OUTPUT_DATA_RESNET50_BF16_JAX_2048X7X7XBF16_BATCHES = utils.build_batch_model_test_data(
+    template=OUTPUT_DATA_RESNET50_BF16_JAX_2048X7X7XBF16_BATCH_TEMPLATE,
+    batch_sizes=[1, 8, 64, 128, 256, 2048])
