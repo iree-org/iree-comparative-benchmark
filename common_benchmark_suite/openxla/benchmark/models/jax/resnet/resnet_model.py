@@ -13,8 +13,6 @@ from typing import Any, Tuple
 
 from openxla.benchmark.models.jax import model_interfaces
 
-MODEL_NAME = "microsoft/resnet-50"
-
 
 def _get_image_input(width=224, height=224):
   """Returns a sample image in the Imagenet2012 Validation Dataset.
@@ -29,15 +27,16 @@ def _get_image_input(width=224, height=224):
   return img
 
 
-class ResNet50(model_interfaces.InferenceModel):
+class ResNet(model_interfaces.InferenceModel):
   """See https://huggingface.co/docs/transformers/model_doc/resnet for more information."""
 
   def __init__(
       self,
+      model_name: str,
       batch_size: int,
       dtype: Any,
   ):
-    self.model = FlaxResNetModel.from_pretrained(MODEL_NAME, dtype=dtype)
+    self.model = FlaxResNetModel.from_pretrained(self.model_name, dtype=dtype)
     if dtype == jnp.float32:
       # The original model is fp32.
       pass
@@ -48,6 +47,7 @@ class ResNet50(model_interfaces.InferenceModel):
     else:
       raise ValueError(f"Unsupported data type '{dtype}'.")
 
+    self.model_name = model_name
     self.batch_size = batch_size
 
   def generate_default_inputs(self) -> Tuple[Any, ...]:
@@ -57,7 +57,7 @@ class ResNet50(model_interfaces.InferenceModel):
 
   def preprocess(self, raw_inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
     image, = raw_inputs
-    image_processor = AutoImageProcessor.from_pretrained(MODEL_NAME)
+    image_processor = AutoImageProcessor.from_pretrained(self.model_name)
     inputs = image_processor(images=image, return_tensors="jax")
     tensor = inputs["pixel_values"]
     tensor = jnp.asarray(jnp.tile(tensor, [self.batch_size, 1, 1, 1]),
@@ -81,15 +81,18 @@ DTYPE_MAP = {
 }
 
 
-def create_model(batch_size: int = 1,
+def create_model(model_name: str = "microsoft/resnet-50",
+                 batch_size: int = 1,
                  data_type: str = "fp32",
-                 **_unused_params) -> ResNet50:
-  """Configure and create a JAX ResNet50 model instance.
+                 **_unused_params) -> ResNet:
+  """Configure and create a JAX ResNet model instance.
   
   Args:
     batch_size: input batch size.
     data_type: model data type. Supported options include: fp32, fp16, bf16.
   Returns:
-    A JAX ResNet50 model.
+    A JAX ResNet model.
   """
-  return ResNet50(batch_size=batch_size, dtype=DTYPE_MAP[data_type])
+  return ResNet(model_name=model_name,
+                batch_size=batch_size,
+                dtype=DTYPE_MAP[data_type])
