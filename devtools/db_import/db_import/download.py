@@ -33,7 +33,7 @@ def configure_parser(parser: argparse.ArgumentParser):
 
 def _download(config_file, args: argparse.Namespace):
   try:
-    config = config_file["cloud_functions"][args.config_name]
+    config = config_file["pipelines"][args.config_name]
   except KeyError:
     sys.exit(f"No configuration with the name {args.config_name} found.")
 

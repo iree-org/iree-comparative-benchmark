@@ -64,7 +64,7 @@ def _deploy(config_file, args: argparse.Namespace):
 
   for config_name in args.config_names:
     print(f"Processing config {config_name}...")
-    config = config_file["cloud_functions"][config_name]
+    config = config_file["pipelines"][config_name]
     bucket_name = config["bucket_name"]
     cloud_function_name = config["cloud_function_name"]
     table_name = config["table_name"]

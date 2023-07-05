@@ -23,7 +23,7 @@ SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 with open(SCRIPT_DIR / "config.yml") as fd:
   config_file = yaml.safe_load(fd)
 
-config = config_file["cloud_functions"][os.environ["config_name"]]
+config = config_file["pipelines"][os.environ["config_name"]]
 
 db_client = bigquery.Client()
 table = db_client.get_table(config["table_name"])

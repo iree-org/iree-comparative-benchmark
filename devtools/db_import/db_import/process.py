@@ -54,7 +54,7 @@ def configure_parser(parser: argparse.ArgumentParser):
 
 def _process(config_file, args: argparse.Namespace):
   try:
-    config = config_file["cloud_functions"][args.config]
+    config = config_file["pipelines"][args.config]
   except KeyError:
     sys.exit(f"No configuration with the name {args.config_name} found.")
 
