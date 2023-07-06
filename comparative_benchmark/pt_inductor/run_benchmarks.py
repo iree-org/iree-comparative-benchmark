@@ -87,7 +87,7 @@ def _run_framework_benchmark(
       outputs = compiled_model.forward(pt_inputs)
       if backend == "gpu":
         torch.cuda.synchronize()
-        outputs = outputs.cpu()
+        outputs = [output.cpu() for output in outputs]
       end = time.perf_counter()
       latency = 1000 * (end - start)
       return (outputs, latency)

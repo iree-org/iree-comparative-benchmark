@@ -17,7 +17,7 @@ BERT_PT_IMPL = def_types.ModelImplementation(
     framework_type=def_types.ModelFrameworkType.PYTORCH,
     module_path=f"{utils.MODELS_MODULE_PATH}.pt.bert.bert_model",
     source_info=
-    "https://huggingface.co/docs/transformers/model_doc/bert#transformers.FlaxBertModel",
+    "https://huggingface.co/docs/transformers/model_doc/bert#transformers.BertModel",
 )
 
 BERT_LARGE_FP32_PT_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(

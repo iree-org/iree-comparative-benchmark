@@ -82,7 +82,11 @@ def create_model(batch_size: int = 1,
   Returns:
     A PyTorch Bert model.
   """
-  return Bert(batch_size=batch_size,
-              seq_len=seq_len,
-              dtype=DTYPE_MAP[data_type],
-              model_name=model_name)
+  dtype = DTYPE_MAP.get(data_type)
+  if dtype is None:
+    raise ValueError(f"Unsupported data type: '{data_type}'.")
+  model = Bert(batch_size=batch_size,
+               seq_len=seq_len,
+               dtype=dtype,
+               model_name=model_name)
+  return model.to(dtype=dtype)
