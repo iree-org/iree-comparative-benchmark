@@ -24,7 +24,7 @@ sys.path.insert(
 from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite.torch import benchmark_definitions
 from openxla.benchmark.models import model_interfaces
-import utils
+import benchmark_lib, utils
 
 
 def _run_framework_benchmark(
@@ -108,22 +108,14 @@ def _run_framework_benchmark(
 
     if last_outputs is None:
       raise ValueError("No benchmark runs.")
-    verdicts = utils.compare_tensors(outputs=last_outputs,
-                                     expects=expects,
-                                     **verify_params)
-    all_equal = True
-    for idx, verdict in enumerate(verdicts):
-      is_equal, max_diff = verdict
-      if not is_equal:
-        print(f"Output {idx} exceeds tolerance. Max diff: {max_diff}")
-        all_equal = False
 
-    if not all_equal:
-      raise ValueError("Output verification failed.")
+    utils.check_tensor_outputs(outputs=last_outputs,
+                               expects=expects,
+                               **verify_params)
 
   except Exception as e:
     print(f"Failed to benchmark model {model.name}.")
-    raise RuntimeError(e)
+    return {"error": str(e)}
 
   result_dict = {
       "min_warmup_latency_ms":
