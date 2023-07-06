@@ -46,6 +46,7 @@ def _run_framework_benchmark(
     warmup_iterations: int,
     benchmark_iterations: int,
     backend: str,
+    verbose: bool,
 ) -> Dict[str, Any]:
   tf_device = _TF_GPU_DEVICE if backend == "gpu" else _TF_CPU_DEVICE
 
@@ -85,6 +86,7 @@ def _run_framework_benchmark(
 
       utils.check_tensor_outputs(outputs=last_outputs,
                                  expects=expects,
+                                 verbose=verbose,
                                  **verify_params)
 
       # Retrieve memory stats.
@@ -102,7 +104,7 @@ def _run_framework_benchmark(
 
   except Exception as e:
     print(f"Failed to benchmark model {model.name}. Exception: {e}")
-    raise RuntimeError(e)
+    return {"error": str(e)}
 
   return {
       "min_warmup_latency_ms":

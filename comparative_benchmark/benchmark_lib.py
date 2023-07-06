@@ -24,11 +24,16 @@ from openxla.benchmark import def_types
 import utils
 
 
-def _run(benchmark: def_types.BenchmarkCase, run_in_process: bool,
-         warmup_iterations: int, iterations: int,
-         input_npys: Sequence[pathlib.Path],
-         expect_npys: Sequence[pathlib.Path],
-         benchmark_function: Callable) -> utils.BenchmarkResult:
+def _run(
+    benchmark: def_types.BenchmarkCase,
+    run_in_process: bool,
+    warmup_iterations: int,
+    iterations: int,
+    input_npys: Sequence[pathlib.Path],
+    expect_npys: Sequence[pathlib.Path],
+    benchmark_function: Callable,
+    verbose: bool,
+) -> utils.BenchmarkResult:
   model = benchmark.model
   input_data = benchmark.input_data.artifacts[
       def_types.ModelTestDataFormat.NUMPY_TENSORS]
@@ -65,6 +70,7 @@ def _run(benchmark: def_types.BenchmarkCase, run_in_process: bool,
         warmup_iterations=warmup_iterations,
         benchmark_iterations=iterations,
         backend=backend,
+        verbose=verbose,
     )
     if run_in_process:
       framework_metrics = benchmark_function(**kwargs)
@@ -214,7 +220,8 @@ def benchmark(
                   iterations=iterations,
                   input_npys=benchmarks_to_inputs[benchmark.id],
                   expect_npys=benchmarks_to_expects[benchmark.id],
-                  benchmark_function=benchmark_function)
+                  benchmark_function=benchmark_function,
+                  verbose=verbose)
     if verbose:
       print(json.dumps(dataclasses.asdict(result), indent=2))
 

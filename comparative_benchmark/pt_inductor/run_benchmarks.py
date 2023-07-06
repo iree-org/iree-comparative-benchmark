@@ -24,7 +24,7 @@ sys.path.insert(
     0, str(pathlib.Path(__file__).parents[2] / "comparative_benchmark"))
 
 from openxla.benchmark import def_types
-from openxla.benchmark.comparative_suite.torch import benchmark_definitions
+from openxla.benchmark.comparative_suite.pt import benchmark_definitions
 from openxla.benchmark.models import model_interfaces
 import benchmark_lib, utils
 
@@ -37,6 +37,7 @@ def _run_framework_benchmark(
     warmup_iterations: int,
     benchmark_iterations: int,
     backend: str,
+    verbose: bool,
 ) -> Dict[str, Any]:
   try:
 
@@ -68,20 +69,22 @@ def _run_framework_benchmark(
     pt_inputs = [torch.from_numpy(input_data) for input_data in inputs]
 
     if backend == "gpu":
-      model.cuda()
+      model_obj.cuda()
       pt_inputs = [input_data.cuda() for input_data in pt_inputs]
 
     if data_type == "fp16":
       # Autotuning not supported with FP16 datatypes.
-      model = torch.compile(model_obj, backend="inductor")
+      compiled_model = torch.compile(model_obj, backend="inductor")
       autotuning_enabled = False
     else:
-      model = torch.compile(model_obj, mode="max-autotune", backend="inductor")
+      compiled_model = torch.compile(model_obj,
+                                     mode="max-autotune",
+                                     backend="inductor")
       autotuning_enabled = True
 
     def run_one_iter():
       start = time.perf_counter()
-      outputs = model.forward(*pt_inputs)
+      outputs = compiled_model.forward(pt_inputs)
       if backend == "gpu":
         torch.cuda.synchronize()
         outputs = outputs.cpu()
@@ -106,13 +109,14 @@ def _run_framework_benchmark(
     for i in range(benchmark_iterations):
       outputs, latency = run_one_iter()
       latencies.append(latency)
-      last_outputs = outputs.detach().numpy()
+      last_outputs = [output.detach().numpy() for output in outputs]
 
     if last_outputs is None:
       raise ValueError("No benchmark runs.")
 
     utils.check_tensor_outputs(outputs=last_outputs,
                                expects=expects,
+                               verbose=verbose,
                                **verify_params)
 
   except Exception as e:
@@ -129,7 +133,8 @@ def _run_framework_benchmark(
       "median_warmup_latency_ms":
           None if not warmup_latencies else statistics.median(warmup_latencies),
       "stddev_warmup_latency_ms":
-          None if not warmup_latencies else statistics.stdev(warmup_latencies),
+          None
+          if len(warmup_latencies) < 2 else statistics.stdev(warmup_latencies),
       "warmup_iterations":
           warmup_iterations,
       "min_latency_ms":
@@ -141,7 +146,7 @@ def _run_framework_benchmark(
       "median_latency_ms":
           None if not latencies else statistics.median(latencies),
       "stddev_latency_ms":
-          None if not latencies else statistics.stdev(latencies),
+          None if len(latencies) < 2 else statistics.stdev(latencies),
       "benchmark_iterations":
           benchmark_iterations,
       "compile_time_ms":

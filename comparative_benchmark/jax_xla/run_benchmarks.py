@@ -37,6 +37,7 @@ def _run_framework_benchmark(
     warmup_iterations: int,
     benchmark_iterations: int,
     backend: str,
+    verbose: bool,
 ) -> Dict[str, Any]:
 
   model_module = importlib.import_module(model.model_impl.module_path)
@@ -84,11 +85,12 @@ def _run_framework_benchmark(
 
       utils.check_tensor_outputs(outputs=last_outputs,
                                  expects=expects,
+                                 verbose=verbose,
                                  **verify_params)
 
   except Exception as e:
     print(f"Failed to benchmark model {model.name}. Exception: {e}")
-    raise RuntimeError(e)
+    return {"error": str(e)}
 
   return {
       "min_warmup_latency_ms":
