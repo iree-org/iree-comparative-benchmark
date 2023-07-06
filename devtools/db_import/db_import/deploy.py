@@ -15,7 +15,7 @@ from google.cloud import storage, bigquery
 from db_import import batch_import
 from db_import import db
 
-SCRIPT_DIR = pathlib.Path(__main__.__file__).resolve().parent
+MAIN_MODULE_DIR = pathlib.Path(__main__.__file__).resolve().parent
 
 
 def configure_parser(parser: argparse.ArgumentParser):
@@ -136,7 +136,7 @@ def _deploy(config_file, args: argparse.Namespace):
         "--gen2",
         "--runtime=python311",
         f"--service-account={my_service_account}",
-        f"--source={SCRIPT_DIR}",
+        f"--source={MAIN_MODULE_DIR}",
         "--entry-point=entry_point",
         f"--region={args.region.lower()}",
         "--trigger-event-filters=type=google.cloud.storage.object.v1.finalized",
