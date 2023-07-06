@@ -11,6 +11,7 @@ import yaml
 
 SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 
+from db_import import deploy
 from db_import import download
 from db_import import batch_import
 from db_import import process
@@ -26,6 +27,10 @@ parser.add_argument(
     default=SCRIPT_DIR / "config.yml",
 )
 subparsers = parser.add_subparsers(required=True)
+
+deploy_parser = subparsers.add_parser("deploy",
+                                      help="Deploy one or more cloud functions")
+deploy.configure_parser(deploy_parser)
 
 download_parser = subparsers.add_parser(
     "download", help="Download files from bucket for local usage")
