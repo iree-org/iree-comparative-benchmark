@@ -9,6 +9,8 @@ import string
 from openxla.benchmark.comparative_suite import utils
 from openxla.benchmark import def_types, unique_ids
 
+PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.13_1688607404/"
+
 # T5 large inputs.
 INPUT_DATA_T5_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
     id=utils.BATCH_ID(unique_ids.INPUT_DATA_T5_LARGE_FP32_JAX_512XI32),
@@ -28,7 +30,8 @@ INPUT_DATA_T5_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplat
                     ]
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/T5_LARGE_FP32_JAX_512XI32_BATCH${batch_size}/input_npy.tgz"
+                    PARENT_GCS_DIR +
+                    "T5_LARGE_FP32_JAX_512XI32_BATCH${batch_size}/inputs_npy.tgz"
                 ))
     })
 INPUT_DATA_T5_LARGE_FP16_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
@@ -48,8 +51,10 @@ INPUT_DATA_T5_LARGE_FP16_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplat
                         utils.BATCH_TENSOR_DIMS("512xi32"),
                     ]
                 },
-                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
-                source_url=string.Template("TODO"))
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "T5_LARGE_FP16_JAX_512XI32_BATCH${batch_size}/inputs_npy.tgz"
+                ))
     })
 INPUT_DATA_T5_LARGE_BF16_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
     id=utils.BATCH_ID(unique_ids.INPUT_DATA_T5_LARGE_BF16_JAX_512XI32),
@@ -68,8 +73,10 @@ INPUT_DATA_T5_LARGE_BF16_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplat
                         utils.BATCH_TENSOR_DIMS("512xi32"),
                     ]
                 },
-                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
-                source_url=string.Template("TODO"))
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "T5_LARGE_BF16_JAX_512XI32_BATCH${batch_size}/inputs_npy.tgz"
+                ))
     })
 INPUT_DATA_T5_LARGE_FP32_JAX_512XI32_BATCHES = utils.build_batch_model_test_data(
     template=INPUT_DATA_T5_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE,
@@ -101,7 +108,8 @@ OUTPUT_DATA_T5_LARGE_FP32_JAX_512X1024XF32_BATCH_TEMPLATE = utils.ModelTestDataT
                     "absolute_tolerance": 0.5,
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/T5_LARGE_FP32_JAX_512XI32_BATCH${batch_size}/output_npy.tgz"
+                    PARENT_GCS_DIR +
+                    "T5_LARGE_FP32_JAX_512XI32_BATCH${batch_size}/outputs_npy.tgz"
                 ))
     })
 OUTPUT_DATA_T5_LARGE_FP16_JAX_512X1024XF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
@@ -122,8 +130,10 @@ OUTPUT_DATA_T5_LARGE_FP16_JAX_512X1024XF16_BATCH_TEMPLATE = utils.ModelTestDataT
                 verify_parameters={
                     "absolute_tolerance": 0.5,
                 },
-                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
-                source_url=string.Template("TODO"))
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "T5_LARGE_FP16_JAX_512XI32_BATCH${batch_size}/outputs_npy.tgz"
+                ))
     })
 OUTPUT_DATA_T5_LARGE_BF16_JAX_512X1024XBF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
     id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_T5_LARGE_BF16_JAX_512X1024XBF16),
@@ -143,8 +153,10 @@ OUTPUT_DATA_T5_LARGE_BF16_JAX_512X1024XBF16_BATCH_TEMPLATE = utils.ModelTestData
                 verify_parameters={
                     "absolute_tolerance": 0.5,
                 },
-                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
-                source_url=string.Template("TODO"))
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "T5_LARGE_BF16_JAX_512XI32_BATCH$${batch_size}/outputs_npy.tgz"
+                ))
     })
 OUTPUT_DATA_T5_LARGE_FP32_JAX_512X1024XF32_BATCHES = utils.build_batch_model_test_data(
     template=OUTPUT_DATA_T5_LARGE_FP32_JAX_512X1024XF32_BATCH_TEMPLATE,
@@ -174,9 +186,9 @@ INPUT_DATA_BERT_LARGE_FP32_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTempl
                     ],
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/BERT_LARGE_FP32_JAX_384XI32_BATCH${batch_size}/input_npy.tgz"
-                ),
-            )
+                    PARENT_GCS_DIR +
+                    "BERT_LARGE_FP32_JAX_384XI32_BATCH${batch_size}/inputs_npy.tgz"
+                ))
     })
 
 INPUT_DATA_BERT_LARGE_FP16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
@@ -195,9 +207,10 @@ INPUT_DATA_BERT_LARGE_FP16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTempl
                         utils.BATCH_TENSOR_DIMS("384xi32"),
                     ],
                 },
-                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
-                source_url=string.Template("TODO"),
-            )
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "BERT_LARGE_FP16_JAX_384XI32_BATCH${batch_size}/inputs_npy.tgz"
+                ))
     })
 
 INPUT_DATA_BERT_LARGE_BF16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
@@ -216,9 +229,10 @@ INPUT_DATA_BERT_LARGE_BF16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTempl
                         utils.BATCH_TENSOR_DIMS("384xi32"),
                     ],
                 },
-                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
-                source_url=string.Template("TODO"),
-            )
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "BERT_LARGE_BF16_JAX_384XI32_BATCH${batch_size}/inputs_npy.tgz"
+                ))
     })
 
 INPUT_DATA_BERT_LARGE_FP32_JAX_384XI32_BATCHES = utils.build_batch_model_test_data(
@@ -251,7 +265,8 @@ OUTPUT_DATA_BERT_LARGE_FP32_JAX_384X1024XF32_BATCH_TEMPLATE = utils.ModelTestDat
                     "absolute_tolerance": 0.5,
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/BERT_LARGE_FP32_JAX_384XI32_BATCH${batch_size}/output_npy.tgz"
+                    PARENT_GCS_DIR +
+                    "BERT_LARGE_FP32_JAX_384XI32_BATCH${batch_size}/outputs_npy.tgz"
                 ))
     })
 
@@ -273,8 +288,10 @@ OUTPUT_DATA_BERT_LARGE_FP16_JAX_384X1024XF16_BATCH_TEMPLATE = utils.ModelTestDat
                 verify_parameters={
                     "absolute_tolerance": 0.5,
                 },
-                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
-                source_url=string.Template("TODO"))
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "BERT_LARGE_FP16_JAX_384XI32_BATCH${batch_size}/outputs_npy.tgz"
+                ))
     })
 
 OUTPUT_DATA_BERT_LARGE_BF16_JAX_384X1024XBF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
@@ -295,8 +312,10 @@ OUTPUT_DATA_BERT_LARGE_BF16_JAX_384X1024XBF16_BATCH_TEMPLATE = utils.ModelTestDa
                 verify_parameters={
                     "absolute_tolerance": 0.5,
                 },
-                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
-                source_url=string.Template("TODO"))
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "BERT_LARGE_BF16_JAX_384XI32_BATCH${batch_size}/outputs_npy.tgz"
+                ))
     })
 
 OUTPUT_DATA_BERT_LARGE_FP32_JAX_384X1024XF32_BATCHES = utils.build_batch_model_test_data(
@@ -330,7 +349,8 @@ INPUT_DATA_RESNET50_FP32_JAX_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTestDataT
                 },
                 verify_parameters={},
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/RESNET50_FP32_JAX_3X224X224XF32_BATCH${batch_size}/input_npy.tgz"
+                    PARENT_GCS_DIR +
+                    "RESNET50_FP32_JAX_3X224X224XF32_BATCH${batch_size}/inputs_npy.tgz"
                 ))
     })
 
@@ -351,8 +371,10 @@ INPUT_DATA_RESNET50_FP16_JAX_3X224X224XF16_BATCH_TEMPLATE = utils.ModelTestDataT
                     ],
                 },
                 verify_parameters={},
-                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
-                source_url=string.Template("TODO"))
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "RESNET50_FP16_JAX_3X224X224XF16_BATCH${batch_size}/inputs_npy.tgz"
+                ))
     })
 
 INPUT_DATA_RESNET50_BF16_JAX_3X224X224XBF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
@@ -372,8 +394,10 @@ INPUT_DATA_RESNET50_BF16_JAX_3X224X224XBF16_BATCH_TEMPLATE = utils.ModelTestData
                     ],
                 },
                 verify_parameters={},
-                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
-                source_url=string.Template("TODO"))
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "RESNET50_BF16_JAX_3X224X224XBF16_BATCH${batch_size}/inputs_npy.tgz"
+                ))
     })
 
 INPUT_DATA_RESNET50_FP32_JAX_3X224X224XF32_BATCHES = utils.build_batch_model_test_data(
@@ -408,7 +432,8 @@ OUTPUT_DATA_RESNET50_FP32_JAX_2048X7X7XF32_BATCH_TEMPLATE = utils.ModelTestDataT
                     "absolute_tolerance": 0.5,
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/RESNET50_FP32_JAX_3X224X224XF32_BATCH${batch_size}/output_npy.tgz"
+                    PARENT_GCS_DIR +
+                    "RESNET50_FP32_JAX_3X224X224XF32_BATCH${batch_size}/outputs_npy.tgz"
                 ))
     })
 
@@ -430,8 +455,10 @@ OUTPUT_DATA_RESNET50_FP16_JAX_2048X7X7XF16_BATCH_TEMPLATE = utils.ModelTestDataT
                 verify_parameters={
                     "absolute_tolerance": 0.5,
                 },
-                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
-                source_url=string.Template("TODO"))
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "RESNET50_FP16_JAX_3X224X224XF16_BATCH${batch_size}/outputs_npy.tgz"
+                ))
     })
 
 OUTPUT_DATA_RESNET50_BF16_JAX_2048X7X7XBF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
@@ -452,8 +479,10 @@ OUTPUT_DATA_RESNET50_BF16_JAX_2048X7X7XBF16_BATCH_TEMPLATE = utils.ModelTestData
                 verify_parameters={
                     "absolute_tolerance": 0.5,
                 },
-                # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
-                source_url=string.Template("TODO"))
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "RESNET50_BF16_JAX_3X224X224XBF16_BATCH${batch_size}/outputs_npy.tgz"
+                ))
     })
 
 OUTPUT_DATA_RESNET50_FP32_JAX_2048X7X7XF32_BATCHES = utils.build_batch_model_test_data(

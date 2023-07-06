@@ -10,7 +10,7 @@ import string
 from openxla.benchmark import def_types, unique_ids
 from openxla.benchmark.comparative_suite import utils
 
-PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.10_1684396752/"
+PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.13_1688607404/"
 
 T5_JAX_IMPL = def_types.ModelImplementation(
     id=unique_ids.MODEL_IMPL_T5_JAX,
@@ -63,7 +63,22 @@ T5_LARGE_FP16_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "model_name": "t5-large",
     },
     artifacts={
-        # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+        def_types.ModelArtifactType.STABLEHLO:
+            utils.ModelArtifactTemplate(
+                artifact_type=def_types.ModelArtifactType.STABLEHLO,
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "T5_LARGE_FP16_JAX_512XI32_BATCH${batch_size}/stablehlo.mlirbc"
+                ),
+            ),
+        def_types.ModelArtifactType.XLA_HLO_DUMP:
+            utils.ModelArtifactTemplate(
+                artifact_type=def_types.ModelArtifactType.XLA_HLO_DUMP,
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "T5_LARGE_FP16_JAX_512XI32_BATCH${batch_size}/xla_hlo_before_optimizations.txt"
+                ),
+            ),
     },
 )
 T5_LARGE_BF16_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
@@ -77,7 +92,22 @@ T5_LARGE_BF16_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "model_name": "t5-large",
     },
     artifacts={
-        # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+        def_types.ModelArtifactType.STABLEHLO:
+            utils.ModelArtifactTemplate(
+                artifact_type=def_types.ModelArtifactType.STABLEHLO,
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "T5_LARGE_BF16_JAX_512XI32_BATCH${batch_size}/stablehlo.mlirbc"
+                ),
+            ),
+        def_types.ModelArtifactType.XLA_HLO_DUMP:
+            utils.ModelArtifactTemplate(
+                artifact_type=def_types.ModelArtifactType.XLA_HLO_DUMP,
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "T5_LARGE_BF16_JAX_512XI32_BATCH${batch_size}/xla_hlo_before_optimizations.txt"
+                ),
+            ),
     },
 )
 # TODO(#54): Template should also support data types so we don't need to define
@@ -117,7 +147,22 @@ T5_4CG_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "seq_len": 512
     },
     artifacts={
-        # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+        def_types.ModelArtifactType.STABLEHLO:
+            utils.ModelArtifactTemplate(
+                artifact_type=def_types.ModelArtifactType.STABLEHLO,
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "T5_4CG_LARGE_FP32_JAX_512XI32_BATCH${batch_size}/stablehlo.mlirbc"
+                ),
+            ),
+        def_types.ModelArtifactType.XLA_HLO_DUMP:
+            utils.ModelArtifactTemplate(
+                artifact_type=def_types.ModelArtifactType.XLA_HLO_DUMP,
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "T5_4CG_LARGE_FP32_JAX_512XI32_BATCH${batch_size}/xla_hlo_before_optimizations.txt"
+                ),
+            ),
     },
 )
 T5_4CG_LARGE_FP32_JAX_512XI32_BATCHES = utils.build_batch_models(
@@ -149,7 +194,22 @@ BERT_LARGE_FP32_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "model_name": "bert-large-uncased",
     },
     artifacts={
-        # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+        def_types.ModelArtifactType.STABLEHLO:
+            utils.ModelArtifactTemplate(
+                artifact_type=def_types.ModelArtifactType.STABLEHLO,
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "BERT_LARGE_FP32_JAX_384XI32_BATCH${batch_size}/stablehlo.mlirbc"
+                ),
+            ),
+        def_types.ModelArtifactType.XLA_HLO_DUMP:
+            utils.ModelArtifactTemplate(
+                artifact_type=def_types.ModelArtifactType.XLA_HLO_DUMP,
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "BERT_LARGE_FP32_JAX_384XI32_BATCH${batch_size}/xla_hlo_before_optimizations.txt"
+                ),
+            ),
     })
 
 BERT_LARGE_FP16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
@@ -164,7 +224,22 @@ BERT_LARGE_FP16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "model_name": "bert-large-uncased",
     },
     artifacts={
-        # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+        def_types.ModelArtifactType.STABLEHLO:
+            utils.ModelArtifactTemplate(
+                artifact_type=def_types.ModelArtifactType.STABLEHLO,
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "BERT_LARGE_FP16_JAX_384XI32_BATCH${batch_size}/stablehlo.mlirbc"
+                ),
+            ),
+        def_types.ModelArtifactType.XLA_HLO_DUMP:
+            utils.ModelArtifactTemplate(
+                artifact_type=def_types.ModelArtifactType.XLA_HLO_DUMP,
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "BERT_LARGE_FP16_JAX_384XI32_BATCH${batch_size}/xla_hlo_before_optimizations.txt"
+                ),
+            ),
     })
 
 BERT_LARGE_BF16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
@@ -179,7 +254,22 @@ BERT_LARGE_BF16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "model_name": "bert-large-uncased",
     },
     artifacts={
-        # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+        def_types.ModelArtifactType.STABLEHLO:
+            utils.ModelArtifactTemplate(
+                artifact_type=def_types.ModelArtifactType.STABLEHLO,
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "BERT_LARGE_BF16_JAX_384XI32_BATCH${batch_size}/stablehlo.mlirbc"
+                ),
+            ),
+        def_types.ModelArtifactType.XLA_HLO_DUMP:
+            utils.ModelArtifactTemplate(
+                artifact_type=def_types.ModelArtifactType.XLA_HLO_DUMP,
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "BERT_LARGE_BF16_JAX_384XI32_BATCH${batch_size}/xla_hlo_before_optimizations.txt"
+                ),
+            ),
     })
 
 BERT_LARGE_FP32_JAX_384XI32_BATCHES = utils.build_batch_models(
@@ -219,7 +309,22 @@ RESNET50_FP32_JAX_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTemplate(
         "model_name": "microsoft/resnet-50",
     },
     artifacts={
-        # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+        def_types.ModelArtifactType.STABLEHLO:
+            utils.ModelArtifactTemplate(
+                artifact_type=def_types.ModelArtifactType.STABLEHLO,
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "RESNET50_FP32_JAX_3X224X224XF32_BATCH${batch_size}/stablehlo.mlirbc"
+                ),
+            ),
+        def_types.ModelArtifactType.XLA_HLO_DUMP:
+            utils.ModelArtifactTemplate(
+                artifact_type=def_types.ModelArtifactType.XLA_HLO_DUMP,
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "RESNET50_FP32_JAX_3X224X224XF32_BATCH${batch_size}/xla_hlo_before_optimizations.txt"
+                ),
+            ),
     })
 
 RESNET50_FP16_JAX_3X224X224XF16_BATCH_TEMPLATE = utils.ModelTemplate(
@@ -233,7 +338,22 @@ RESNET50_FP16_JAX_3X224X224XF16_BATCH_TEMPLATE = utils.ModelTemplate(
         "model_name": "microsoft/resnet-50",
     },
     artifacts={
-        # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+        def_types.ModelArtifactType.STABLEHLO:
+            utils.ModelArtifactTemplate(
+                artifact_type=def_types.ModelArtifactType.STABLEHLO,
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "RESNET50_FP16_JAX_3X224X224XF16_BATCH${batch_size}/stablehlo.mlirbc"
+                ),
+            ),
+        def_types.ModelArtifactType.XLA_HLO_DUMP:
+            utils.ModelArtifactTemplate(
+                artifact_type=def_types.ModelArtifactType.XLA_HLO_DUMP,
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "RESNET50_FP16_JAX_3X224X224XF16_BATCH${batch_size}/xla_hlo_before_optimizations.txt"
+                ),
+            ),
     })
 
 RESNET50_BF16_JAX_3X224X224XBF16_BATCH_TEMPLATE = utils.ModelTemplate(
@@ -247,7 +367,22 @@ RESNET50_BF16_JAX_3X224X224XBF16_BATCH_TEMPLATE = utils.ModelTemplate(
         "model_name": "microsoft/resnet-50",
     },
     artifacts={
-        # TODO(#12): Add artifacts once artifact generation pipeline is implemented.
+        def_types.ModelArtifactType.STABLEHLO:
+            utils.ModelArtifactTemplate(
+                artifact_type=def_types.ModelArtifactType.STABLEHLO,
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "RESNET50_BF16_JAX_3X224X224XBF16_BATCH${batch_size}/stablehlo.mlirbc"
+                ),
+            ),
+        def_types.ModelArtifactType.XLA_HLO_DUMP:
+            utils.ModelArtifactTemplate(
+                artifact_type=def_types.ModelArtifactType.XLA_HLO_DUMP,
+                source_url=string.Template(
+                    PARENT_GCS_DIR +
+                    "RESNET50_BF16_JAX_3X224X224XBF16_BATCH${batch_size}/xla_hlo_before_optimizations.txt"
+                ),
+            ),
     })
 
 RESNET50_FP32_JAX_3X224X224XF32_BATCHES = utils.build_batch_models(
