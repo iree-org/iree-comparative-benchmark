@@ -47,6 +47,10 @@ def download_file(source_url: str,
   # requests doesn't clearly state that its session is thread-safe. In order to
   # download in parallel, don't use session here.
   with requests.get(source_url, stream=True) as response:
+    if not response.ok:
+      raise ValueError(f"Failed to download '{source_url}'."
+                       f" Error: '{response.status_code} - {response.text}'")
+
     with save_path.open("wb") as f:
       for chunk in response.iter_content(chunk_size=65536):
         f.write(chunk)
@@ -73,7 +77,11 @@ def download_files(urls_to_paths: List[Tuple[str, pathlib.Path]],
                           source_url=source_url,
                           save_path=save_path,
                           verbose=verbose))
+
     concurrent.futures.wait(futures)
+    # Check the results and raise exceptions.
+    for future in futures:
+      future.result()
 
 
 def compare_tensors(outputs: Sequence[np.ndarray],

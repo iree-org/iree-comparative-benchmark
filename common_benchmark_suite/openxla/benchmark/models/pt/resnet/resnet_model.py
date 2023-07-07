@@ -30,7 +30,7 @@ class ResNet(model_interfaces.InferenceModel, torch.nn.Module):
 
     if model_name == "torchvision/resnet50":
       weights = torchvision.models.ResNet50_Weights.DEFAULT
-      model = torchvision.models.resnet50(weights=weights)
+      model = torchvision.models.resnet50(weights=weights).to(dtype)
       preprocessor = weights.transforms()
     else:
       raise ValueError(f"Unsupported model: '{model_name}'")
@@ -39,6 +39,7 @@ class ResNet(model_interfaces.InferenceModel, torch.nn.Module):
     self.preprocessor = preprocessor
     self.batch_size = batch_size
     self.dtype = dtype
+    self.train(False)
 
   def generate_default_inputs(self) -> Tuple[Any, ...]:
     # TODO(#44): This should go away once we support different raw inputs.

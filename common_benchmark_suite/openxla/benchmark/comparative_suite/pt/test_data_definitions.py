@@ -134,7 +134,7 @@ INPUT_DATA_RESNET50_FP32_PT_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTestDataTe
                 },
                 verify_parameters={},
                 source_url=string.Template(
-                    "RESNET50_FP32_PT_3X224X224XF32_BATCH${batch_size}/inputs_npy.tgz"
+                    "https://storage.googleapis.com/iree-model-artifacts/pt/pt_models_20230401.795_1680469670/RESNET50_FP32_PT_3X224X224XF32_BATCH${batch_size}/inputs_npy.tgz"
                 ))
     })
 
@@ -187,7 +187,7 @@ OUTPUT_DATA_RESNET50_FP32_PT_2048X7X7XF32_BATCH_TEMPLATE = utils.ModelTestDataTe
                     "absolute_tolerance": 0.5,
                 },
                 source_url=string.Template(
-                    "RESNET50_FP32_PT_3X224X224XF32_BATCH${batch_size}/outputs_npy.tgz"
+                    "https://storage.googleapis.com/iree-model-artifacts/pt/pt_models_20230401.795_1680469670/RESNET50_FP32_PT_3X224X224XF32_BATCH${batch_size}/outputs_npy.tgz"
                 ))
     })
 
