@@ -104,12 +104,12 @@ def _download_artifacts(benchmarks: Sequence[def_types.BenchmarkCase],
   for benchmark in benchmarks:
     input_artifact = benchmark.input_data.artifacts[
         def_types.ModelTestDataFormat.NUMPY_TENSORS]
-    input_path = root_dir / benchmark.model.name / "input_npy.tgz"
+    input_path = root_dir / benchmark.model.name / "inputs_npy.tgz"
     download_list.append((input_artifact.source_url, input_path))
 
     expect_artifact = benchmark.expected_output.artifacts[
         def_types.ModelTestDataFormat.NUMPY_TENSORS]
-    expect_path = root_dir / benchmark.model.name / "output_npy.tgz"
+    expect_path = root_dir / benchmark.model.name / "outputs_npy.tgz"
     download_list.append((expect_artifact.source_url, expect_path))
 
   utils.download_files(download_list, verbose=verbose)
@@ -196,7 +196,7 @@ def benchmark(
     input_npys = []
     # Check and gather input npy paths.
     for idx in range(num_of_inputs):
-      path = model_dir / "input_npy" / f"input_{idx}.npy"
+      path = model_dir / "inputs_npy" / f"input_{idx}.npy"
       if not path.exists():
         raise ValueError(f"Missing input data '{path}'.")
       input_npys.append(path)
@@ -207,7 +207,7 @@ def benchmark(
     expect_npys = []
     # Check and gather expect npy paths.
     for idx in range(num_of_expects):
-      path = model_dir / "output_npy" / f"output_{idx}.npy"
+      path = model_dir / "outputs_npy" / f"output_{idx}.npy"
       if not path.exists():
         raise ValueError(f"Missing expected data '{path}'.")
       expect_npys.append(path)
