@@ -11,7 +11,6 @@ from typing import Any, Callable, Tuple
 from openxla.benchmark.models import model_interfaces, utils
 
 DEFAULT_IMAGE_URL = "https://storage.googleapis.com/iree-model-artifacts/ILSVRC2012_val_00000023.JPEG"
-TORCHVISION_RESNET50_MODEL_NAME = "torchvision/resnet50"
 
 
 class ResNet(model_interfaces.InferenceModel, torch.nn.Module):
@@ -29,7 +28,7 @@ class ResNet(model_interfaces.InferenceModel, torch.nn.Module):
   def __init__(self, batch_size: int, dtype: torch.dtype, model_name: str):
     super().__init__()
 
-    if model_name == TORCHVISION_RESNET50_MODEL_NAME:
+    if model_name == "torchvision/resnet50":
       weights = torchvision.models.ResNet50_Weights.DEFAULT
       model = torchvision.models.resnet50(weights=weights)
       preprocessor = weights.transforms()
@@ -72,7 +71,7 @@ DTYPE_MAP = {
 
 def create_model(batch_size: int = 1,
                  data_type: str = "fp32",
-                 model_name: str = TORCHVISION_RESNET50_MODEL_NAME,
+                 model_name: str = "torchvision/resnet50",
                  **_unused_params) -> ResNet:
   """Configure and create a PyTorch ResNet model instance.
 
