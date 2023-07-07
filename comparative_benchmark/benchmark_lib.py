@@ -32,6 +32,7 @@ def _run(
     input_npys: Sequence[pathlib.Path],
     expect_npys: Sequence[pathlib.Path],
     benchmark_function: Callable,
+    compiler: str,
     verbose: bool,
 ) -> utils.BenchmarkResult:
   model = benchmark.model
@@ -52,7 +53,7 @@ def _run(
       "batch_size": batch_size,
       "inputs": input_dims,
       "outputs": output_dims,
-      "compiler": "xla",
+      "compiler": compiler,
       "device": benchmark.target_device.name,
       "tags": model.model_impl.tags + model.tags,
   }
@@ -165,6 +166,7 @@ def benchmark(
     verbose: bool,
     benchmark_function: Callable,
     benchmark_cases: Sequence[def_types.BenchmarkCase],
+    compiler: str,
 ):
   name_pattern = re.compile(f"^{benchmark_name}$")
   benchmarks = [
@@ -221,6 +223,7 @@ def benchmark(
                   input_npys=benchmarks_to_inputs[benchmark.id],
                   expect_npys=benchmarks_to_expects[benchmark.id],
                   benchmark_function=benchmark_function,
+                  compiler=compiler,
                   verbose=verbose)
     if verbose:
       print(json.dumps(dataclasses.asdict(result), indent=2))

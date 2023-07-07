@@ -134,6 +134,7 @@ def _parse_arguments() -> argparse.Namespace:
 def main(**kwargs):
   benchmark_lib.benchmark(benchmark_function=_run_framework_benchmark,
                           benchmark_cases=benchmark_definitions.ALL_BENCHMARKS,
+                          compiler="xla",
                           **kwargs)
 
 
