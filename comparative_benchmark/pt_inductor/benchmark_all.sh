@@ -26,11 +26,16 @@ TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR="${VENV_DIR}" PYTHON="${PYTHON}" source "${TD}/setup_venv.sh"
 
 declare -a GPU_BENCHMARK_NAMES=(
+  "models/RESNET50_FP32_PT_.+/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
+  "models/RESNET50_FP16_PT_.+/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
   "models/BERT_LARGE_FP32_PT_.+/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
   "models/BERT_LARGE_FP16_PT_.+/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
 )
 
 declare -a CPU_BENCHMARK_NAMES=(
+  "models/RESNET50_FP32_PT_.+_BATCH1/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
+  "models/RESNET50_FP32_PT_.+_BATCH32/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
+  "models/RESNET50_FP32_PT_.+_BATCH64/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
   "models/BERT_LARGE_FP32_PT_.+_BATCH1/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
   "models/BERT_LARGE_FP32_PT_.+_BATCH32/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
   "models/BERT_LARGE_FP32_PT_.+_BATCH64/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
