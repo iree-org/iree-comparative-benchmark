@@ -25,7 +25,7 @@ class Bert(model_interfaces.InferenceModel, torch.nn.Module):
       self,
       batch_size: int,
       seq_len: int,
-      dtype: Any,
+      dtype: torch.dtype,
       model_name: str,
   ):
     super().__init__()
@@ -77,6 +77,7 @@ def create_model(batch_size: int = 1,
   Args:
     batch_size: input batch size.
     seq_len: input sequence length. Default to 384.
+    data_type: model data type.
     model_name: The name of the T5 variant to use. Supported variants include:
       bert-base-[un]cased, bert-large-[un]cased, bert-base-chinese, etc.
   Returns:
@@ -85,8 +86,10 @@ def create_model(batch_size: int = 1,
   dtype = DTYPE_MAP.get(data_type)
   if dtype is None:
     raise ValueError(f"Unsupported data type: '{data_type}'.")
+
   model = Bert(batch_size=batch_size,
                seq_len=seq_len,
                dtype=dtype,
                model_name=model_name)
+
   return model.to(dtype=dtype)
