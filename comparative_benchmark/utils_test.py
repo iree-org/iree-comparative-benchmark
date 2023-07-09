@@ -36,6 +36,18 @@ class UtilsTest(unittest.TestCase):
             expects=(np.array([0]), np.array([1])),
         ))
 
+  def test_check_tensor_outputs(self):
+    utils.check_tensor_outputs(outputs=(np.array([0]),),
+                               expects=(np.array([-1]),),
+                               absolute_tolerance=10)
+
+  def test_check_tensor_outputs_raise_error(self):
+    self.assertRaises(
+        ValueError, lambda: utils.check_tensor_outputs(
+            outputs=(np.array([0]),),
+            expects=(np.array([-1]),),
+        ))
+
 
 if __name__ == "__main__":
   unittest.main()

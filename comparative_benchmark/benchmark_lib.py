@@ -24,11 +24,17 @@ from openxla.benchmark import def_types
 import utils
 
 
-def _run(benchmark: def_types.BenchmarkCase, run_in_process: bool,
-         warmup_iterations: int, iterations: int,
-         input_npys: Sequence[pathlib.Path],
-         expect_npys: Sequence[pathlib.Path],
-         benchmark_function: Callable) -> utils.BenchmarkResult:
+def _run(
+    benchmark: def_types.BenchmarkCase,
+    run_in_process: bool,
+    warmup_iterations: int,
+    iterations: int,
+    input_npys: Sequence[pathlib.Path],
+    expect_npys: Sequence[pathlib.Path],
+    benchmark_function: Callable,
+    compiler: str,
+    verbose: bool,
+) -> utils.BenchmarkResult:
   model = benchmark.model
   input_data = benchmark.input_data.artifacts[
       def_types.ModelTestDataFormat.NUMPY_TENSORS]
@@ -47,7 +53,7 @@ def _run(benchmark: def_types.BenchmarkCase, run_in_process: bool,
       "batch_size": batch_size,
       "inputs": input_dims,
       "outputs": output_dims,
-      "compiler": "xla",
+      "compiler": compiler,
       "device": benchmark.target_device.name,
       "tags": model.model_impl.tags + model.tags,
   }
@@ -65,6 +71,7 @@ def _run(benchmark: def_types.BenchmarkCase, run_in_process: bool,
         warmup_iterations=warmup_iterations,
         benchmark_iterations=iterations,
         backend=backend,
+        verbose=verbose,
     )
     if run_in_process:
       framework_metrics = benchmark_function(**kwargs)
@@ -97,12 +104,12 @@ def _download_artifacts(benchmarks: Sequence[def_types.BenchmarkCase],
   for benchmark in benchmarks:
     input_artifact = benchmark.input_data.artifacts[
         def_types.ModelTestDataFormat.NUMPY_TENSORS]
-    input_path = root_dir / benchmark.model.name / "input_npy.tgz"
+    input_path = root_dir / benchmark.model.name / "inputs_npy.tgz"
     download_list.append((input_artifact.source_url, input_path))
 
     expect_artifact = benchmark.expected_output.artifacts[
         def_types.ModelTestDataFormat.NUMPY_TENSORS]
-    expect_path = root_dir / benchmark.model.name / "output_npy.tgz"
+    expect_path = root_dir / benchmark.model.name / "outputs_npy.tgz"
     download_list.append((expect_artifact.source_url, expect_path))
 
   utils.download_files(download_list, verbose=verbose)
@@ -159,6 +166,7 @@ def benchmark(
     verbose: bool,
     benchmark_function: Callable,
     benchmark_cases: Sequence[def_types.BenchmarkCase],
+    compiler: str,
 ):
   name_pattern = re.compile(f"^{benchmark_name}$")
   benchmarks = [
@@ -188,7 +196,7 @@ def benchmark(
     input_npys = []
     # Check and gather input npy paths.
     for idx in range(num_of_inputs):
-      path = model_dir / "input_npy" / f"input_{idx}.npy"
+      path = model_dir / "inputs_npy" / f"input_{idx}.npy"
       if not path.exists():
         raise ValueError(f"Missing input data '{path}'.")
       input_npys.append(path)
@@ -199,7 +207,7 @@ def benchmark(
     expect_npys = []
     # Check and gather expect npy paths.
     for idx in range(num_of_expects):
-      path = model_dir / "output_npy" / f"output_{idx}.npy"
+      path = model_dir / "outputs_npy" / f"output_{idx}.npy"
       if not path.exists():
         raise ValueError(f"Missing expected data '{path}'.")
       expect_npys.append(path)
@@ -214,7 +222,9 @@ def benchmark(
                   iterations=iterations,
                   input_npys=benchmarks_to_inputs[benchmark.id],
                   expect_npys=benchmarks_to_expects[benchmark.id],
-                  benchmark_function=benchmark_function)
+                  benchmark_function=benchmark_function,
+                  compiler=compiler,
+                  verbose=verbose)
     if verbose:
       print(json.dumps(dataclasses.asdict(result), indent=2))
 

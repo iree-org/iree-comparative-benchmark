@@ -101,6 +101,27 @@ def compare_tensors(outputs: Sequence[np.ndarray],
   return verdicts
 
 
+def check_tensor_outputs(outputs: Sequence[np.ndarray],
+                         expects: Sequence[np.ndarray],
+                         absolute_tolerance: float = 0,
+                         relative_tolerance: float = 0,
+                         verbose: bool = False):
+  verdicts = compare_tensors(outputs=outputs,
+                             expects=expects,
+                             absolute_tolerance=absolute_tolerance,
+                             relative_tolerance=relative_tolerance)
+  all_equal = True
+  for idx, verdict in enumerate(verdicts):
+    is_equal, max_diff = verdict
+    if not is_equal:
+      all_equal = False
+      if verbose:
+        print(f"Output {idx} exceeds tolerance. Max diff: {max_diff}")
+
+  if not all_equal:
+    raise ValueError("Output verification failed.")
+
+
 def append_benchmark_result(result_path: pathlib.Path, result: BenchmarkResult):
   result_obj = {}
   if result_path.exists():

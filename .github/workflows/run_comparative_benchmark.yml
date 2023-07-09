@@ -151,3 +151,15 @@ jobs:
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
           gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+      - name: "Benchmarking PT-Inductor:GPU"
+        env:
+          PT_INDUCTOR_RESULTS_JSON: pt-inductor.json
+          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+        run: |
+          RESULTS_PATH="${RESULTS_DIR}/${PT_INDUCTOR_RESULTS_JSON}"
+          docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:c39107c4160e749b7c4bac18862c6c1b6d56e1aa60644a4fe323e315ffba0a0b" \
+            ./comparative_benchmark/pt_inductor/benchmark_all.sh \
+              "${TARGET_DEVICE}"\
+              "${RESULTS_PATH}"
+          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"

@@ -37,6 +37,7 @@ def _run_framework_benchmark(
     warmup_iterations: int,
     benchmark_iterations: int,
     backend: str,
+    verbose: bool,
 ) -> Dict[str, Any]:
 
   model_module = importlib.import_module(model.model_impl.module_path)
@@ -82,22 +83,14 @@ def _run_framework_benchmark(
       if last_outputs is None:
         raise ValueError("No benchmark runs.")
 
-      verdicts = utils.compare_tensors(outputs=last_outputs,
-                                       expects=expects,
-                                       **verify_params)
-      all_equal = True
-      for idx, verdict in enumerate(verdicts):
-        is_equal, max_diff = verdict
-        if not is_equal:
-          print(f"Output {idx} exceeds tolerance. Max diff: {max_diff}")
-          all_equal = False
-
-      if not all_equal:
-        raise ValueError("Output verification failed.")
+      utils.check_tensor_outputs(outputs=last_outputs,
+                                 expects=expects,
+                                 verbose=verbose,
+                                 **verify_params)
 
   except Exception as e:
     print(f"Failed to benchmark model {model.name}. Exception: {e}")
-    raise RuntimeError(e)
+    return {"error": str(e)}
 
   return {
       "min_warmup_latency_ms":
@@ -141,6 +134,7 @@ def _parse_arguments() -> argparse.Namespace:
 def main(**kwargs):
   benchmark_lib.benchmark(benchmark_function=_run_framework_benchmark,
                           benchmark_cases=benchmark_definitions.ALL_BENCHMARKS,
+                          compiler="xla",
                           **kwargs)
 
 
