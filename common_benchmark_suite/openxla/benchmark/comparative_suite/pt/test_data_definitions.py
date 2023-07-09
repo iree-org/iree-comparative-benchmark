@@ -49,7 +49,7 @@ INPUT_DATA_BERT_LARGE_FP16_PT_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTempla
                     ],
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/pt/pt_models_20230522.846_1684830698/BERT_LARGE_FP16_PT_384XI32_BATCH${batch_size}/input_npy.tgz"
+                    "https://storage.googleapis.com/iree-model-artifacts/pt/pt_models_20230522.846_1684830698/BERT_LARGE_FP16_PT_384XI32_BATCH${batch_size}/inputs_npy.tgz"
                 ),
             )
     })
@@ -81,7 +81,7 @@ OUTPUT_DATA_BERT_LARGE_FP32_PT_384X1024XF32_BATCH_TEMPLATE = utils.ModelTestData
                     "absolute_tolerance": 0.5,
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/pt/pt_models_20230401.795_1680469670/BERT_LARGE_FP32_PT_384XI32_BATCH${batch_size}/output_npy.tgz"
+                    "https://storage.googleapis.com/iree-model-artifacts/pt/pt_models_20230401.795_1680469670/BERT_LARGE_FP32_PT_384XI32_BATCH${batch_size}/outputs_npy.tgz"
                 ))
     })
 
@@ -104,7 +104,7 @@ OUTPUT_DATA_BERT_LARGE_FP16_PT_384X1024XF16_BATCH_TEMPLATE = utils.ModelTestData
                     "absolute_tolerance": 0.5,
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/pt/pt_models_20230522.846_1684830698/BERT_LARGE_FP16_PT_384XI32_BATCH${batch_size}/output_npy.tgz"
+                    "https://storage.googleapis.com/iree-model-artifacts/pt/pt_models_20230522.846_1684830698/BERT_LARGE_FP16_PT_384XI32_BATCH${batch_size}/outputs_npy.tgz"
                 ))
     })
 
