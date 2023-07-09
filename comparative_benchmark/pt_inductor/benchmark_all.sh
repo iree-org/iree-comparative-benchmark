@@ -13,6 +13,9 @@
 #   argument.
 # OOBI_OUTPUT: path to output benchmark results, can also be specified the
 #   second argument.
+#
+# Example usage:
+# ./benchmark_all.sh a2-highgpu-1g /tmp/results.json
 
 set -xeuo pipefail
 
