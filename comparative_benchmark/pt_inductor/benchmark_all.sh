@@ -5,11 +5,19 @@
 # Licensed under the Apache License v2.0 with LLVM Exceptions.
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# Environment variables:
+# PYTHON: Python interpreter, default: /usr/bin/python3
+# OOBI_VENV_DIR: path to create Python virtualenv, default: pt-benchmarks.venv
+# OOBI_TARGET_DEVICE: target benchmark device, can also be specified the first
+#   argument.
+# OOBI_OUTPUT: path to output benchmark results, can also be specified the
+#   second argument.
 
 set -xeuo pipefail
 
-VENV_DIR="${OOBI_VENV_DIR:-pt-benchmarks.venv}"
 PYTHON="${PYTHON:-/usr/bin/python3}"
+VENV_DIR="${OOBI_VENV_DIR:-pt-benchmarks.venv}"
 TARGET_DEVICE="${1:-${OOBI_TARGET_DEVICE}}"
 OUTPUT_PATH="${2:-${OOBI_OUTPUT}}"
 
