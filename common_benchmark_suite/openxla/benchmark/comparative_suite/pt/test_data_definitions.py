@@ -27,7 +27,7 @@ INPUT_DATA_BERT_LARGE_FP32_PT_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTempla
                     ],
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/pt/pt_models_20230401.795_1680469670/BERT_LARGE_FP32_PT_384XI32_BATCH${batch_size}/input_npy.tgz"
+                    "https://storage.googleapis.com/iree-model-artifacts/pt/pt_models_20230401.795_1680469670/BERT_LARGE_FP32_PT_384XI32_BATCH${batch_size}/inputs_npy.tgz"
                 ),
             )
     })
