@@ -31,8 +31,8 @@ VENV_DIR="${VENV_DIR}" PYTHON="${PYTHON}" source "${TD}/setup_venv.sh"
 declare -a GPU_BENCHMARK_NAMES=(
   "models/RESNET50_FP32_PT_.+/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
   "models/RESNET50_FP16_PT_.+/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
-  "models/BERT_LARGE_FP32_PT_.+/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
-  "models/BERT_LARGE_FP16_PT_.+/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
+  # "models/BERT_LARGE_FP32_PT_.+/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
+  # "models/BERT_LARGE_FP16_PT_.+/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
 )
 
 declare -a CPU_BENCHMARK_NAMES=(
