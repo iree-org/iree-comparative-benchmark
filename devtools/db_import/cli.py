@@ -29,6 +29,10 @@ parser.add_argument(
 )
 subparsers = parser.add_subparsers(required=True)
 
+config_parser = subparsers.add_parser(
+    "config", help="Various function for managing config files")
+config.configure_parser(config_parser)
+
 deploy_parser = subparsers.add_parser("deploy",
                                       help="Deploy one or more cloud functions")
 deploy.configure_parser(deploy_parser)

@@ -1,0 +1,40 @@
+## Copyright 2023 The OpenXLA Authors
+#
+# Licensed under the Apache License v2.0 with LLVM Exceptions.
+# See https://llvm.org/LICENSE.txt for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+pipelines:
+  comparative:
+    bucket_name: comparative-benchmark-artifacts
+    cloud_function_name: oobi-comparative-benchmarks-importer-v6
+    table_name: benchmarking_experiments.oobi_v6
+    service_account: oobi-db-import
+
+    sql_create_table: CREATE TABLE `{dataset}.{table}` (results JSON)
+    sql_delete: DELETE FROM `{dataset}.{table}` WHERE JSON_VALUE(results.trigger.bucket_name) = "comparative-benchmark-artifacts"
+    sql_data_present: SELECT 1 FROM `{dataset}.{table}` WHERE JSON_VALUE(results.trigger.bucket_name) = "comparative-benchmark-artifacts" LIMIT 1
+
+    rules:
+      # Matches this file for example: gs://comparative-benchmark-artifacts/2023-07-12.1689195682/a2-highgpu-1g-results/jax-xla.json
+      - filepath_regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}\.[0-9]+/[a-zA-Z0-9-]+-results/[a-z]+-[a-z]+\.json$
+        # TODO(beckerhe): Replace dummy config
+        result: |
+          [
+            {
+              "results": std.toString({
+                "trigger": {
+                  bucket_name: "comparative-benchmark-artifacts"
+                }
+              })
+            }
+          ]
+
+    tests:
+      - id: dummy
+        # TODO(beckerhe): Replace dummy test
+        name: Dummy test - will be replaced later
+        triggers:
+          - 2023-07-12.1689195682/a2-highgpu-1g-results/jax-xla.json
+        checks:
+          - SELECT CASE WHEN COUNT(*) = 1 THEN true ELSE ERROR(FORMAT('Expected ` row in the table, but got %t', COUNT(*))) END FROM {dataset}.{table}
+          - SELECT ERROR('Found DB entry from wrong bucket') FROM {dataset}.{table} WHERE JSON_VALUE(results.trigger.bucket_name) != "comparative-benchmark-artifacts"
