@@ -10,6 +10,7 @@ import sys
 
 from google.cloud import storage
 
+from db_import import config
 from db_import import in_memory_database
 from db_import import batch_import
 
@@ -33,7 +34,7 @@ def configure_parser(parser: argparse.ArgumentParser):
 
 def _download(config_file, args: argparse.Namespace):
   try:
-    config = config_file["pipelines"][args.config_name]
+    current_config = config_file[config.PIPELINES_KEY][args.config_name]
   except KeyError:
     sys.exit(f"No configuration with the name {args.config_name} found.")
 
@@ -48,7 +49,7 @@ def _download(config_file, args: argparse.Namespace):
   batch_import.import_entire_bucket(
       db_client,
       storage_client,
-      config,
+      current_config,
       config_file.get("snippets", {}),
       check_for_presence=False,
       prefix_filter=args.prefix if args.prefix else None,

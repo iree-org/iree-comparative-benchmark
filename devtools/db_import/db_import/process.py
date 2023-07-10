@@ -12,6 +12,7 @@ import pathlib
 from google.cloud import bigquery, storage as CloudStorage
 from typing import Optional, Any, Callable, Dict, List
 
+from db_import import config
 from db_import import in_memory_database
 from db_import import local_storage
 from db_import import rules as rule_helpers
@@ -54,7 +55,7 @@ def configure_parser(parser: argparse.ArgumentParser):
 
 def _process(config_file, args: argparse.Namespace):
   try:
-    config = config_file["pipelines"][args.config]
+    current_config = config_file[config.PIPELINES_KEY][args.config]
   except KeyError:
     sys.exit(f"No configuration with the name {args.config_name} found.")
 
@@ -63,7 +64,7 @@ def _process(config_file, args: argparse.Namespace):
   else:
     storage_client = CloudStorage.Client()
 
-  bucket = storage_client.get_bucket(config["bucket_name"])
+  bucket = storage_client.get_bucket(current_config["bucket_name"])
   file = bucket.blob(args.trigger)
 
   if args.dry_run:
@@ -71,10 +72,10 @@ def _process(config_file, args: argparse.Namespace):
   else:
     db_client = bigquery.Client()
 
-  db_table = db_client.get_table(config["table_name"])
+  db_table = db_client.get_table(current_config["table_name"])
 
-  result = process_single_file(db_client, db_table, config["rules"], file,
-                               config, config_file["snippets"])
+  result = process_single_file(db_client, db_table, current_config["rules"],
+                               file, current_config, config_file["snippets"])
 
   if args.dry_run:
     print(json.dumps(result, indent=2))
