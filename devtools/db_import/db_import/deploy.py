@@ -12,6 +12,7 @@ import sys
 
 from google.cloud import storage, bigquery
 
+from db_import import config
 from db_import import batch_import
 from db_import import db
 
@@ -64,10 +65,10 @@ def _deploy(config_file, args: argparse.Namespace):
 
   for config_name in args.config_names:
     print(f"Processing config {config_name}...")
-    config = config_file["cloud_functions"][config_name]
-    bucket_name = config["bucket_name"]
-    cloud_function_name = config["cloud_function_name"]
-    table_name = config["table_name"]
+    current_config = config_file[config.PIPELINES_KEY][config_name]
+    bucket_name = current_config["bucket_name"]
+    cloud_function_name = current_config["cloud_function_name"]
+    table_name = current_config["table_name"]
     table_exists = bool(bq["show", table_name] & plumbum.TF)
     db_client = bigquery.Client()
 
@@ -91,7 +92,7 @@ def _deploy(config_file, args: argparse.Namespace):
         print(
             f"Deleting pre-existing data from destination table {table_name} as requested."
         )
-        db.delete_all_preexisting_data(db_client, config)
+        db.delete_all_preexisting_data(db_client, current_config)
       else:
         print(
             f"The destination table {table_name} already exists. Checking if data is already present."
@@ -99,8 +100,9 @@ def _deploy(config_file, args: argparse.Namespace):
 
     table = db_client.get_table(table_name)
     data_exists = db.query_returns_non_empty_result(
-        db_client, config["sql_data_present"].format(table=table.table_id,
-                                                     dataset=table.dataset_id),
+        db_client,
+        current_config["sql_data_present"].format(table=table.table_id,
+                                                  dataset=table.dataset_id),
         {"bucket_name": bucket_name})
 
     if not data_exists or args.force_data_import:
@@ -113,7 +115,7 @@ def _deploy(config_file, args: argparse.Namespace):
 
       batch_import.import_entire_bucket(db_client,
                                         storage_client,
-                                        config,
+                                        current_config,
                                         config_file.get("snippets", {}),
                                         check_for_presence=False)
 

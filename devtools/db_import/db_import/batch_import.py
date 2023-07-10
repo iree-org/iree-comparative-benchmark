@@ -12,6 +12,7 @@ from google.cloud import bigquery
 from google.cloud import storage
 from typing import Optional, Any, Dict
 
+from db_import import config
 from db_import import process
 from db_import import rules
 from db_import import db
@@ -31,7 +32,7 @@ def configure_parser(parser: argparse.ArgumentParser):
 
 def _batch_import(config_file, args: argparse.Namespace):
   try:
-    config = config_file["cloud_functions"][args.config_name]
+    current_config = config_file[config.PIPELINES_KEY][args.config_name]
   except KeyError:
     sys.exit(f"No configuration with the name {args.config_name} found.")
 
@@ -41,7 +42,7 @@ def _batch_import(config_file, args: argparse.Namespace):
   import_entire_bucket(
       db_client,
       storage_client,
-      config,
+      current_config,
       config_file.get("snippets", {}),
       check_for_presence=args.check,
   )
