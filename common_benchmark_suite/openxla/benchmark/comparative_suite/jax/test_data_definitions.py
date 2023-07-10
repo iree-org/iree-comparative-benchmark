@@ -416,7 +416,7 @@ INPUT_DATA_RESNET50_BF16_JAX_3X224X224XBF16_BATCHES = utils.build_batch_model_te
 OUTPUT_DATA_RESNET50_FP32_JAX_2048X7X7XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
     id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_RESNET50_FP32_JAX_2048X7X7XF32),
     name=utils.BATCH_NAME("OUTPUT_DATA_RESNET50_FP32_JAX_2048X7X7XF32"),
-    tags=["input-data", "imagenet", utils.BATCH_TAG],
+    tags=["output-data", "imagenet", utils.BATCH_TAG],
     source_info="",
     artifacts={
         def_types.ModelTestDataFormat.NUMPY_TENSORS:
@@ -440,7 +440,7 @@ OUTPUT_DATA_RESNET50_FP32_JAX_2048X7X7XF32_BATCH_TEMPLATE = utils.ModelTestDataT
 OUTPUT_DATA_RESNET50_FP16_JAX_2048X7X7XF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
     id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_RESNET50_FP16_JAX_2048X7X7XF16),
     name=utils.BATCH_NAME("OUTPUT_DATA_RESNET50_FP16_JAX_2048X7X7XF16"),
-    tags=["input-data", "imagenet", utils.BATCH_TAG],
+    tags=["output-data", "imagenet", utils.BATCH_TAG],
     source_info="",
     artifacts={
         def_types.ModelTestDataFormat.NUMPY_TENSORS:
@@ -464,7 +464,7 @@ OUTPUT_DATA_RESNET50_FP16_JAX_2048X7X7XF16_BATCH_TEMPLATE = utils.ModelTestDataT
 OUTPUT_DATA_RESNET50_BF16_JAX_2048X7X7XBF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
     id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_RESNET50_BF16_JAX_2048X7X7XBF16),
     name=utils.BATCH_NAME("OUTPUT_DATA_RESNET50_BF16_JAX_2048X7X7XBF16"),
-    tags=["input-data", "imagenet", utils.BATCH_TAG],
+    tags=["output-data", "imagenet", utils.BATCH_TAG],
     source_info="",
     artifacts={
         def_types.ModelTestDataFormat.NUMPY_TENSORS:
