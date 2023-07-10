@@ -64,7 +64,9 @@ def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
     inputs = utils.generate_and_save_inputs(model_obj, model_dir)
     jit_inputs = jax.device_put(inputs)
     jit_function = jax.jit(model_obj.forward)
-    outputs = jit_function(jit_inputs)
+    jit_outputs = jit_function(jit_inputs)
+    jax.block_until_ready(jit_outputs)
+    outputs = jax.device_get(jit_outputs)
     utils.save_outputs(outputs, model_dir)
 
     utils.cleanup_hlo(hlo_dir, model_dir, HLO_FILENAME_REGEX)
