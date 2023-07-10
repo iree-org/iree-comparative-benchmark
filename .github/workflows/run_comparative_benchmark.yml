@@ -190,7 +190,7 @@ jobs:
         run: |
           gcloud storage cp "${XLA_TOOLS_DIR_GCS_ARTIFACT}" "${XLA_TOOLS_DIR_ARCHIVE}"
           tar -xvf "${XLA_TOOLS_DIR_ARCHIVE}"
-      - name: "Benchmarking XLA-HLO:GPU"
+      - name: "Benchmarking XLA-HLO:CPU"
         env:
           XLA_HLO_RESULTS_JSON: xla-hlo.json
           RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
@@ -203,7 +203,7 @@ jobs:
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
           gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
-      - name: "Benchmarking JAX-XLA:GPU"
+      - name: "Benchmarking JAX-XLA:CPU"
         env:
           JAX_XLA_RESULTS_JSON: jax-xla.json
           RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
@@ -215,7 +215,7 @@ jobs:
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
           gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
-      - name: "Benchmarking TF-XLA:GPU"
+      - name: "Benchmarking TF-XLA:CPU"
         env:
           TF_XLA_RESULTS_JSON: tf-xla.json
           RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
@@ -227,7 +227,7 @@ jobs:
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
           gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
-      - name: "Benchmarking PT-Inductor:GPU"
+      - name: "Benchmarking PT-Inductor:CPU"
         env:
           PT_INDUCTOR_RESULTS_JSON: pt-inductor.json
           RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
