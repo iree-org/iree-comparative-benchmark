@@ -84,13 +84,13 @@ def _run_framework_benchmark(
 
     def run_one_iter():
       start = time.perf_counter()
-      outputs = compiled_model.forward(pt_inputs)
+      output = compiled_model.forward(*pt_inputs)
       if backend == "gpu":
         torch.cuda.synchronize()
-        outputs = [output.cpu() for output in outputs]
+        output = output.cpu()
       end = time.perf_counter()
       latency = 1000 * (end - start)
-      return (outputs, latency)
+      return (output, latency)
 
     # Run warmup.
     warmup_latencies = []
@@ -105,16 +105,17 @@ def _run_framework_benchmark(
 
     # Run benchmark.
     latencies = []
-    last_outputs = None
+    output = None
     for i in range(benchmark_iterations):
-      outputs, latency = run_one_iter()
+      output, latency = run_one_iter()
       latencies.append(latency)
-      last_outputs = [output.detach().numpy() for output in outputs]
+      output = output.detach().numpy()
 
-    if last_outputs is None:
+    if output is None:
       raise ValueError("No benchmark runs.")
 
-    utils.check_tensor_outputs(outputs=last_outputs,
+    outputs = (output,)
+    utils.check_tensor_outputs(outputs=outputs,
                                expects=expects,
                                verbose=verbose,
                                **verify_params)
