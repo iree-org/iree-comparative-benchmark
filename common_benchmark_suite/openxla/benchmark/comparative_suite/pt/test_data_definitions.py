@@ -9,6 +9,8 @@ import string
 from openxla.benchmark.comparative_suite import utils
 from openxla.benchmark import def_types, unique_ids
 
+PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/pytorch/pt_models_20230709.894_1688992116/"
+
 # Bert large inputs.
 INPUT_DATA_BERT_LARGE_FP32_PT_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
     id=utils.BATCH_ID(unique_ids.INPUT_DATA_BERT_LARGE_FP32_PT_384XI32),
@@ -27,9 +29,10 @@ INPUT_DATA_BERT_LARGE_FP32_PT_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTempla
                     ],
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/pt/pt_models_20230401.795_1680469670/BERT_LARGE_FP32_PT_384XI32_BATCH${batch_size}/inputs_npy.tgz"
+                    PARENT_GCS_DIR +
+                    "BERT_LARGE_FP32_PT_384XI32_BATCH${batch_size}/inputs_npy.tgz"
                 ),
-            )
+            ),
     })
 
 INPUT_DATA_BERT_LARGE_FP16_PT_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
@@ -49,7 +52,8 @@ INPUT_DATA_BERT_LARGE_FP16_PT_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTempla
                     ],
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/pt/pt_models_20230522.846_1684830698/BERT_LARGE_FP16_PT_384XI32_BATCH${batch_size}/inputs_npy.tgz"
+                    PARENT_GCS_DIR +
+                    "BERT_LARGE_FP16_PT_384XI32_BATCH${batch_size}/inputs_npy.tgz"
                 ),
             )
     })
@@ -81,8 +85,10 @@ OUTPUT_DATA_BERT_LARGE_FP32_PT_384X1024XF32_BATCH_TEMPLATE = utils.ModelTestData
                     "absolute_tolerance": 0.5,
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/pt/pt_models_20230401.795_1680469670/BERT_LARGE_FP32_PT_384XI32_BATCH${batch_size}/outputs_npy.tgz"
-                ))
+                    PARENT_GCS_DIR +
+                    "BERT_LARGE_FP32_PT_384XI32_BATCH${batch_size}/outputs_npy.tgz"
+                ),
+            )
     })
 
 OUTPUT_DATA_BERT_LARGE_FP16_PT_384X1024XF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
@@ -104,8 +110,10 @@ OUTPUT_DATA_BERT_LARGE_FP16_PT_384X1024XF16_BATCH_TEMPLATE = utils.ModelTestData
                     "absolute_tolerance": 0.5,
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/pt/pt_models_20230522.846_1684830698/BERT_LARGE_FP16_PT_384XI32_BATCH${batch_size}/outputs_npy.tgz"
-                ))
+                    PARENT_GCS_DIR +
+                    "BERT_LARGE_FP16_PT_384XI32_BATCH${batch_size}/outputs_npy.tgz"
+                ),
+            )
     })
 
 OUTPUT_DATA_BERT_LARGE_FP32_PT_384X1024XF32_BATCHES = utils.build_batch_model_test_data(
@@ -134,8 +142,10 @@ INPUT_DATA_RESNET50_FP32_PT_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTestDataTe
                 },
                 verify_parameters={},
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/pt/pt_models_20230401.795_1680469670/RESNET50_FP32_PT_3X224X224XF32_BATCH${batch_size}/inputs_npy.tgz"
-                ))
+                    PARENT_GCS_DIR +
+                    "RESNET50_FP32_PT_3X224X224XF32_BATCH${batch_size}/inputs_npy.tgz"
+                ),
+            )
     })
 
 INPUT_DATA_RESNET50_FP16_PT_3X224X224XF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
@@ -156,8 +166,10 @@ INPUT_DATA_RESNET50_FP16_PT_3X224X224XF16_BATCH_TEMPLATE = utils.ModelTestDataTe
                 },
                 verify_parameters={},
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/pt/pt_models_20230522.846_1684830698/RESNET50_FP16_PT_3X224X224XF16_BATCH${batch_size}/inputs_npy.tgz"
-                ))
+                    PARENT_GCS_DIR +
+                    "RESNET50_FP16_PT_3X224X224XF16_BATCH${batch_size}/inputs_npy.tgz"
+                ),
+            )
     })
 
 INPUT_DATA_RESNET50_FP32_PT_3X224X224XF32_BATCHES = utils.build_batch_model_test_data(
@@ -187,8 +199,10 @@ OUTPUT_DATA_RESNET50_FP32_PT_2048X7X7XF32_BATCH_TEMPLATE = utils.ModelTestDataTe
                     "absolute_tolerance": 0.5,
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/pt/pt_models_20230401.795_1680469670/RESNET50_FP32_PT_3X224X224XF32_BATCH${batch_size}/outputs_npy.tgz"
-                ))
+                    PARENT_GCS_DIR +
+                    "RESNET50_FP32_PT_3X224X224XF32_BATCH${batch_size}/outputs_npy.tgz"
+                ),
+            )
     })
 
 OUTPUT_DATA_RESNET50_FP16_PT_2048X7X7XF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
@@ -210,8 +224,10 @@ OUTPUT_DATA_RESNET50_FP16_PT_2048X7X7XF16_BATCH_TEMPLATE = utils.ModelTestDataTe
                     "absolute_tolerance": 0.5,
                 },
                 source_url=string.Template(
-                    "https://storage.googleapis.com/iree-model-artifacts/pt/pt_models_20230522.846_1684830698/RESNET50_FP16_PT_3X224X224XF16_BATCH${batch_size}/outputs_npy.tgz"
-                ))
+                    PARENT_GCS_DIR +
+                    "RESNET50_FP16_PT_3X224X224XF16_BATCH${batch_size}/outputs_npy.tgz"
+                ),
+            )
     })
 
 OUTPUT_DATA_RESNET50_FP32_PT_2048X7X7XF32_BATCHES = utils.build_batch_model_test_data(

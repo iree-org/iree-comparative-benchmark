@@ -6,7 +6,7 @@
 
 import torch
 from transformers import BertTokenizer, BertModel
-from typing import Any, Tuple
+from typing import Any, Dict, Tuple
 
 from openxla.benchmark.models import model_interfaces
 
@@ -16,10 +16,13 @@ class Bert(model_interfaces.InferenceModel, torch.nn.Module):
 
   batch_size: int
   seq_len: int
+  dtype: torch.dtype
   model: BertModel
   model_name: str
   tokenizer: BertTokenizer
-  tokenization_kwargs: dict[str, Any]
+  tokenization_kwargs: Dict[str, Any]
+  import_on_gpu: bool
+  import_with_fx: bool
 
   def __init__(
       self,
@@ -27,11 +30,14 @@ class Bert(model_interfaces.InferenceModel, torch.nn.Module):
       seq_len: int,
       dtype: torch.dtype,
       model_name: str,
+      import_on_gpu: bool,
+      import_with_fx: bool,
   ):
     super().__init__()
 
     self.batch_size = batch_size
     self.seq_len = seq_len
+    self.dtype = dtype
     self.model_name = model_name
     self.model = BertModel.from_pretrained(model_name)
     self.tokenizer = BertTokenizer.from_pretrained(
@@ -41,6 +47,8 @@ class Bert(model_interfaces.InferenceModel, torch.nn.Module):
         "padding": True,
         "return_tensors": "pt",
     }
+    self.import_on_gpu = import_on_gpu
+    self.import_with_fx = import_with_fx
 
   def generate_default_inputs(self) -> Tuple[Any, ...]:
     input_text = ["a photo of a cat"] * self.batch_size
@@ -51,10 +59,8 @@ class Bert(model_interfaces.InferenceModel, torch.nn.Module):
     inputs = self.tokenizer(text=input_text, **self.tokenization_kwargs)
     return (inputs["input_ids"], inputs["attention_mask"])
 
-  def forward(self, inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    input_ids, attention_mask = inputs
-    output = self.model(input_ids, attention_mask).last_hidden_state
-    return (output,)
+  def forward(self, input_ids, attention_mask):
+    return self.model(input_ids, attention_mask)[0]
 
   def postprocess(self, outputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
     # No-op.
@@ -71,6 +77,8 @@ def create_model(batch_size: int = 1,
                  seq_len: int = 384,
                  data_type: str = "fp32",
                  model_name: str = "bert-large-uncased",
+                 import_on_gpu: bool = False,
+                 import_with_fx: bool = True,
                  **_unused_params) -> Bert:
   """Configure and create a PyTorch Bert model instance.
 
@@ -80,6 +88,8 @@ def create_model(batch_size: int = 1,
     data_type: model data type.
     model_name: The name of the T5 variant to use. Supported variants include:
       bert-base-[un]cased, bert-large-[un]cased, bert-base-chinese, etc.
+    import_on_gpu: Whether to generate model artifacts on a GPU.
+    import_with_fx: Whether to lower to mlir using fx.
   Returns:
     A PyTorch Bert model.
   """
@@ -90,6 +100,8 @@ def create_model(batch_size: int = 1,
   model = Bert(batch_size=batch_size,
                seq_len=seq_len,
                dtype=dtype,
-               model_name=model_name)
+               model_name=model_name,
+               import_on_gpu=import_on_gpu,
+               import_with_fx=import_with_fx)
 
   return model.to(dtype=dtype)

@@ -37,8 +37,8 @@ declare -a GPU_BENCHMARK_NAMES=(
 
 declare -a CPU_BENCHMARK_NAMES=(
   "models/RESNET50_FP32_PT_.+_BATCH1/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
-  "models/RESNET50_FP32_PT_.+_BATCH32/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
   "models/RESNET50_FP32_PT_.+_BATCH64/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
+  "models/RESNET50_FP32_PT_.+_BATCH128/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
   "models/BERT_LARGE_FP32_PT_.+_BATCH1/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
   "models/BERT_LARGE_FP32_PT_.+_BATCH32/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
   "models/BERT_LARGE_FP32_PT_.+_BATCH64/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"

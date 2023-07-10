@@ -42,7 +42,8 @@ class ModelArtifactType(Enum):
   TF_SAVEDMODEL_V1 = "tf_savedmodel_v1"
   TF_SAVEDMODEL_V2 = "tf_savedmodel_v2"
   XLA_HLO_DUMP = "xla_hlo_dump"
-  STABLEHLO = "stablehlo"
+  STABLEHLO_MLIR = "stablehlo_mlir"
+  LINALG_MLIR = "linalg_mlir"
 
 
 @dataclass(frozen=True)

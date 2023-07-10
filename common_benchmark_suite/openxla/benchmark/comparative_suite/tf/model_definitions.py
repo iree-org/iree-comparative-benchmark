@@ -34,9 +34,9 @@ T5_LARGE_FP32_TF_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "model_name": "t5-large",
     },
     artifacts={
-        def_types.ModelArtifactType.STABLEHLO:
+        def_types.ModelArtifactType.STABLEHLO_MLIR:
             utils.ModelArtifactTemplate(
-                artifact_type=def_types.ModelArtifactType.STABLEHLO,
+                artifact_type=def_types.ModelArtifactType.STABLEHLO_MLIR,
                 source_url=string.Template(
                     PARENT_GCS_DIR +
                     "T5_LARGE_FP32_TF_512XI32_BATCH${batch_size}/stablehlo.mlirbc"
@@ -87,9 +87,9 @@ BERT_LARGE_FP32_TF_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "model_name": "bert-large-uncased",
     },
     artifacts={
-        def_types.ModelArtifactType.STABLEHLO:
+        def_types.ModelArtifactType.STABLEHLO_MLIR:
             utils.ModelArtifactTemplate(
-                artifact_type=def_types.ModelArtifactType.STABLEHLO,
+                artifact_type=def_types.ModelArtifactType.STABLEHLO_MLIR,
                 source_url=string.Template(
                     PARENT_GCS_DIR +
                     "BERT_LARGE_FP32_TF_384XI32_BATCH${batch_size}/stablehlo.mlirbc"
@@ -139,9 +139,9 @@ RESNET50_FP32_TF_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTemplate(
         "model_name": "microsoft/resnet-50",
     },
     artifacts={
-        def_types.ModelArtifactType.STABLEHLO:
+        def_types.ModelArtifactType.STABLEHLO_MLIR:
             utils.ModelArtifactTemplate(
-                artifact_type=def_types.ModelArtifactType.STABLEHLO,
+                artifact_type=def_types.ModelArtifactType.STABLEHLO_MLIR,
                 source_url=string.Template(
                     PARENT_GCS_DIR +
                     "RESNET50_FP32_TF_3X224X224XF32_BATCH${batch_size}/stablehlo.mlirbc"

@@ -24,8 +24,11 @@ class ResNet(model_interfaces.InferenceModel, torch.nn.Module):
   preprocessor: Callable[[Any], torch.Tensor]
   batch_size: int
   dtype: torch.dtype
+  import_on_gpu: bool
+  import_with_fx: bool
 
-  def __init__(self, batch_size: int, dtype: torch.dtype, model_name: str):
+  def __init__(self, batch_size: int, dtype: torch.dtype, model_name: str,
+               import_on_gpu: bool, import_with_fx: bool):
     super().__init__()
 
     if model_name == "torchvision/resnet50":
@@ -39,6 +42,8 @@ class ResNet(model_interfaces.InferenceModel, torch.nn.Module):
     self.preprocessor = preprocessor
     self.batch_size = batch_size
     self.dtype = dtype
+    self.import_on_gpu = import_on_gpu
+    self.import_with_fx = import_with_fx
     self.train(False)
 
   def generate_default_inputs(self) -> Tuple[Any, ...]:
@@ -54,10 +59,8 @@ class ResNet(model_interfaces.InferenceModel, torch.nn.Module):
     tensor = tensor.repeat(self.batch_size, 1, 1, 1)
     return (tensor,)
 
-  def forward(self, inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    input_data, = inputs
-    output = self.model(input_data)
-    return (output,)
+  def forward(self, input):
+    return self.model(input)
 
   def postprocess(self, outputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
     # No-op.
@@ -73,6 +76,8 @@ DTYPE_MAP = {
 def create_model(batch_size: int = 1,
                  data_type: str = "fp32",
                  model_name: str = "torchvision/resnet50",
+                 import_on_gpu: bool = False,
+                 import_with_fx: bool = True,
                  **_unused_params) -> ResNet:
   """Configure and create a PyTorch ResNet model instance.
 
@@ -81,6 +86,8 @@ def create_model(batch_size: int = 1,
     data_type: model data type. Available options: `fp32`, `fp16`
     model_name: The name of the ResNet variant to use. Supported variants
       include: `torchvision/resnet50`
+    import_on_gpu: Whether to generate model artifacts on a GPU.
+    import_with_fx: Whether to lower to mlir using fx.
   Returns:
     A PyTorch ResNet model.
   """
@@ -88,4 +95,8 @@ def create_model(batch_size: int = 1,
   if dtype is None:
     raise ValueError(f"Unsupported data type: '{data_type}'.")
 
-  return ResNet(batch_size=batch_size, dtype=dtype, model_name=model_name)
+  return ResNet(batch_size=batch_size,
+                dtype=dtype,
+                model_name=model_name,
+                import_on_gpu=import_on_gpu,
+                import_with_fx=import_with_fx)
