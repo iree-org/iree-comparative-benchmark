@@ -163,3 +163,78 @@ jobs:
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
           gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+
+  benchmark_on_c2-standard-16:
+    needs: [setup, build_xla_tools]
+    runs-on:
+      - self-hosted  # must come first
+      - runner-group=${{ needs.setup.outputs.runner-group }}
+      - environment=prod
+      - machine-type=c2-standard-16
+    env:
+      RESULTS_DIR: results-dir
+      TARGET_DEVICE: c2-standard-16
+      XLA_TOOLS_DIR: ${{ needs.build_xla_tools.outputs.xla-tools-dir }}
+      XLA_TOOLS_DIR_ARCHIVE: ${{ needs.build_xla_tools.outputs.xla-tools-dir-archive }}
+      XLA_TOOLS_DIR_GCS_ARTIFACT: ${{ needs.build_xla_tools.outputs.xla-tools-dir-gcs-artifact }}
+    steps:
+      - name: "Checking out PR repository"
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
+      - name: "Setup"
+        id: setup
+        run: |
+          echo "results-gcs-dir=${GCS_DIR}/${TARGET_DEVICE}_$(date +'%Y-%m-%d').$(date +'%s')" >> "${GITHUB_OUTPUT}"
+          mkdir "${RESULTS_DIR}"
+      - name: "Downloading and unpacking XLA tools"
+        run: |
+          gcloud storage cp "${XLA_TOOLS_DIR_GCS_ARTIFACT}" "${XLA_TOOLS_DIR_ARCHIVE}"
+          tar -xvf "${XLA_TOOLS_DIR_ARCHIVE}"
+      - name: "Benchmarking XLA-HLO:GPU"
+        env:
+          XLA_HLO_RESULTS_JSON: xla-hlo.json
+          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+        run: |
+          RESULTS_PATH="${RESULTS_DIR}/${XLA_HLO_RESULTS_JSON}"
+          docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+            --env "OOBI_XLA_TOOLS_DIR=${XLA_TOOLS_DIR}" \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:692bb3ca648c474e89bad21ef89f4b33a9741e3d1cc477fa61844caddd798ba0" \
+            ./comparative_benchmark/xla_hlo/benchmark_all.sh \
+              "${TARGET_DEVICE}"\
+              "${RESULTS_PATH}"
+          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+      - name: "Benchmarking JAX-XLA:GPU"
+        env:
+          JAX_XLA_RESULTS_JSON: jax-xla.json
+          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+        run: |
+          RESULTS_PATH="${RESULTS_DIR}/${JAX_XLA_RESULTS_JSON}"
+          docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:692bb3ca648c474e89bad21ef89f4b33a9741e3d1cc477fa61844caddd798ba0" \
+            ./comparative_benchmark/jax_xla/benchmark_all.sh \
+              "${TARGET_DEVICE}"\
+              "${RESULTS_PATH}"
+          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+      - name: "Benchmarking TF-XLA:GPU"
+        env:
+          TF_XLA_RESULTS_JSON: tf-xla.json
+          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+        run: |
+          RESULTS_PATH="${RESULTS_DIR}/${TF_XLA_RESULTS_JSON}"
+          docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:692bb3ca648c474e89bad21ef89f4b33a9741e3d1cc477fa61844caddd798ba0" \
+            ./comparative_benchmark/tf_xla/benchmark_all.sh \
+              "${TARGET_DEVICE}"\
+              "${RESULTS_PATH}"
+          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+      - name: "Benchmarking PT-Inductor:GPU"
+        env:
+          PT_INDUCTOR_RESULTS_JSON: pt-inductor.json
+          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+        run: |
+          RESULTS_PATH="${RESULTS_DIR}/${PT_INDUCTOR_RESULTS_JSON}"
+          docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:692bb3ca648c474e89bad21ef89f4b33a9741e3d1cc477fa61844caddd798ba0" \
+            ./comparative_benchmark/pt_inductor/benchmark_all.sh \
+              "${TARGET_DEVICE}"\
+              "${RESULTS_PATH}"
+          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
