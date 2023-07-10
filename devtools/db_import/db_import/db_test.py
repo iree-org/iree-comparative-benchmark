@@ -13,9 +13,10 @@ from db_import import db
 from db_import import bigquery_emulator
 
 
-@unittest.skipUnless(bigquery_emulator.is_bigquery_emulator_available(
-), "The BigQuery emulator is not available on this machine. Check out https://github.com/goccy/bigquery-emulator for more details."
-                    )
+@unittest.skipUnless(
+    bigquery_emulator.is_bigquery_emulator_available(),
+    "The BigQuery emulator is not available on this machine. Check out https://github.com/goccy/bigquery-emulator for more details.",
+)
 class TestDbQueries(unittest.TestCase):
 
   def setUp(self):

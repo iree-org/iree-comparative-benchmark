@@ -61,13 +61,15 @@ def emulate_bigquery(
   http_port = _reserve_local_port()
   grpc_port = _reserve_local_port()
 
-  with subprocess.Popen([
-      "bigquery-emulator", f"--project={project_name}",
-      f"--dataset={dataset_name}", f"--port={http_port}",
-      f"--grpc-port={grpc_port}"
-  ],
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL) as process:
+  with subprocess.Popen(
+      [
+          "bigquery-emulator", f"--project={project_name}",
+          f"--dataset={dataset_name}", f"--port={http_port}",
+          f"--grpc-port={grpc_port}"
+      ],
+      stdout=subprocess.DEVNULL,
+      stderr=subprocess.DEVNULL,
+  ) as process:
     try:
       client_options = ClientOptions(api_endpoint=f"http://0.0.0.0:{http_port}")
       yield bigquery.Client(project=project_name, client_options=client_options)
