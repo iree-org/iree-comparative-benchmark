@@ -167,7 +167,7 @@ T5_4CG_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
 )
 T5_4CG_LARGE_FP32_JAX_512XI32_BATCHES = utils.build_batch_models(
     template=T5_4CG_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE,
-    batch_sizes=[1, 16, 24, 32, 48, 64, 512])
+    batch_sizes=[1, 16, 24, 32, 48])
 
 # Bert-Large models.
 # Model implementation from https://huggingface.co/docs/transformers/model_doc/bert#transformers.FlaxBertModel.

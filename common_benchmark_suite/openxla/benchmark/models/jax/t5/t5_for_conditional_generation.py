@@ -51,11 +51,12 @@ class T5ForConditionalGeneration(model_interfaces.InferenceModel):
     # auto-regressively.
     output = self.model.generate(input_ids=input_ids,
                                  attention_mask=attention_mask,
-                                 max_new_tokens=max_new_tokens)
+                                 max_new_tokens=max_new_tokens).sequences
     return (output,)
 
   def postprocess(self, outputs: Any) -> Any:
-    return self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
+    output, = outputs
+    return self.tokenizer.batch_decode(output, skip_special_tokens=True)
 
 
 def create_model(batch_size: int = 1,
