@@ -10,7 +10,6 @@ import functions_framework
 import os
 import pathlib
 from typing import Dict
-import yaml
 
 from google.cloud import bigquery, storage
 from cloudevents.http import event
@@ -22,7 +21,7 @@ from db_import import process
 SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 
 with open(SCRIPT_DIR / "config.yml") as fd:
-  config_file = yaml.safe_load(fd)
+  config_file = config.load_config(fd)
 
 current_config = config_file[config.PIPELINES_KEY][os.environ["config_name"]]
 

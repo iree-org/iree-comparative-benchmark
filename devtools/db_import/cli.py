@@ -7,10 +7,10 @@
 
 import argparse
 import pathlib
-import yaml
 
 SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 
+from db_import import config
 from db_import import deploy
 from db_import import download
 from db_import import batch_import
@@ -47,6 +47,6 @@ process.configure_parser(process_parser)
 args = parser.parse_args()
 
 with open(args.config_file) as fd:
-  config_file = yaml.safe_load(fd)
+  config_file = config.load_config(fd)
 
 args.command_handler(config_file, args)
