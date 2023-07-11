@@ -51,7 +51,7 @@ jobs:
           # For presubmit testing, the result artifacts are uploaded to the
           # temporary workflow GCS dir. In postsubmit, the result artifacts are
           # uploaded to the comparative benchmark GCS dir.
-          if [[ "${RUNNER_GROUP}" == "presubmit" ]]; then
+          if [[ "${RUNNER_GROUP}" == "postsubmit" ]]; then
             BENCHMARK_GCS_DIR="${GCS_DIR}/comparative-benchmark-artifacts"
           else
             BENCHMARK_GCS_DIR="gs://comparative-benchmark-artifacts/$(date +'%Y-%m-%d').$(date +'%s')"
