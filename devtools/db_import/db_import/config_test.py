@@ -55,12 +55,22 @@ class TestConfig(unittest.TestCase):
   def test_load_config_with_forbidden_path(self):
     with tempfile.TemporaryDirectory() as directory_path_str:
       directory_path = pathlib.Path(directory_path_str)
-      (directory_path / "file.txt").write_text("42")
 
       # The embedding feature only works when the YAML is loaded from a file, so no StringIO here:
       config_file_path = directory_path / "config.yml"
       config_file_path.write_text(f"---\nkey: !embed /etc/passwd\n")
 
-      with open(config_file_path) as fd:
-        with self.assertRaises(Exception):
-          config.load_config(fd)
+      with open(config_file_path) as fd, self.assertRaises(Exception):
+        config.load_config(fd)
+
+  def test_load_config_with_forbidden_symlink(self):
+    with tempfile.TemporaryDirectory() as directory_path_str:
+      directory_path = pathlib.Path(directory_path_str)
+      (directory_path / "file.txt").symlink_to("/etc/passwd")
+
+      # The embedding feature only works when the YAML is loaded from a file, so no StringIO here:
+      config_file_path = directory_path / "config.yml"
+      config_file_path.write_text(f"---\nkey: !embed file.txt\n")
+
+      with open(config_file_path) as fd, self.assertRaises(Exception):
+        config.load_config(fd)

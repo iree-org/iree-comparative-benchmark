@@ -4,25 +4,13 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+import os
 import pathlib
 import yaml
-import contextlib
-import os
 
 from typing import TextIO
 
 PIPELINES_KEY: str = "pipelines"
-
-
-@contextlib.contextmanager
-def _current_working_directory(path: pathlib.Path):
-  previous_cwd = pathlib.Path().absolute()
-
-  try:
-    os.chdir(path)
-    yield path
-  finally:
-    os.chdir(previous_cwd)
 
 
 def _embed(loader: yaml.Loader, node):
@@ -39,16 +27,16 @@ def _embed(loader: yaml.Loader, node):
     property: !embed filename.txt
     """
   yaml_filepath = pathlib.Path(loader.name).resolve()
+  allowed_directory = yaml_filepath.parent
+  filepath = (allowed_directory /
+              pathlib.Path(loader.construct_scalar(node))).resolve()
 
-  with _current_working_directory(yaml_filepath.parent):
-    filepath = pathlib.Path(loader.construct_scalar(node)).resolve()
-    allowed_directory = yaml_filepath.parent.resolve()
-    # We use os.path here to check whether filepath is below allowed_directory,
-    # because the equivalent function in pathlib is not available before Python 3.9.
-    assert os.path.commonpath([allowed_directory]) == os.path.commonpath(
-        [allowed_directory, filepath])
-    assert filepath.is_file()
-    return filepath.read_text()
+  # We use os.path here to check whether filepath is below allowed_directory,
+  # because the equivalent function in pathlib is not available before Python 3.9.
+  assert os.path.commonpath([allowed_directory]) == os.path.commonpath(
+      [allowed_directory, filepath])
+  assert filepath.is_file()
+  return filepath.read_text()
 
 
 yaml.SafeLoader.add_constructor("!embed", _embed)
