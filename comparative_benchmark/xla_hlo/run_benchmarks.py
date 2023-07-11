@@ -25,6 +25,7 @@ sys.path.insert(
 
 from openxla.benchmark import def_types
 import openxla.benchmark.comparative_suite.jax.benchmark_definitions as jax_benchmark_definitions
+import openxla.benchmark.comparative_suite.tf.benchmark_definitions as tf_benchmark_definitions
 import utils
 
 TIME_UNITS = {"us": 1e-3, "ms": 1, "s": 1e3, "min": 60 * 1e3, "h": 3600 * 1e3}
@@ -321,7 +322,7 @@ def main(
     verbose: bool,
 ):
   name_pattern = re.compile(f"^{benchmark_name}$")
-  all_benchmarks = jax_benchmark_definitions.ALL_BENCHMARKS
+  all_benchmarks = jax_benchmark_definitions.ALL_BENCHMARKS + tf_benchmark_definitions.ALL_BENCHMARKS
   benchmarks = [
       benchmark for benchmark in all_benchmarks
       if name_pattern.match(benchmark.name)
