@@ -121,7 +121,7 @@ jobs:
       - name: "Setup"
         id: setup
         run: |
-          echo "results-gcs-dir=${BENCHMARK_GCS_DIR}/${TARGET_DEVICE}" >> "${GITHUB_OUTPUT}"
+          echo "results-gcs-dir=${BENCHMARK_GCS_DIR}/${TARGET_DEVICE}-results" >> "${GITHUB_OUTPUT}"
           mkdir "${RESULTS_DIR}"
       - name: "Downloading and unpacking XLA tools"
         run: |
@@ -197,7 +197,7 @@ jobs:
       - name: "Setup"
         id: setup
         run: |
-          echo "results-gcs-dir=${BENCHMARK_GCS_DIR}/${TARGET_DEVICE}" >> "${GITHUB_OUTPUT}"
+          echo "results-gcs-dir=${BENCHMARK_GCS_DIR}/${TARGET_DEVICE}-results" >> "${GITHUB_OUTPUT}"
           mkdir "${RESULTS_DIR}"
       - name: "Downloading and unpacking XLA tools"
         run: |
