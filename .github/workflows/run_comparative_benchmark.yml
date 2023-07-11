@@ -19,11 +19,10 @@ concurrency:
   # A PR number if a pull request and otherwise the commit hash. This cancels
   # queued and in-progress runs for the same PR (presubmit) or commit
   # (postsubmit).
-  group: ${{ github.event.number || github.sha }}
+  group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
   cancel-in-progress: true
 
 env:
-  # TODO(#20): Upload reuslts to "gs://comparative-benchmark-artifacts"
   GCS_DIR: gs://openxla-github-actions-${{ github.event_name == 'pull_request' && 'presubmit' || 'postsubmit' }}-artifacts/${{ github.run_id }}/${{ github.run_attempt }}
 
 jobs:
@@ -31,6 +30,7 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       runner-group: ${{ steps.configure.outputs.runner-group }}
+      benchmark-gcs-dir: ${{ steps.configure.outputs.benchmark-gcs-dir }}
     steps:
       - name: "Checking out PR repository"
         uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
@@ -48,6 +48,16 @@ jobs:
           # `runner-group` a job output variable.
           echo "runner-group=${RUNNER_GROUP}" > "${GITHUB_OUTPUT}"
 
+          # For presubmit testing, the result artifacts are uploaded to the
+          # temporary workflow GCS dir. In postsubmit, the result artifacts are
+          # uploaded to the comparative benchmark GCS dir.
+          if [[ "${RUNNER_GROUP}" == "presubmit" ]]; then
+            BENCHMARK_GCS_DIR="${GCS_DIR}/comparative-benchmark-artifacts"
+          else
+            BENCHMARK_GCS_DIR="gs://comparative-benchmark-artifacts/$(date +'%Y-%m-%d').$(date +'%s')"
+          fi
+          echo "benchmark-gcs-dir=${BENCHMARK_GCS_DIR}" >> "${GITHUB_OUTPUT}"
+
   build_xla_tools:
     needs: setup
     runs-on:
@@ -59,6 +69,7 @@ jobs:
     env:
       CUDA_VERSION: 11.8
       XLA_TOOLS_DIR: xla-tools-dir
+      BENCHMARK_GCS_DIR: ${{ needs.setup.outputs.benchmark-gcs-dir }}
     outputs:
       xla-tools-dir: ${{ env.XLA_TOOLS_DIR }}
       xla-tools-dir-archive: ${{ steps.archive.outputs.xla-tools-dir-archive }}
@@ -85,7 +96,7 @@ jobs:
         id: upload
         env:
           XLA_TOOLS_DIR_ARCHIVE: ${{ steps.archive.outputs.xla-tools-dir-archive }}
-          XLA_TOOLS_DIR_GCS_ARTIFACT: ${{ env.GCS_DIR }}/${{ steps.archive.outputs.xla-tools-dir-archive }}
+          XLA_TOOLS_DIR_GCS_ARTIFACT: ${{ env.BENCHMARK_GCS_DIR }}/${{ steps.archive.outputs.xla-tools-dir-archive }}
         run: |
           gcloud storage cp "${XLA_TOOLS_DIR_ARCHIVE}" "${XLA_TOOLS_DIR_GCS_ARTIFACT}"
           echo "xla-tools-dir-gcs-artifact=${XLA_TOOLS_DIR_GCS_ARTIFACT}" >> "${GITHUB_OUTPUT}"
@@ -98,6 +109,7 @@ jobs:
       - environment=prod
       - machine-type=a2-highgpu-1g
     env:
+      BENCHMARK_GCS_DIR: ${{ needs.setup.outputs.benchmark-gcs-dir }}
       RESULTS_DIR: results-dir
       TARGET_DEVICE: a2-highgpu-1g
       XLA_TOOLS_DIR: ${{ needs.build_xla_tools.outputs.xla-tools-dir }}
@@ -109,7 +121,7 @@ jobs:
       - name: "Setup"
         id: setup
         run: |
-          echo "results-gcs-dir=${GCS_DIR}/${TARGET_DEVICE}_$(date +'%Y-%m-%d').$(date +'%s')" >> "${GITHUB_OUTPUT}"
+          echo "results-gcs-dir=${BENCHMARK_GCS_DIR}/${TARGET_DEVICE}" >> "${GITHUB_OUTPUT}"
           mkdir "${RESULTS_DIR}"
       - name: "Downloading and unpacking XLA tools"
         run: |
@@ -173,6 +185,7 @@ jobs:
       - environment=prod
       - machine-type=c2-standard-16
     env:
+      BENCHMARK_GCS_DIR: ${{ needs.setup.outputs.benchmark-gcs-dir }}
       RESULTS_DIR: results-dir
       TARGET_DEVICE: c2-standard-16
       XLA_TOOLS_DIR: ${{ needs.build_xla_tools.outputs.xla-tools-dir }}
@@ -184,7 +197,7 @@ jobs:
       - name: "Setup"
         id: setup
         run: |
-          echo "results-gcs-dir=${GCS_DIR}/${TARGET_DEVICE}_$(date +'%Y-%m-%d').$(date +'%s')" >> "${GITHUB_OUTPUT}"
+          echo "results-gcs-dir=${BENCHMARK_GCS_DIR}/${TARGET_DEVICE}" >> "${GITHUB_OUTPUT}"
           mkdir "${RESULTS_DIR}"
       - name: "Downloading and unpacking XLA tools"
         run: |
