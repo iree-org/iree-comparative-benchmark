@@ -144,7 +144,7 @@ RESNET50_FP32_TF_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTemplate(
                 artifact_type=def_types.ModelArtifactType.STABLEHLO_MLIR,
                 source_url=string.Template(
                     PARENT_GCS_DIR +
-                    "RESNET50_FP32_TF_3X224X224XF32_BATCH${batch_size}/stablehlo.mlirbc"
+                    "RESNET50_FP32_TF_224X224X3XF32_BATCH${batch_size}/stablehlo.mlirbc"
                 ),
             ),
         def_types.ModelArtifactType.XLA_HLO_DUMP:
@@ -152,7 +152,7 @@ RESNET50_FP32_TF_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTemplate(
                 artifact_type=def_types.ModelArtifactType.XLA_HLO_DUMP,
                 source_url=string.Template(
                     PARENT_GCS_DIR +
-                    "RESNET50_FP32_TF_3X224X224XF32_BATCH${batch_size}/xla_hlo_before_optimizations.txt"
+                    "RESNET50_FP32_TF_224X224X3XF32_BATCH${batch_size}/xla_hlo_before_optimizations.txt"
                 ),
             ),
         def_types.ModelArtifactType.TF_SAVEDMODEL_V2:
@@ -160,7 +160,7 @@ RESNET50_FP32_TF_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTemplate(
                 artifact_type=def_types.ModelArtifactType.TF_SAVEDMODEL_V2,
                 source_url=string.Template(
                     PARENT_GCS_DIR +
-                    "RESNET50_FP32_TF_3X224X224XF32_BATCH${batch_size}/tf-model.tgz"
+                    "RESNET50_FP32_TF_224X224X3XF32_BATCH${batch_size}/tf-model.tgz"
                 ),
             ),
     })
