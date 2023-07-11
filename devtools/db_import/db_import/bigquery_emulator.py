@@ -10,6 +10,7 @@ import subprocess
 from contextlib import contextmanager, closing
 from typing import Generator
 
+from google.auth import credentials
 from google.cloud import bigquery
 from google.api_core.client_options import ClientOptions
 
@@ -72,7 +73,10 @@ def emulate_bigquery(
   ) as process:
     try:
       client_options = ClientOptions(api_endpoint=f"http://0.0.0.0:{http_port}")
-      yield bigquery.Client(project=project_name, client_options=client_options)
+      anonymous_credentials = credentials.AnonymousCredentials()
+      yield bigquery.Client(project=project_name,
+                            client_options=client_options,
+                            credentials=anonymous_credentials)
     finally:
       process.terminate()
       try:
