@@ -62,6 +62,8 @@ def _run_framework_benchmark(
       inputs = [np.load(path) for path in input_npys]
       expects = [np.load(path) for path in expect_npys]
 
+      print("test1")
+
       # Run warmup.
       warmup_latencies = []
       for i in range(warmup_iterations):
@@ -70,6 +72,8 @@ def _run_framework_benchmark(
         tf.test.experimental.sync_devices()
         end = time.perf_counter()
         warmup_latencies.append(1000 * (end - start))
+
+      print("test2")
 
       # Run benchmark.
       latencies = []
@@ -80,6 +84,8 @@ def _run_framework_benchmark(
         tf.test.experimental.sync_devices()
         end = time.perf_counter()
         latencies.append(1000 * (end - start))
+
+      print("test3")
 
       if last_outputs is None:
         raise ValueError("No benchmark runs.")
