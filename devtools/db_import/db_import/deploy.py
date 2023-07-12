@@ -75,12 +75,14 @@ def _deploy(config_file, args: argparse.Namespace):
     if not table_exists:
       print(f"Table {table_name} does not exist. Creating it...")
       try:
-        schema = config_file["table_schemas"][table_name]
+        separate_dataset_name, separate_table_name = table_name.split(".", 1)
+        db_client.query(current_config["sql_create_table"].format(
+            dataset=separate_dataset_name, table=separate_table_name)).result()
       except KeyError:
         sys.exit(
-            f"Table schema for table {table_name} not found in config file.")
+            f"SQL statement for creating table {table_name} not found in config file. Please add a `sql_create_table` key to the config {config_name}."
+        )
 
-      bq("mk", "-t", table_name, schema)
       bq(
           "add-iam-policy-binding",
           f"--member=serviceAccount:{my_service_account}",
