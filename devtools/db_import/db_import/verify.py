@@ -11,6 +11,7 @@ import sys
 from google.cloud import storage
 from typing import Dict
 
+from db_import import db
 from db_import import process
 from db_import import bigquery_emulator
 
@@ -105,6 +106,22 @@ def _verify(config_file: Dict, args: argparse.Namespace):
           dataset=dataset_name, table=table_name)).result()
       db_table = db_client.get_table(config["table_name"])
 
+      sql_data_present = config["sql_data_present"].format(
+          dataset=db_table.dataset_id, table=db_table.table_id)
+      sql_data_present_params = {"bucket_name": config["bucket_name"]}
+
+      print("  Checking if `sql_data_present` returns an empty result...")
+      try:
+        if db.query_returns_non_empty_result(db_client, sql_data_present,
+                                             sql_data_present_params):
+          sys.exit(
+              f"The `sql_data_present` SQL query '{config['sql_data_present']}' returned a non-empty result even though the destination table was just created and should not contain any data."
+          )
+      except Exception as e:
+        sys.exit(
+            f"The SQL query '{sql_data_present}' failed with the following error:\n{e}\n"
+        )
+
       for setup in test.get("setup", []):
         db_client.query(
             setup.format(dataset=db_table.dataset_id,
@@ -124,8 +141,30 @@ def _verify(config_file: Dict, args: argparse.Namespace):
         if len(rows) > 0:
           db_client.insert_rows(db_table, rows)
 
-      print(f"  Running checks...")
+      try:
+        if not test.get('expect_no_import', False):
+          print(
+              "  Checking if `sql_data_present` returns a non-empty result...")
+          if not db.query_returns_non_empty_result(db_client, sql_data_present,
+                                                   sql_data_present_params):
+            sys.exit(
+                f"The `sql_data_present` SQL query '{sql_data_present}' returned an empty result even though we just imported some data."
+            )
+        else:
+          print(
+              "  Checking if `sql_data_present` still returns an empty result after attempted import..."
+          )
+          if db.query_returns_non_empty_result(db_client, sql_data_present,
+                                               sql_data_present_params):
+            sys.exit(
+                f"The `sql_data_present` SQL query '{sql_data_present}' returned a non-empty result even though we expected no import to happen."
+            )
+      except Exception as e:
+        sys.exit(
+            f"The SQL query '{sql_data_present}' failed with the following error:\n{e}\n"
+        )
 
+      print(f"  Running checks...")
       for check in test["checks"]:
         sql = check.format(dataset=db_table.dataset_id, table=db_table.table_id)
         try:
@@ -133,5 +172,14 @@ def _verify(config_file: Dict, args: argparse.Namespace):
         except Exception as e:
           sys.exit(
               f"The SQL query '{sql}' failed with the following error:\n{e}\n")
+
+      print("  Checking whether `sql_delete` query works...")
+      db.delete_all_preexisting_data(db_client, config)
+      print("  Checking if `sql_data_present` now returns an empty result...")
+      if db.query_returns_non_empty_result(db_client, sql_data_present,
+                                           sql_data_present_params):
+        sys.exit(
+            f"The `sql_data_present` SQL query '{sql_data_present}' returned a non-empty result even though we just deleted all the data. This is either an issue with the `sql_data_present` query or with the `sql_delete` query."
+        )
 
     print("Done.\n\n")
