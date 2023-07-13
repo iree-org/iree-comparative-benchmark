@@ -79,7 +79,7 @@ pipelines:
     table_name: my_dataset.my_destination_table # We will stream the processed data to this BigQuery table.
     cloud_function_name: the_name_of_my_cloud_function # This is what will show up in the GCP console
     rules:
-    - filepath_regex: "\.json$" # Any JSON file
+    - filepath_regex: "\\.json$" # Any JSON file
       results: *my_jsonnet_transformation # An example follows in the next section
 ```
 
@@ -122,7 +122,7 @@ pipelines:
     table_name: my_dataset.my_destination_table # We will stream the processed data to this BigQuery table.
     cloud_function_name: the_name_of_my_cloud_function # This is what will show up in the GCP console
     rules:
-    - filepath_regex: "\.json$" # Any JSON file
+    - filepath_regex: "\\.json$" # Any JSON file
       results: |
         // Unlike JSON, Jsonnet allows comments.
         // Check out the tutorial (https://jsonnet.org/learning/tutorial.html) for more details.
@@ -152,7 +152,7 @@ Example:
 pipelines: # This config is not complete - some keys are missing
   my_pipeline:
     rules:
-    - filepath_regex: "^(?P<my_arbitrary_capture_name>.*\.json)$" # Any JSON file
+    - filepath_regex: "^(?P<my_arbitrary_capture_name>.*\\.json)$" # Any JSON file
       results: |
         local getFilepathCapture = function(name) std.parseJson(std.extVar('filepath_captures'))[name];
 
@@ -181,7 +181,7 @@ Example:
 pipelines: # This config is not complete - some keys are missing
   my_pipeline:
     rules:
-    - filepath_regex: "^(?P<my_arbitrary_capture_name>.*\.json)$" # Any JSON file
+    - filepath_regex: "^(?P<my_arbitrary_capture_name>.*\\.json)$" # Any JSON file
       results: |
         local getFilepathCapture = function(name) std.parseJson(std.extVar('filepath_captures'))[name];
         local loadJson = function(filename) std.parseJson(std.native('readFile')(filename));
@@ -232,7 +232,7 @@ snippets:
 pipelines: # This config is not complete - some keys are missing
   my_pipeline:
     rules:
-    - filepath_regex: "^(?P<my_arbitrary_capture_name>.*\.json)$" # Any JSON file
+    - filepath_regex: "^(?P<my_arbitrary_capture_name>.*\\.json)$" # Any JSON file
       results: |
         // The import key word can load functions form the snippets section
         local getFilepathCapture = import "getFilepathCapture";
@@ -263,7 +263,7 @@ Example:
 pipelines: # This config is not complete - some keys are missing
   my_pipeline:
     rules:
-    - filepath_regex: "^(?P<my_arbitrary_capture_name>.*\.json)$" # Any JSON file
+    - filepath_regex: "^(?P<my_arbitrary_capture_name>.*\\.json)$" # Any JSON file
       results: !embed my_pipeline_standard_rule.jsonnet
 ```
 
