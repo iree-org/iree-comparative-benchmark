@@ -13,6 +13,7 @@ on:
     # Scheduled to run at 09:00 UTC and 21:00 UTC.
     - cron: '0 09,21 * * *'
   workflow_dispatch:
+  pull_request:
 
 concurrency:
   # A PR number if a pull request and otherwise the commit hash. This cancels
@@ -57,127 +58,127 @@ jobs:
           fi
           echo "benchmark-gcs-dir=${BENCHMARK_GCS_DIR}" >> "${GITHUB_OUTPUT}"
 
-  build_xla_tools:
-    needs: setup
-    runs-on:
-      - self-hosted  # must come first
-      - runner-group=${{ needs.setup.outputs.runner-group }}
-      - environment=prod
-      - cpu
-      - os-family=Linux
-    env:
-      CUDA_VERSION: 11.8
-      XLA_TOOLS_DIR: xla-tools-dir
-      BENCHMARK_GCS_DIR: ${{ needs.setup.outputs.benchmark-gcs-dir }}
-    outputs:
-      xla-tools-dir: ${{ env.XLA_TOOLS_DIR }}
-      xla-tools-dir-archive: ${{ steps.archive.outputs.xla-tools-dir-archive }}
-      xla-tools-dir-gcs-artifact: ${{ steps.upload.outputs.xla-tools-dir-gcs-artifact }}
-    steps:
-      - name: "Checking out PR repository"
-        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
-      - name: "Building XLA"
-        run: |
-          mkdir -p "${XLA_TOOLS_DIR}"
-          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:c39107c4160e749b7c4bac18862c6c1b6d56e1aa60644a4fe323e315ffba0a0b" \
-            ./comparative_benchmark/xla_hlo/build_xla_tools.sh \
-              "${XLA_TOOLS_DIR}" \
-              "${CUDA_VERSION}"
-      - name: "Creating tool dir archive"
-        id: archive
-        env:
-          XLA_TOOLS_DIR_ARCHIVE: ${{ env.XLA_TOOLS_DIR }}.tgz
-        run: |
-          tar -zcvf ${XLA_TOOLS_DIR_ARCHIVE} ${XLA_TOOLS_DIR}
-          echo "xla-tools-dir-archive=${XLA_TOOLS_DIR_ARCHIVE}" >> "${GITHUB_OUTPUT}"
-      - name: "Uploading tool dir archive"
-        id: upload
-        env:
-          XLA_TOOLS_DIR_ARCHIVE: ${{ steps.archive.outputs.xla-tools-dir-archive }}
-          XLA_TOOLS_DIR_GCS_ARTIFACT: ${{ env.BENCHMARK_GCS_DIR }}/${{ steps.archive.outputs.xla-tools-dir-archive }}
-        run: |
-          gcloud storage cp "${XLA_TOOLS_DIR_ARCHIVE}" "${XLA_TOOLS_DIR_GCS_ARTIFACT}"
-          echo "xla-tools-dir-gcs-artifact=${XLA_TOOLS_DIR_GCS_ARTIFACT}" >> "${GITHUB_OUTPUT}"
+#  build_xla_tools:
+#    needs: setup
+#    runs-on:
+#      - self-hosted  # must come first
+#      - runner-group=${{ needs.setup.outputs.runner-group }}
+#      - environment=prod
+#      - cpu
+#      - os-family=Linux
+#    env:
+#      CUDA_VERSION: 11.8
+#      XLA_TOOLS_DIR: xla-tools-dir
+#      BENCHMARK_GCS_DIR: ${{ needs.setup.outputs.benchmark-gcs-dir }}
+#    outputs:
+#      xla-tools-dir: ${{ env.XLA_TOOLS_DIR }}
+#      xla-tools-dir-archive: ${{ steps.archive.outputs.xla-tools-dir-archive }}
+#      xla-tools-dir-gcs-artifact: ${{ steps.upload.outputs.xla-tools-dir-gcs-artifact }}
+#    steps:
+#      - name: "Checking out PR repository"
+#        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
+#      - name: "Building XLA"
+#        run: |
+#          mkdir -p "${XLA_TOOLS_DIR}"
+#          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+#            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:58f779bf45ee558114a41c9e8da87bc86229dbe78c047877203a65662dd1e759" \
+#            ./comparative_benchmark/xla_hlo/build_xla_tools.sh \
+#              "${XLA_TOOLS_DIR}" \
+#              "${CUDA_VERSION}"
+#      - name: "Creating tool dir archive"
+#        id: archive
+#        env:
+#          XLA_TOOLS_DIR_ARCHIVE: ${{ env.XLA_TOOLS_DIR }}.tgz
+#        run: |
+#          tar -zcvf ${XLA_TOOLS_DIR_ARCHIVE} ${XLA_TOOLS_DIR}
+#          echo "xla-tools-dir-archive=${XLA_TOOLS_DIR_ARCHIVE}" >> "${GITHUB_OUTPUT}"
+#      - name: "Uploading tool dir archive"
+#        id: upload
+#        env:
+#          XLA_TOOLS_DIR_ARCHIVE: ${{ steps.archive.outputs.xla-tools-dir-archive }}
+#          XLA_TOOLS_DIR_GCS_ARTIFACT: ${{ env.BENCHMARK_GCS_DIR }}/${{ steps.archive.outputs.xla-tools-dir-archive }}
+#        run: |
+#          gcloud storage cp "${XLA_TOOLS_DIR_ARCHIVE}" "${XLA_TOOLS_DIR_GCS_ARTIFACT}"
+#          echo "xla-tools-dir-gcs-artifact=${XLA_TOOLS_DIR_GCS_ARTIFACT}" >> "${GITHUB_OUTPUT}"
 
-  benchmark_on_a2-highgpu-1g:
-    needs: [setup, build_xla_tools]
-    runs-on:
-      - self-hosted  # must come first
-      - runner-group=${{ needs.setup.outputs.runner-group }}
-      - environment=prod
-      - machine-type=a2-highgpu-1g
-    env:
-      BENCHMARK_GCS_DIR: ${{ needs.setup.outputs.benchmark-gcs-dir }}
-      RESULTS_DIR: results-dir
-      TARGET_DEVICE: a2-highgpu-1g
-      XLA_TOOLS_DIR: ${{ needs.build_xla_tools.outputs.xla-tools-dir }}
-      XLA_TOOLS_DIR_ARCHIVE: ${{ needs.build_xla_tools.outputs.xla-tools-dir-archive }}
-      XLA_TOOLS_DIR_GCS_ARTIFACT: ${{ needs.build_xla_tools.outputs.xla-tools-dir-gcs-artifact }}
-    steps:
-      - name: "Checking out PR repository"
-        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
-      - name: "Setup"
-        id: setup
-        run: |
-          echo "results-gcs-dir=${BENCHMARK_GCS_DIR}/${TARGET_DEVICE}-results" >> "${GITHUB_OUTPUT}"
-          mkdir "${RESULTS_DIR}"
-      - name: "Downloading and unpacking XLA tools"
-        run: |
-          gcloud storage cp "${XLA_TOOLS_DIR_GCS_ARTIFACT}" "${XLA_TOOLS_DIR_ARCHIVE}"
-          tar -xvf "${XLA_TOOLS_DIR_ARCHIVE}"
-      - name: "Benchmarking XLA-HLO:GPU"
-        env:
-          XLA_HLO_RESULTS_JSON: xla-hlo.json
-          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
-        run: |
-          RESULTS_PATH="${RESULTS_DIR}/${XLA_HLO_RESULTS_JSON}"
-          docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            --env "OOBI_XLA_TOOLS_DIR=${XLA_TOOLS_DIR}" \
-            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:c39107c4160e749b7c4bac18862c6c1b6d56e1aa60644a4fe323e315ffba0a0b" \
-            ./comparative_benchmark/xla_hlo/benchmark_all.sh \
-              "${TARGET_DEVICE}"\
-              "${RESULTS_PATH}"
-          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
-      - name: "Benchmarking JAX-XLA:GPU"
-        env:
-          JAX_XLA_RESULTS_JSON: jax-xla.json
-          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
-        run: |
-          RESULTS_PATH="${RESULTS_DIR}/${JAX_XLA_RESULTS_JSON}"
-          docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:c39107c4160e749b7c4bac18862c6c1b6d56e1aa60644a4fe323e315ffba0a0b" \
-            ./comparative_benchmark/jax_xla/benchmark_all.sh \
-              "${TARGET_DEVICE}"\
-              "${RESULTS_PATH}"
-          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
-      - name: "Benchmarking TF-XLA:GPU"
-        env:
-          TF_XLA_RESULTS_JSON: tf-xla.json
-          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
-        run: |
-          RESULTS_PATH="${RESULTS_DIR}/${TF_XLA_RESULTS_JSON}"
-          docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:c39107c4160e749b7c4bac18862c6c1b6d56e1aa60644a4fe323e315ffba0a0b" \
-            ./comparative_benchmark/tf_xla/benchmark_all.sh \
-              "${TARGET_DEVICE}"\
-              "${RESULTS_PATH}"
-          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
-      - name: "Benchmarking PT-Inductor:GPU"
-        env:
-          PT_INDUCTOR_RESULTS_JSON: pt-inductor.json
-          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
-        run: |
-          RESULTS_PATH="${RESULTS_DIR}/${PT_INDUCTOR_RESULTS_JSON}"
-          docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:c39107c4160e749b7c4bac18862c6c1b6d56e1aa60644a4fe323e315ffba0a0b" \
-            ./comparative_benchmark/pt_inductor/benchmark_all.sh \
-              "${TARGET_DEVICE}"\
-              "${RESULTS_PATH}"
-          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+#  benchmark_on_a2-highgpu-1g:
+#    needs: [setup, build_xla_tools]
+#    runs-on:
+#      - self-hosted  # must come first
+#      - runner-group=${{ needs.setup.outputs.runner-group }}
+#      - environment=prod
+#      - machine-type=a2-highgpu-1g
+#    env:
+#      BENCHMARK_GCS_DIR: ${{ needs.setup.outputs.benchmark-gcs-dir }}
+#      RESULTS_DIR: results-dir
+#      TARGET_DEVICE: a2-highgpu-1g
+#      XLA_TOOLS_DIR: ${{ needs.build_xla_tools.outputs.xla-tools-dir }}
+#      XLA_TOOLS_DIR_ARCHIVE: ${{ needs.build_xla_tools.outputs.xla-tools-dir-archive }}
+#      XLA_TOOLS_DIR_GCS_ARTIFACT: ${{ needs.build_xla_tools.outputs.xla-tools-dir-gcs-artifact }}
+#    steps:
+#      - name: "Checking out PR repository"
+#        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
+#      - name: "Setup"
+#        id: setup
+#        run: |
+#          echo "results-gcs-dir=${BENCHMARK_GCS_DIR}/${TARGET_DEVICE}-results" >> "${GITHUB_OUTPUT}"
+#          mkdir "${RESULTS_DIR}"
+#      - name: "Downloading and unpacking XLA tools"
+#        run: |
+#          gcloud storage cp "${XLA_TOOLS_DIR_GCS_ARTIFACT}" "${XLA_TOOLS_DIR_ARCHIVE}"
+#          tar -xvf "${XLA_TOOLS_DIR_ARCHIVE}"
+#      - name: "Benchmarking XLA-HLO:GPU"
+#        env:
+#          XLA_HLO_RESULTS_JSON: xla-hlo.json
+#          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+#        run: |
+#          RESULTS_PATH="${RESULTS_DIR}/${XLA_HLO_RESULTS_JSON}"
+#          docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+#            --env "OOBI_XLA_TOOLS_DIR=${XLA_TOOLS_DIR}" \
+#            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:58f779bf45ee558114a41c9e8da87bc86229dbe78c047877203a65662dd1e759" \
+#            ./comparative_benchmark/xla_hlo/benchmark_all.sh \
+#              "${TARGET_DEVICE}"\
+#              "${RESULTS_PATH}"
+#          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+#      - name: "Benchmarking JAX-XLA:GPU"
+#        env:
+#          JAX_XLA_RESULTS_JSON: jax-xla.json
+#          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+#        run: |
+#          RESULTS_PATH="${RESULTS_DIR}/${JAX_XLA_RESULTS_JSON}"
+#          docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+#            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:58f779bf45ee558114a41c9e8da87bc86229dbe78c047877203a65662dd1e759" \
+#            ./comparative_benchmark/jax/benchmark_xla.sh \
+#              "${TARGET_DEVICE}"\
+#              "${RESULTS_PATH}"
+#          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+#      - name: "Benchmarking TF-XLA:GPU"
+#        env:
+#          TF_XLA_RESULTS_JSON: tf-xla.json
+#          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+#        run: |
+#          RESULTS_PATH="${RESULTS_DIR}/${TF_XLA_RESULTS_JSON}"
+#          docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+#            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:58f779bf45ee558114a41c9e8da87bc86229dbe78c047877203a65662dd1e759" \
+#            ./comparative_benchmark/tf_xla/benchmark_all.sh \
+#              "${TARGET_DEVICE}"\
+#              "${RESULTS_PATH}"
+#          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+#      - name: "Benchmarking PT-Inductor:GPU"
+#        env:
+#          PT_INDUCTOR_RESULTS_JSON: pt-inductor.json
+#          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+#        run: |
+#          RESULTS_PATH="${RESULTS_DIR}/${PT_INDUCTOR_RESULTS_JSON}"
+#          docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+#            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:58f779bf45ee558114a41c9e8da87bc86229dbe78c047877203a65662dd1e759" \
+#            ./comparative_benchmark/pt_inductor/benchmark_all.sh \
+#              "${TARGET_DEVICE}"\
+#              "${RESULTS_PATH}"
+#          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
 
   benchmark_on_c2-standard-16:
-    needs: [setup, build_xla_tools]
+    needs: [setup]
     runs-on:
       - self-hosted  # must come first
       - runner-group=${{ needs.setup.outputs.runner-group }}
@@ -198,56 +199,68 @@ jobs:
         run: |
           echo "results-gcs-dir=${BENCHMARK_GCS_DIR}/${TARGET_DEVICE}-results" >> "${GITHUB_OUTPUT}"
           mkdir "${RESULTS_DIR}"
-      - name: "Downloading and unpacking XLA tools"
-        run: |
-          gcloud storage cp "${XLA_TOOLS_DIR_GCS_ARTIFACT}" "${XLA_TOOLS_DIR_ARCHIVE}"
-          tar -xvf "${XLA_TOOLS_DIR_ARCHIVE}"
-      - name: "Benchmarking XLA-HLO:CPU"
+#      - name: "Downloading and unpacking XLA tools"
+#        run: |
+#          gcloud storage cp "${XLA_TOOLS_DIR_GCS_ARTIFACT}" "${XLA_TOOLS_DIR_ARCHIVE}"
+#          tar -xvf "${XLA_TOOLS_DIR_ARCHIVE}"
+#      - name: "Benchmarking XLA-HLO:CPU"
+#        env:
+#          XLA_HLO_RESULTS_JSON: xla-hlo.json
+#          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+#        run: |
+#          RESULTS_PATH="${RESULTS_DIR}/${XLA_HLO_RESULTS_JSON}"
+#          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+#            --env "OOBI_XLA_TOOLS_DIR=${XLA_TOOLS_DIR}" \
+#            "gcr.io/iree-oss/openxla-benchmark/base@sha256:1655642eda166c31e668dd808869acfe5ce7ebde2e2929374237c18e3d43548c" \
+#            ./comparative_benchmark/xla_hlo/benchmark_all.sh \
+#              "${TARGET_DEVICE}"\
+#              "${RESULTS_PATH}"
+#          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+#      - name: "Benchmarking JAX-XLA:CPU"
+#        env:
+#          JAX_XLA_RESULTS_JSON: jax-xla.json
+#          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+#        run: |
+#          RESULTS_PATH="${RESULTS_DIR}/${JAX_XLA_RESULTS_JSON}"
+#          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+#            "gcr.io/iree-oss/openxla-benchmark/base@sha256:1655642eda166c31e668dd808869acfe5ce7ebde2e2929374237c18e3d43548c" \
+#            ./comparative_benchmark/jax/benchmark_xla.sh \
+#              "${TARGET_DEVICE}"\
+#              "${RESULTS_PATH}"
+#          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+      - name: "Benchmarking JAX-IREE:CPU"
         env:
-          XLA_HLO_RESULTS_JSON: xla-hlo.json
+          JAX_IREE_RESULTS_JSON: jax-iree.json
           RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
         run: |
-          RESULTS_PATH="${RESULTS_DIR}/${XLA_HLO_RESULTS_JSON}"
+          RESULTS_PATH="${RESULTS_DIR}/${JAX_IREE_RESULTS_JSON}"
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            --env "OOBI_XLA_TOOLS_DIR=${XLA_TOOLS_DIR}" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:692bb3ca648c474e89bad21ef89f4b33a9741e3d1cc477fa61844caddd798ba0" \
-            ./comparative_benchmark/xla_hlo/benchmark_all.sh \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:1655642eda166c31e668dd808869acfe5ce7ebde2e2929374237c18e3d43548c" \
+            ./comparative_benchmark/jax/benchmark_iree.sh \
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
           gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
-      - name: "Benchmarking JAX-XLA:CPU"
-        env:
-          JAX_XLA_RESULTS_JSON: jax-xla.json
-          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
-        run: |
-          RESULTS_PATH="${RESULTS_DIR}/${JAX_XLA_RESULTS_JSON}"
-          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:692bb3ca648c474e89bad21ef89f4b33a9741e3d1cc477fa61844caddd798ba0" \
-            ./comparative_benchmark/jax_xla/benchmark_all.sh \
-              "${TARGET_DEVICE}"\
-              "${RESULTS_PATH}"
-          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
-      - name: "Benchmarking TF-XLA:CPU"
-        env:
-          TF_XLA_RESULTS_JSON: tf-xla.json
-          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
-        run: |
-          RESULTS_PATH="${RESULTS_DIR}/${TF_XLA_RESULTS_JSON}"
-          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:692bb3ca648c474e89bad21ef89f4b33a9741e3d1cc477fa61844caddd798ba0" \
-            ./comparative_benchmark/tf_xla/benchmark_all.sh \
-              "${TARGET_DEVICE}"\
-              "${RESULTS_PATH}"
-          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
-      - name: "Benchmarking PT-Inductor:CPU"
-        env:
-          PT_INDUCTOR_RESULTS_JSON: pt-inductor.json
-          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
-        run: |
-          RESULTS_PATH="${RESULTS_DIR}/${PT_INDUCTOR_RESULTS_JSON}"
-          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:692bb3ca648c474e89bad21ef89f4b33a9741e3d1cc477fa61844caddd798ba0" \
-            ./comparative_benchmark/pt_inductor/benchmark_all.sh \
-              "${TARGET_DEVICE}"\
-              "${RESULTS_PATH}"
-          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+#      - name: "Benchmarking TF-XLA:CPU"
+#        env:
+#          TF_XLA_RESULTS_JSON: tf-xla.json
+#          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+#        run: |
+#          RESULTS_PATH="${RESULTS_DIR}/${TF_XLA_RESULTS_JSON}"
+#          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+#            "gcr.io/iree-oss/openxla-benchmark/base@sha256:1655642eda166c31e668dd808869acfe5ce7ebde2e2929374237c18e3d43548c" \
+#            ./comparative_benchmark/tf_xla/benchmark_all.sh \
+#              "${TARGET_DEVICE}"\
+#              "${RESULTS_PATH}"
+#          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+#      - name: "Benchmarking PT-Inductor:CPU"
+#        env:
+#          PT_INDUCTOR_RESULTS_JSON: pt-inductor.json
+#          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+#        run: |
+#          RESULTS_PATH="${RESULTS_DIR}/${PT_INDUCTOR_RESULTS_JSON}"
+#          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+#            "gcr.io/iree-oss/openxla-benchmark/base@sha256:1655642eda166c31e668dd808869acfe5ce7ebde2e2929374237c18e3d43548c" \
+#            ./comparative_benchmark/pt_inductor/benchmark_all.sh \
+#              "${TARGET_DEVICE}"\
+#              "${RESULTS_PATH}"
+#          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
