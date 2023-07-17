@@ -50,9 +50,6 @@ declare -a CPU_BENCHMARK_NAMES=(
   "models/T5_LARGE_FP32_JAX_.+_BATCH1/.+"
   "models/T5_LARGE_FP32_JAX_.+_BATCH16/.+"
   "models/T5_LARGE_FP32_JAX_.+_BATCH32/.+"
-  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH1/.+"
-  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH16/.+"
-  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH32/.+"
 )
 
 if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then
@@ -60,7 +57,7 @@ if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then
   ITERATIONS=50
 elif [ "${TARGET_DEVICE}" = "c2-standard-16" ]; then
   BENCHMARK_NAMES=("${CPU_BENCHMARK_NAMES[@]}")
-  ITERATIONS=20
+  ITERATIONS=10
 else
   echo "Unsupported target device ${TARGET_DEVICE}."
   exit 1
@@ -68,6 +65,7 @@ fi
 
 "${TD}/../scripts/create_results_json.sh" "${OUTPUT_PATH}"
 
+# Benchmark with XLA.
 for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
   "${TD}/run_benchmarks.py" \
     --benchmark_name="${benchmark_name}" \
@@ -77,3 +75,16 @@ for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
     --compiler="xla" \
     --verbose
 done
+
+# If running on CPU, also benchmark XLA CPU-Next.
+if [ "${TARGET_DEVICE}" = "c2-standard-16" ]; then
+  for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
+    "${TD}/run_benchmarks.py" \
+      --benchmark_name="${benchmark_name}" \
+      --target_device="${TARGET_DEVICE}" \
+      --output="${OUTPUT_PATH}" \
+      --iterations="${ITERATIONS}" \
+      --compiler="xla_cpu_next" \
+      --verbose
+  done
+fi

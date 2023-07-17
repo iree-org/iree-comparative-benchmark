@@ -35,6 +35,7 @@ MODEL_NAME_TO_CLASS = {
     "efficientnetb7": tf.keras.applications.efficientnet.EfficientNetB7,
 }
 
+
 class EfficientNet(model_interfaces.InferenceModel, tf.Module):
   """See https://huggingface.co/docs/transformers/model_doc/resnet for more information."""
 
@@ -84,8 +85,8 @@ class EfficientNet(model_interfaces.InferenceModel, tf.Module):
 
 
 def create_model(batch_size: int = 1,
-    model_name: str = "efficientb7",
-    **_unused_params) -> EfficientNet:
+                 model_name: str = "efficientb7",
+                 **_unused_params) -> EfficientNet:
   """Configure and create a TF EfficientNet model instance.
 
   Args:

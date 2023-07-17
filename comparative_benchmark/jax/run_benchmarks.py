@@ -10,6 +10,7 @@ import argparse
 import importlib
 import jax
 import numpy as np
+import os
 import pathlib
 import statistics
 import sys
@@ -28,6 +29,9 @@ from openxla.benchmark.comparative_suite.jax import benchmark_definitions
 from openxla.benchmark.models import model_interfaces
 import benchmark_lib, utils
 
+_COMPILER_XLA = "xla"
+_COMPILER_XLA_CPU_NEXT = "xla_cpu_next"
+
 
 def _run_framework_benchmark(
     model: def_types.Model,
@@ -40,6 +44,9 @@ def _run_framework_benchmark(
     backend: str,
     verbose: bool,
 ) -> Dict[str, Any]:
+
+  if compiler == _COMPILER_XLA_CPU_NEXT:
+    os.environ['XLA_FLAGS'] = "--xla_cpu_use_xla_runtime"
 
   model_module = importlib.import_module(model.model_impl.module_path)
   model_obj: model_interfaces.InferenceModel = model_module.create_model(
@@ -134,9 +141,9 @@ def _parse_arguments() -> argparse.Namespace:
   parser.add_argument("-c",
                       "--compiler",
                       type=str,
-                      default="xla",
-                      choices=["xla", "iree"],
-                      help="The compiler to use.")
+                      default=_COMPILER_XLA,
+                      choices=[_COMPILER_XLA, _COMPILER_XLA_CPU_NEXT],
+                      help="Compiler to use. Supported: `xla`, `xla_cpu_next`.")
   benchmark_lib.configure_parser(parser)
   return parser.parse_args()
 
