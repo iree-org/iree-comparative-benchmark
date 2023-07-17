@@ -141,7 +141,6 @@ EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCHES = utils.build_batch_models(
     template=EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH_TEMPLATE,
     batch_sizes=[1, 64, 128])
 
-
 ALL_MODELS = list(
     itertools.chain(
         T5_LARGE_FP32_TF_512XI32_BATCHES.values(),

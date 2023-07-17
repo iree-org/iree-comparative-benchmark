@@ -40,7 +40,18 @@ declare -a GPU_BENCHMARK_NAMES=(
 )
 
 declare -a CPU_BENCHMARK_NAMES=(
-  "models/EFFICIENTNET.+"
+  #"models/EFFICIENTNETB7_FP32_TF_.+_BATCH1/.+"
+  "models/EFFICIENTNETB7_FP32_TF_.+_BATCH64/.+"
+  "models/EFFICIENTNETB7_FP32_TF_.+_BATCH128/.+"
+  "models/RESNET50_FP32_TF_.+_BATCH1/.+"
+  "models/RESNET50_FP32_TF_.+_BATCH64/.+"
+  "models/RESNET50_FP32_TF_.+_BATCH128/.+"
+  "models/BERT_LARGE_FP32_TF_.+_BATCH1/.+"
+  "models/BERT_LARGE_FP32_TF_.+_BATCH32/.+"
+  "models/BERT_LARGE_FP32_TF_.+_BATCH64/.+"
+  "models/T5_LARGE_FP32_TF_.+_BATCH1/.+"
+  "models/T5_LARGE_FP32_TF_.+_BATCH16/.+"
+  "models/T5_LARGE_FP32_TF_.+_BATCH32/.+"
 )
 
 if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then
@@ -48,7 +59,7 @@ if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then
   ITERATIONS=50
 elif [ "${TARGET_DEVICE}" = "c2-standard-16" ]; then
   BENCHMARK_NAMES=("${CPU_BENCHMARK_NAMES[@]}")
-  ITERATIONS=20
+  ITERATIONS=3
 else
   echo "Unsupported target device ${TARGET_DEVICE}."
   exit 1
@@ -56,11 +67,26 @@ fi
 
 "${TD}/../scripts/create_results_json.sh" "${OUTPUT_PATH}"
 
+# Benchmark with XLA.
 for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
   "${TD}/run_benchmarks.py" \
     --benchmark_name="${benchmark_name}" \
     --target_device="${TARGET_DEVICE}" \
     --output="${OUTPUT_PATH}" \
     --iterations="${ITERATIONS}" \
+    --compiler="xla" \
     --verbose
 done
+
+# If running on CPU, also benchmark XLA CPU-Next.
+if [ "${TARGET_DEVICE}" = "c2-standard-16" ]; then
+  for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
+    "${TD}/run_benchmarks.py" \
+      --benchmark_name="${benchmark_name}" \
+      --target_device="${TARGET_DEVICE}" \
+      --output="${OUTPUT_PATH}" \
+      --iterations="${ITERATIONS}" \
+      --compiler="xla_cpu_next" \
+      --verbose
+  done
+fi

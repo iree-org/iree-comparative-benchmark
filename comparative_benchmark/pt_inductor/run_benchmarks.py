@@ -36,6 +36,7 @@ def _run_framework_benchmark(
     verify_params: Dict[str, Any],
     warmup_iterations: int,
     benchmark_iterations: int,
+    compiler: str,
     backend: str,
     verbose: bool,
 ) -> Dict[str, Any]:
