@@ -7,12 +7,12 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #
 # Environment variables:
-# PYTHON: Python interpreter, default: /usr/bin/python3
-# OOBI_VENV_DIR: path to create Python virtualenv, default: jax-benchmarks.venv
-# OOBI_TARGET_DEVICE: target benchmark device, can also be specified the first
-#   argument.
-# OOBI_OUTPUT: path to output benchmark results, can also be specified the
-#   second argument.
+#   PYTHON: Python interpreter, default: /usr/bin/python3
+#   OOBI_VENV_DIR: path to create Python virtualenv, default: jax-benchmarks.venv
+#   OOBI_TARGET_DEVICE: target benchmark device, can also be specified the first
+#     argument.
+#   OOBI_OUTPUT: path to output benchmark results, can also be specified the
+#     second argument.
 #
 # Example usage:
 # ./benchmark_all.sh a2-highgpu-1g /tmp/results.json
@@ -74,5 +74,6 @@ for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
     --target_device="${TARGET_DEVICE}" \
     --output="${OUTPUT_PATH}" \
     --iterations="${ITERATIONS}" \
+    --compiler="xla" \
     --verbose
 done
