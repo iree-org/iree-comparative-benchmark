@@ -33,12 +33,16 @@ def _run_framework_benchmark(
     input_npys: Sequence[pathlib.Path],
     warmup_iterations: int,
     benchmark_iterations: int,
+    compiler: str,
     backend: str,
     verbose: bool,
 ) -> Tuple[Dict[str, Any], Any]:
 
   model_obj = model_utils.create_model_obj(model)
   inputs = [np.load(path) for path in input_npys]
+
+  if compiler == "iree":
+    backend = "iree_cpu" if backend == "cpu" else "iree_cuda"
 
   try:
     with jax.default_device(jax.devices(backend)[0]):
@@ -116,6 +120,12 @@ def _run_framework_benchmark(
 def _parse_arguments() -> argparse.Namespace:
   parser = argparse.ArgumentParser(
       description="Run JAX benchmarks with XLA backend.")
+  parser.add_argument("-c",
+                      "--compiler",
+                      type=str,
+                      default="xla",
+                      choices=["xla", "iree"],
+                      help="The compiler to use.")
   benchmark_lib.configure_parser(parser)
   return parser.parse_args()
 
@@ -123,7 +133,6 @@ def _parse_arguments() -> argparse.Namespace:
 def main(**kwargs):
   benchmark_lib.benchmark(benchmark_function=_run_framework_benchmark,
                           benchmark_cases=benchmark_definitions.ALL_BENCHMARKS,
-                          compiler="xla",
                           **kwargs)
 
 
