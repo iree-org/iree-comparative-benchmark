@@ -9,6 +9,7 @@
 import argparse
 import jax
 import numpy as np
+import os
 import pathlib
 import statistics
 import sys
@@ -27,18 +28,28 @@ from openxla.benchmark.comparative_suite.jax import benchmark_definitions
 import openxla.benchmark.models.utils as model_utils
 import benchmark_lib
 
+_COMPILER_XLA = "xla"
+_COMPILER_XLA_CPU_NEXT = "xla_cpu_next"
+
 
 def _run_framework_benchmark(
     model: def_types.Model,
     input_npys: Sequence[pathlib.Path],
     warmup_iterations: int,
     benchmark_iterations: int,
+    compiler: str,
     backend: str,
     verbose: bool,
 ) -> Tuple[Dict[str, Any], Any]:
 
+  if compiler == _COMPILER_XLA_CPU_NEXT:
+    os.environ['XLA_FLAGS'] = "--xla_cpu_use_xla_runtime"
+
   model_obj = model_utils.create_model_obj(model)
   inputs = [np.load(path) for path in input_npys]
+
+  if compiler == "iree":
+    backend = "iree_cpu" if backend == "cpu" else "iree_cuda"
 
   try:
     with jax.default_device(jax.devices(backend)[0]):
@@ -116,6 +127,12 @@ def _run_framework_benchmark(
 def _parse_arguments() -> argparse.Namespace:
   parser = argparse.ArgumentParser(
       description="Run JAX benchmarks with XLA backend.")
+  parser.add_argument("-c",
+                      "--compiler",
+                      type=str,
+                      default=_COMPILER_XLA,
+                      choices=[_COMPILER_XLA, _COMPILER_XLA_CPU_NEXT],
+                      help="Compiler to use. Supported: `xla`, `xla_cpu_next`.")
   benchmark_lib.configure_parser(parser)
   return parser.parse_args()
 
@@ -123,7 +140,6 @@ def _parse_arguments() -> argparse.Namespace:
 def main(**kwargs):
   benchmark_lib.benchmark(benchmark_function=_run_framework_benchmark,
                           benchmark_cases=benchmark_definitions.ALL_BENCHMARKS,
-                          compiler="xla",
                           **kwargs)
 
 
