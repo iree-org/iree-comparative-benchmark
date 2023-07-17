@@ -60,14 +60,14 @@ def _run_framework_benchmark(
 
       # Run warmup.
       warmup_latencies = []
-      compile_time_s = -1
+      compile_time_ms = -1
       for i in range(warmup_iterations):
         start = time.perf_counter()
         jax.block_until_ready(jit_function(jit_inputs))
         end = time.perf_counter()
         latency = 1000 * (end - start)
         if i == 0:
-          compile_time_s = latency / 1000
+          compile_time_ms = latency
         warmup_latencies.append(latency)
 
       # Run benchmark.
@@ -117,8 +117,8 @@ def _run_framework_benchmark(
           None if not latencies else statistics.stdev(latencies),
       "benchmark_iterations":
           benchmark_iterations,
-      "compile_time_s":
-          compile_time_s,
+      "compile_time_ms":
+          compile_time_ms,
       "input_data_transfer_ms":
           input_data_transfer_ms,
   }
