@@ -147,7 +147,6 @@ class BenchmarkCase:
   model: Model
   input_data: ModelTestData
   expected_output: ModelTestData
-  target_device: DeviceSpec
 
   @classmethod
   def build(
@@ -155,7 +154,6 @@ class BenchmarkCase:
       model: Model,
       input_data: ModelTestData,
       expected_output: ModelTestData,
-      target_device: DeviceSpec,
   ):
     benchmark_id = "/".join([
         "models",
@@ -164,8 +162,6 @@ class BenchmarkCase:
         input_data.id,
         "expected_outputs",
         expected_output.id,
-        "target_devices",
-        target_device.id,
     ])
     name = "/".join([
         "models",
@@ -174,12 +170,9 @@ class BenchmarkCase:
         input_data.name,
         "expected_outputs",
         expected_output.name,
-        "target_devices",
-        target_device.name,
     ])
     return cls(id=benchmark_id,
                name=name,
                model=model,
                input_data=input_data,
-               expected_output=expected_output,
-               target_device=target_device)
+               expected_output=expected_output)

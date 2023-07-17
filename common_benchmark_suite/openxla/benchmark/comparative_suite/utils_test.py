@@ -31,9 +31,9 @@ class UtilsTest(unittest.TestCase):
             "data_type": "fp32",
         },
         artifacts={
-            def_types.ModelArtifactType.STABLEHLO:
+            def_types.ModelArtifactType.STABLEHLO_MLIR:
                 utils.ModelArtifactTemplate(
-                    artifact_type=def_types.ModelArtifactType.STABLEHLO,
+                    artifact_type=def_types.ModelArtifactType.STABLEHLO_MLIR,
                     source_url=string.Template("batch_${batch_size}/x.mlirbc"))
         },
     )
@@ -53,10 +53,10 @@ class UtilsTest(unittest.TestCase):
                         "data_type": "fp32",
                     },
                     artifacts={
-                        def_types.ModelArtifactType.STABLEHLO:
+                        def_types.ModelArtifactType.STABLEHLO_MLIR:
                             def_types.ModelArtifact(
                                 artifact_type=def_types.ModelArtifactType.
-                                STABLEHLO,
+                                STABLEHLO_MLIR,
                                 source_url="batch_1/x.mlirbc")
                     },
                 ),
@@ -71,17 +71,14 @@ class UtilsTest(unittest.TestCase):
                         "data_type": "fp32",
                     },
                     artifacts={
-                        def_types.ModelArtifactType.STABLEHLO:
+                        def_types.ModelArtifactType.STABLEHLO_MLIR:
                             def_types.ModelArtifact(
                                 artifact_type=def_types.ModelArtifactType.
-                                STABLEHLO,
+                                STABLEHLO_MLIR,
                                 source_url="batch_2/x.mlirbc")
                     },
                 ),
         })
-
-  def test_build_batch_model_test_data(self):
-    pass
 
 
 if __name__ == "__main__":
