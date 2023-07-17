@@ -182,25 +182,26 @@ OUTPUT_DATA_RESNET50_FP32_TF_2048X7X7XF32_BATCHES = utils.build_batch_model_test
 EFFICIENTNET_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/tensorflow/tf_models_2.13.0_1689819439/"
 
 INPUT_DATA_EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.INPUT_DATA_EFFICIENTNETB7_FP32_TF_600X600X3XF32),
+    id=utils.BATCH_ID(
+        unique_ids.INPUT_DATA_EFFICIENTNETB7_FP32_TF_600X600X3XF32),
     name=utils.BATCH_NAME("INPUT_DATA_EFFICIENTNETB7_FP32_TF_600X600X3XF32"),
     tags=["input-data", "imagenet", utils.BATCH_TAG],
     source_info=
     "Original image: https://storage.googleapis.com/iree-model-artifacts/ILSVRC2012_val_00000023.JPEG",
     artifacts={
         def_types.ModelTestDataFormat.NUMPY_TENSORS:
-          utils.ModelTestDataArtifactTemplate(
-              data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
-              data_parameters={
-                  "tensor_names": ["pixel_values"],
-                  "tensor_dimensions": [
-                      utils.BATCH_TENSOR_DIMS("600x600x3xf32")
-                  ],
-              },
-              source_url=string.Template(
-                  EFFICIENTNET_GCS_DIR +
-                  "EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH${batch_size}/inputs_npy.tgz"
-              ))
+            utils.ModelTestDataArtifactTemplate(
+                data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
+                data_parameters={
+                    "tensor_names": ["pixel_values"],
+                    "tensor_dimensions": [
+                        utils.BATCH_TENSOR_DIMS("600x600x3xf32")
+                    ],
+                },
+                source_url=string.Template(
+                    EFFICIENTNET_GCS_DIR +
+                    "EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH${batch_size}/inputs_npy.tgz"
+                ))
     })
 INPUT_DATA_EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCHES = utils.build_batch_model_test_data(
     template=INPUT_DATA_EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH_TEMPLATE,
@@ -214,21 +215,19 @@ OUTPUT_DATA_EFFICIENTNETB7_FP32_TF_1000XF32_BATCH_TEMPLATE = utils.ModelTestData
     source_info="",
     artifacts={
         def_types.ModelTestDataFormat.NUMPY_TENSORS:
-          utils.ModelTestDataArtifactTemplate(
-              data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
-              data_parameters={
-                  "tensor_names": ["output_0"],
-                  "tensor_dimensions": [
-                      utils.BATCH_TENSOR_DIMS("1000xf32")
-                  ],
-              },
-              verify_parameters={
-                  "absolute_tolerance": 0.5,
-              },
-              source_url=string.Template(
-                  EFFICIENTNET_GCS_DIR +
-                  "EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH${batch_size}/outputs_npy.tgz"
-              ))
+            utils.ModelTestDataArtifactTemplate(
+                data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
+                data_parameters={
+                    "tensor_names": ["output_0"],
+                    "tensor_dimensions": [utils.BATCH_TENSOR_DIMS("1000xf32")],
+                },
+                verify_parameters={
+                    "absolute_tolerance": 0.5,
+                },
+                source_url=string.Template(
+                    EFFICIENTNET_GCS_DIR +
+                    "EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH${batch_size}/outputs_npy.tgz"
+                ))
     })
 OUTPUT_DATA_EFFICIENTNETB7_FP32_TF_1000XF32_BATCHES = utils.build_batch_model_test_data(
     template=OUTPUT_DATA_EFFICIENTNETB7_FP32_TF_1000XF32_BATCH_TEMPLATE,
