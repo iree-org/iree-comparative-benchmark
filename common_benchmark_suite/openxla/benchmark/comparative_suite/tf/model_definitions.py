@@ -130,17 +130,35 @@ EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH_TEMPLATE = utils.ModelTemplate(
         "data_type": "fp32",
         "model_name": "efficientnetb7",
     },
-    artifacts_dir_url=EFFICIENTNET_ARTIFACTS_DIR_URL_TEMPLATE,
-    exported_model_types=[
-        def_types.ModelArtifactType.STABLEHLO_MLIR,
-        def_types.ModelArtifactType.XLA_HLO_DUMP,
-        def_types.ModelArtifactType.TF_SAVEDMODEL_V2,
-    ],
-)
+(??)    artifacts={
+(??)        def_types.ModelArtifactType.STABLEHLO_MLIR:
+(??)          utils.ModelArtifactTemplate(
+(??)              artifact_type=def_types.ModelArtifactType.STABLEHLO_MLIR,
+(??)              source_url=string.Template(
+(??)                  EFFICIENTNET_GCS_DIR +
+(??)                  "EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH{batch_size}/stablehlo.mlirbc",
+(??)              ),
+(??)          ),
+(??)        def_types.ModelArtifactType.XLA_HLO_DUMP:
+(??)          utils.ModelArtifactTemplate(
+(??)              artifact_type=def_types.ModelArtifactType.XLA_HLO_DUMP,
+(??)              source_url=string.Template(
+(??)                  EFFICIENTNET_GCS_DIR +
+(??)                  "EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH{batch_size}/xla_hlo_before_optimizations.txt"
+(??)              ),
+(??)          ),
+(??)        def_types.ModelArtifactType.TF_SAVEDMODEL_V2:
+(??)          utils.ModelArtifactTemplate(
+(??)              artifact_type=def_types.ModelArtifactType.TF_SAVEDMODEL_V2,
+(??)              source_url=string.Template(
+(??)                  EFFICIENTNET_GCS_DIR +
+(??)                  "EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH{batch_size}/tf-model.tgz"
+(??)              ),
+(??)          ),
+(??)    })
 EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCHES = utils.build_batch_models(
     template=EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH_TEMPLATE,
     batch_sizes=[1, 64, 128])
-
 
 ALL_MODELS = list(
     itertools.chain(
