@@ -2,8 +2,6 @@ name: DB Import
 
 on:
   pull_request:
-    branches:
-      - main
     paths:
       - devtools/db_import/**
   # This also needs to run on push to fill the GitHub Actions Cache with the current Docker image,
@@ -11,6 +9,14 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+concurrency:
+  # A PR number if a pull request and otherwise the commit hash. This cancels
+  # queued and in-progress runs for the same PR (presubmit) or commit
+  # (postsubmit).
+  group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
+  cancel-in-progress: true
 
 jobs:
   testing:
@@ -45,7 +51,7 @@ jobs:
         uses: docker/build-push-action@2eb1c1961a95fc15694676618e422e8ba1d63825 # v4.1.1
         with:
           context: ./devtools/db_import
-          file: ./devtools/db_import/Dockerfile.presubmit
+          file: ./devtools/docker/dockerfiles/db_import.Dockerfile
           cache-from: type=gha
           cache-to: type=gha,mode=max
           load: true
@@ -55,11 +61,11 @@ jobs:
       - name: Run unit tests
         id: run_unit_tests
         run: |
-          docker run --rm -v $(pwd)/devtools/db_import:/home/user/db_import --pull=never presubmit:current \
-          python -m unittest discover -p \*_test.py -s db_import/db_import -t db_import
+          docker run --rm -v $(pwd)/devtools/db_import:/work --pull=never presubmit:current \
+          python -m unittest discover -p \*_test.py -s /work/db_import -t db_import
 
       - name: Run integration tests
         id: run_integration_tests
         run: |
-          docker run --rm -v $(pwd)/devtools/db_import:/home/user/db_import --pull=never presubmit:current \
-          sh -c 'python db_import/cli.py config list_pipelines | xargs python db_import/cli.py verify'
+          docker run --rm -v $(pwd)/devtools/db_import:/work --pull=never presubmit:current \
+          sh -c 'python /work/cli.py config list_pipelines | xargs python /work/cli.py verify'

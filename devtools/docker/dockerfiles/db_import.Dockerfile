@@ -14,12 +14,12 @@ RUN apt-get update && \
 FROM $BASE_IMAGE
 WORKDIR /root
 COPY --from=builder /go/bigquery-emulator/bigquery-emulator /usr/local/bin/
-RUN pip install --upgrade pip
+RUN pip install pip==23.2
 
-RUN adduser -D user
+RUN adduser -D user && mkdir /work
 USER user
-WORKDIR /home/user
+WORKDIR /work
 
-COPY requirements.txt ./
+COPY requirements.txt /home/user/
 ENV PATH="/home/user/.local/bin:${PATH}"
-RUN pip install --user -r requirements.txt && rm requirements.txt
+RUN pip install --user -r /home/user/requirements.txt && rm /home/user/requirements.txt
