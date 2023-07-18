@@ -6,4 +6,5 @@
 
 from . import gcp_devices
 
+# All defined device specs.
 ALL_DEVICES = gcp_devices.ALL_DEVICES
