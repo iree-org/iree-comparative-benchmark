@@ -34,21 +34,21 @@ VENV_DIR="${VENV_DIR}" PYTHON="${PYTHON}" source "${TD}/setup_venv.sh"
 unset WITH_CUDA
 
 declare -a GPU_BENCHMARK_NAMES=(
-  "models/RESNET50_FP32_TF_.+/inputs/.+/expected_outputs/.+"
-  "models/BERT_LARGE_FP32_TF_.+/inputs/.+/expected_outputs/.+"
-  "models/T5_LARGE_FP32_TF_.+/inputs/.+/expected_outputs/.+"
+  "models/RESNET50_FP32_TF_.+"
+  "models/BERT_LARGE_FP32_TF_.+"
+  "models/T5_LARGE_FP32_TF_.+"
 )
 
 declare -a CPU_BENCHMARK_NAMES=(
-  "models/RESNET50_FP32_TF_.+_BATCH1/inputs/.+/expected_outputs/.+"
-  "models/RESNET50_FP32_TF_.+_BATCH64/inputs/.+/expected_outputs/.+"
-  "models/RESNET50_FP32_TF_.+_BATCH128/inputs/.+/expected_outputs/.+"
-  "models/BERT_LARGE_FP32_TF_.+_BATCH1/inputs/.+/expected_outputs/.+"
-  "models/BERT_LARGE_FP32_TF_.+_BATCH32/inputs/.+/expected_outputs/.+"
-  "models/BERT_LARGE_FP32_TF_.+_BATCH64/inputs/.+/expected_outputs/.+"
-  "models/T5_LARGE_FP32_TF_.+_BATCH1/inputs/.+/expected_outputs/.+"
-  "models/T5_LARGE_FP32_TF_.+_BATCH16/inputs/.+/expected_outputs/.+"
-  "models/T5_LARGE_FP32_TF_.+_BATCH32/inputs/.+/expected_outputs/.+"
+  "models/RESNET50_FP32_TF_.+_BATCH1/.+"
+  "models/RESNET50_FP32_TF_.+_BATCH64/.+"
+  "models/RESNET50_FP32_TF_.+_BATCH128/.+"
+  "models/BERT_LARGE_FP32_TF_.+_BATCH1/.+"
+  "models/BERT_LARGE_FP32_TF_.+_BATCH32/.+"
+  "models/BERT_LARGE_FP32_TF_.+_BATCH64/.+"
+  "models/T5_LARGE_FP32_TF_.+_BATCH1/.+"
+  "models/T5_LARGE_FP32_TF_.+_BATCH16/.+"
+  "models/T5_LARGE_FP32_TF_.+_BATCH32/.+"
 )
 
 if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then

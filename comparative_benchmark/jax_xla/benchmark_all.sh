@@ -34,25 +34,25 @@ VENV_DIR="${VENV_DIR}" PYTHON="${PYTHON}" source "${TD}/setup_venv.sh"
 unset WITH_CUDA
 
 declare -a GPU_BENCHMARK_NAMES=(
-  "models/RESNET50_FP32_JAX_.+/inputs/.+/expected_outputs/.+"
-  "models/BERT_LARGE_FP32_JAX_.+/inputs/.+/expected_outputs/.+"
-  "models/T5_LARGE_FP32_JAX_.+/inputs/.+/expected_outputs/.+"
-  "models/T5_4CG_LARGE_FP32_JAX_.+/inputs/.+/expected_outputs/.+"
+  "models/RESNET50_FP32_JAX_.+"
+  "models/BERT_LARGE_FP32_JAX_.+"
+  "models/T5_LARGE_FP32_JAX_.+"
+  "models/T5_4CG_LARGE_FP32_JAX_.+"
 )
 
 declare -a CPU_BENCHMARK_NAMES=(
-  "models/RESNET50_FP32_JAX_.+_BATCH1/inputs/.+/expected_outputs/.+"
-  "models/RESNET50_FP32_JAX_.+_BATCH64/inputs/.+/expected_outputs/.+"
-  "models/RESNET50_FP32_JAX_.+_BATCH128/inputs/.+/expected_outputs/.+"
-  "models/BERT_LARGE_FP32_JAX_.+_BATCH1/inputs/.+/expected_outputs/.+"
-  "models/BERT_LARGE_FP32_JAX_.+_BATCH32/inputs/.+/expected_outputs/.+"
-  "models/BERT_LARGE_FP32_JAX_.+_BATCH64/inputs/.+/expected_outputs/.+"
-  "models/T5_LARGE_FP32_JAX_.+_BATCH1/inputs/.+/expected_outputs/.+"
-  "models/T5_LARGE_FP32_JAX_.+_BATCH16/inputs/.+/expected_outputs/.+"
-  "models/T5_LARGE_FP32_JAX_.+_BATCH32/inputs/.+/expected_outputs/.+"
-  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH1/inputs/.+/expected_outputs/.+"
-  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH16/inputs/.+/expected_outputs/.+"
-  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH32/inputs/.+/expected_outputs/.+"
+  "models/RESNET50_FP32_JAX_.+_BATCH1/.+"
+  "models/RESNET50_FP32_JAX_.+_BATCH64/.+"
+  "models/RESNET50_FP32_JAX_.+_BATCH128/.+"
+  "models/BERT_LARGE_FP32_JAX_.+_BATCH1/.+"
+  "models/BERT_LARGE_FP32_JAX_.+_BATCH32/.+"
+  "models/BERT_LARGE_FP32_JAX_.+_BATCH64/.+"
+  "models/T5_LARGE_FP32_JAX_.+_BATCH1/.+"
+  "models/T5_LARGE_FP32_JAX_.+_BATCH16/.+"
+  "models/T5_LARGE_FP32_JAX_.+_BATCH32/.+"
+  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH1/.+"
+  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH16/.+"
+  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH32/.+"
 )
 
 if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then

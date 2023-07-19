@@ -29,19 +29,19 @@ TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR="${VENV_DIR}" PYTHON="${PYTHON}" source "${TD}/setup_venv.sh"
 
 declare -a GPU_BENCHMARK_NAMES=(
-  "models/RESNET50_FP32_PT_.+/inputs/.+/expected_outputs/.+"
-  "models/RESNET50_FP16_PT_.+/inputs/.+/expected_outputs/.+"
-  "models/BERT_LARGE_FP32_PT_.+/inputs/.+/expected_outputs/.+"
-  "models/BERT_LARGE_FP16_PT_.+/inputs/.+/expected_outputs/.+"
+  "models/RESNET50_FP32_PT_.+"
+  "models/RESNET50_FP16_PT_.+"
+  "models/BERT_LARGE_FP32_PT_.+"
+  "models/BERT_LARGE_FP16_PT_.+"
 )
 
 declare -a CPU_BENCHMARK_NAMES=(
-  "models/RESNET50_FP32_PT_.+_BATCH1/inputs/.+/expected_outputs/.+"
-  "models/RESNET50_FP32_PT_.+_BATCH64/inputs/.+/expected_outputs/.+"
-  "models/RESNET50_FP32_PT_.+_BATCH128/inputs/.+/expected_outputs/.+"
-  "models/BERT_LARGE_FP32_PT_.+_BATCH1/inputs/.+/expected_outputs/.+"
-  "models/BERT_LARGE_FP32_PT_.+_BATCH32/inputs/.+/expected_outputs/.+"
-  "models/BERT_LARGE_FP32_PT_.+_BATCH64/inputs/.+/expected_outputs/.+"
+  "models/RESNET50_FP32_PT_.+_BATCH1/.+"
+  "models/RESNET50_FP32_PT_.+_BATCH64/.+"
+  "models/RESNET50_FP32_PT_.+_BATCH128/.+"
+  "models/BERT_LARGE_FP32_PT_.+_BATCH1/.+"
+  "models/BERT_LARGE_FP32_PT_.+_BATCH32/.+"
+  "models/BERT_LARGE_FP32_PT_.+_BATCH64/.+"
 )
 
 if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then
