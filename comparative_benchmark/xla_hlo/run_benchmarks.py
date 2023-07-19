@@ -23,10 +23,12 @@ sys.path.insert(
 sys.path.insert(
     0, str(pathlib.Path(__file__).parents[2] / "comparative_benchmark"))
 
-from openxla.benchmark import def_types
+from openxla.benchmark import def_types, devices
 import openxla.benchmark.comparative_suite.jax.benchmark_definitions as jax_benchmark_definitions
 import openxla.benchmark.comparative_suite.tf.benchmark_definitions as tf_benchmark_definitions
 import utils
+
+ALL_DEVICE_NAMES = [device.name for device in devices.ALL_DEVICES]
 
 TIME_UNITS = {"us": 1e-3, "ms": 1, "s": 1e3, "min": 60 * 1e3, "h": 3600 * 1e3}
 TIME_REGEXP = re.compile(r"time: (\d+\.?\d*) (%s)" % "|".join(TIME_UNITS))
@@ -209,6 +211,7 @@ def _run_compiler_benchmark_cpu(
 
 def _run(
     benchmark: def_types.BenchmarkCase,
+    target_device: def_types.DeviceSpec,
     iterations: int,
     hlo_tool: pathlib.Path,
     hlo_dump: pathlib.Path,
@@ -233,12 +236,12 @@ def _run(
       "inputs": input_dims,
       "outputs": output_dims,
       "compiler": "xla",
-      "device": benchmark.target_device.name,
+      "device": target_device.name,
       "tags": model.model_impl.tags + model.tags,
   }
 
   # We use different binaries for benchmarking gpu and cpu.
-  accelerator = benchmark.target_device.accelerator_type
+  accelerator = target_device.accelerator_type
   if accelerator == "gpu":
     metrics = _run_compiler_benchmark_gpu(hlo_benchmark_tool_path=hlo_tool,
                                           hlo_input_path=hlo_dump,
@@ -286,6 +289,13 @@ def _parse_arguments() -> argparse.Namespace:
                       "--benchmark_name",
                       required=True,
                       help="The unique id that defines a benchmark.")
+  parser.add_argument("-device",
+                      "--target_device",
+                      dest="target_device_name",
+                      type=str,
+                      required=True,
+                      choices=ALL_DEVICE_NAMES,
+                      help="The target device to benchmark.")
   parser.add_argument("-iter",
                       "--iterations",
                       type=int,
@@ -314,6 +324,7 @@ def _parse_arguments() -> argparse.Namespace:
 
 def main(
     benchmark_name: str,
+    target_device_name: str,
     output: pathlib.Path,
     root_dir: pathlib.Path,
     hlo_tool: pathlib.Path,
@@ -334,6 +345,13 @@ def main(
     raise ValueError(f'No benchmark matches "{benchmark_name}".'
                      f' Available benchmarks:\n{all_benchmark_names}')
 
+  try:
+    target_device = next(device for device in devices.ALL_DEVICES
+                         if device.name == target_device_name)
+  except StopIteration:
+    raise ValueError(f'Target device "{target_device_name}" is not defined.'
+                     f' Available device options:\n{ALL_DEVICE_NAMES}')
+
   if not no_download:
     _download_artifacts(benchmarks=benchmarks,
                         root_dir=root_dir,
@@ -345,6 +363,7 @@ def main(
       raise ValueError(f"HLO dump not found: '{hlo_dump}'.")
 
     result = _run(benchmark=benchmark,
+                  target_device=target_device,
                   iterations=iterations,
                   hlo_tool=hlo_tool,
                   hlo_dump=hlo_dump,

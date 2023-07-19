@@ -33,3 +33,5 @@ GCP_C2_STANDARD_16 = def_types.DeviceSpec(
         "num_of_cores": 16,
     },
 )
+
+ALL_DEVICES = [GCP_A2_HIGHGPU_1G, GCP_C2_STANDARD_16]
