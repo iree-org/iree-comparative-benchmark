@@ -4,11 +4,6 @@ on:
   pull_request:
     paths:
       - devtools/db_import/**
-  # This also needs to run on push to fill the GitHub Actions Cache with the current Docker image,
-  # so that subsequent PRs can inherit this cache and leverage the prebuilt Docker image.
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 concurrency:
@@ -29,43 +24,20 @@ jobs:
       - environment=prod
       - cpu
       - os-family=Linux
+    env:
+      DOCKER_IMAGE: gcr.io/iree-oss/openxla-benchmark/db_import@sha256:d17b8c1caad4b83bd0693c5d134c5cbe2140de073aa6eee60519845650c5fcd5
     steps:
       - name: "Checking out PR repository"
         uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4c0219f9ac95b02789c1075625400b2acbff50b1 # v2.9.1
-
-      # This builds the Docker image from the Dockerfile on each invocation of
-      # the workflow. This has the advantage that we don't have to deal with
-      # outdated Docker images in registries. Any changes to the Dockerfile
-      # or the context will be automatically reflected in the used image.
-      #
-      # This is of course time consuming, so we use the GitHub Actions Caching
-      # Service to make the build step fast (15 mins uncached build time,
-      # 15secs cached build time). If needed it's also possible to push
-      # newly built images to a registries, but this should only happen in
-      # postsubmit.
-      - name: Build Docker image
-        id: build
-        uses: docker/build-push-action@2eb1c1961a95fc15694676618e422e8ba1d63825 # v4.1.1
-        with:
-          context: ./devtools/db_import
-          file: ./devtools/docker/dockerfiles/db_import.Dockerfile
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          load: true
-          push: false
-          tags: presubmit:current
-
       - name: Run unit tests
         id: run_unit_tests
         run: |
-          docker run --rm -v $(pwd)/devtools/db_import:/work --pull=never presubmit:current \
+          docker run --rm -v $(pwd)/devtools/db_import:/work ${DOCKER_IMAGE} \
           python -m unittest discover -p \*_test.py -s /work/db_import -t db_import
 
       - name: Run integration tests
         id: run_integration_tests
         run: |
-          docker run --rm -v $(pwd)/devtools/db_import:/work --pull=never presubmit:current \
+          docker run --rm -v $(pwd)/devtools/db_import:/work --pull=never ${DOCKER_IMAGE} \
           sh -c 'python /work/cli.py config list_pipelines | xargs python /work/cli.py verify'
