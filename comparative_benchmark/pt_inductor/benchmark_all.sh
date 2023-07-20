@@ -50,6 +50,9 @@ if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then
 elif [ "${TARGET_DEVICE}" = "c2-standard-16" ]; then
   BENCHMARK_NAMES=("${CPU_BENCHMARK_NAMES[@]}")
   ITERATIONS=20
+elif [ "${TARGET_DEVICE}" = "c2-standard-60" ]; then
+  BENCHMARK_NAMES=("${CPU_BENCHMARK_NAMES[@]}")
+  ITERATIONS=20
 else
   echo "Unsupported target device ${TARGET_DEVICE}."
   exit 1
