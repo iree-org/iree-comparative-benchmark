@@ -167,7 +167,6 @@ RESNET50_FP32_TF_3X224X224XF32_BATCHES = utils.build_batch_models(
 EFFICIENTNET_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/tensorflow/tf_models_2.13.0_1689819439/"
 
 EFFICIENTNET_TF_IMPL = def_types.ModelImplementation(
-    id=unique_ids.MODEL_IMPL_EFFICIENTNET_TF,
     name="EFFICIENTNET_TF",
     tags=["cnn", "efficientnet"],
     framework_type=def_types.ModelFrameworkType.TF_V2,
@@ -176,7 +175,6 @@ EFFICIENTNET_TF_IMPL = def_types.ModelImplementation(
     "https://www.tensorflow.org/api_docs/python/tf/keras/applications/efficientnet",
 )
 EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH_TEMPLATE = utils.ModelTemplate(
-    id=utils.BATCH_ID(unique_ids.MODEL_EFFICIENTNETB7_FP32_TF_600X600X3XF32),
     name=utils.BATCH_NAME("EFFICIENTNETB7_FP32_TF_600X600X3XF32"),
     tags=[utils.BATCH_TAG, "fp32"],
     model_impl=EFFICIENTNET_TF_IMPL,
