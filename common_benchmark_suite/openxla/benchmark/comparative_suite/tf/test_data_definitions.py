@@ -182,8 +182,6 @@ OUTPUT_DATA_RESNET50_FP32_TF_2048X7X7XF32_BATCHES = utils.build_batch_model_test
 EFFICIENTNET_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/tensorflow/tf_models_2.13.0_1689819439/"
 
 INPUT_DATA_EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(
-        unique_ids.INPUT_DATA_EFFICIENTNETB7_FP32_TF_600X600X3XF32),
     name=utils.BATCH_NAME("INPUT_DATA_EFFICIENTNETB7_FP32_TF_600X600X3XF32"),
     tags=["input-data", "imagenet", utils.BATCH_TAG],
     source_info=
@@ -209,7 +207,6 @@ INPUT_DATA_EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCHES = utils.build_batch_mode
 
 # EfficientNetB7 outputs.
 OUTPUT_DATA_EFFICIENTNETB7_FP32_TF_1000XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_EFFICIENTNETB7_FP32_TF_1000XF32),
     name=utils.BATCH_NAME("OUTPUT_DATA_EFFICIENTNETB7_FP32_TF_1000XF32"),
     tags=["input-data", "imagenet", utils.BATCH_TAG],
     source_info="",

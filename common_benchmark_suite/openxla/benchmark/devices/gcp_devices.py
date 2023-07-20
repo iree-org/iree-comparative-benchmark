@@ -32,4 +32,18 @@ GCP_C2_STANDARD_16 = def_types.DeviceSpec(
     },
 )
 
-ALL_DEVICES = [GCP_A2_HIGHGPU_1G, GCP_C2_STANDARD_16]
+GCP_C2_STANDARD_60 = def_types.DeviceSpec(
+    name="c2-standard-60",
+    host_type="gcp",
+    host_model="c2-standard-60",
+    host_environment="linux-x86_64",
+    accelerator_type="cpu",
+    accelerator_model="intel-cascadelake",
+    accelerator_architecture="x86_64-cascadelake",
+    accelerator_attributes={
+        "num_of_cores": 30,
+        "hyper-threading": False,
+    },
+)
+
+ALL_DEVICES = [GCP_A2_HIGHGPU_1G, GCP_C2_STANDARD_16, GCP_C2_STANDARD_60]
