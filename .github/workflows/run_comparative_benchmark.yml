@@ -177,7 +177,7 @@ jobs:
 #              "${RESULTS_PATH}"
 #          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
 
-  benchmark_on_c2-standard-16:
+  benchmark_on_c2-standard-60:
     needs: [setup]
     # Use a 12-hour timeout because CPU-Next takes a long time.
     timeout-minutes: 1440
@@ -185,11 +185,11 @@ jobs:
       - self-hosted  # must come first
       - runner-group=${{ needs.setup.outputs.runner-group }}
       - environment=prod
-      - machine-type=c2-standard-16
+      - machine-type=c2-standard-60
     env:
       BENCHMARK_GCS_DIR: ${{ needs.setup.outputs.benchmark-gcs-dir }}
       RESULTS_DIR: results-dir
-      TARGET_DEVICE: c2-standard-16
+      TARGET_DEVICE: c2-standard-60
       XLA_TOOLS_DIR: ${{ needs.build_xla_tools.outputs.xla-tools-dir }}
       XLA_TOOLS_DIR_ARCHIVE: ${{ needs.build_xla_tools.outputs.xla-tools-dir-archive }}
       XLA_TOOLS_DIR_GCS_ARTIFACT: ${{ needs.build_xla_tools.outputs.xla-tools-dir-gcs-artifact }}
