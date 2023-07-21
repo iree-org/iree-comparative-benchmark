@@ -86,8 +86,8 @@ RESNET_TF_IMPL = def_types.ModelImplementation(
     source_info=
     "https://huggingface.co/docs/transformers/model_doc/resnet#transformers.TFResNetModel",
 )
-RESNET50_FP32_TF_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTemplate(
-    name=utils.BATCH_NAME("RESNET50_FP32_TF_3X224X224XF32"),
+RESNET50_FP32_TF_224X224X3XF32_BATCH_TEMPLATE = utils.ModelTemplate(
+    name=utils.BATCH_NAME("RESNET50_FP32_TF_224X224X3XF32"),
     tags=[utils.BATCH_TAG, "fp32"],
     model_impl=RESNET_TF_IMPL,
     model_parameters={
@@ -102,13 +102,13 @@ RESNET50_FP32_TF_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTemplate(
         def_types.ModelArtifactType.TF_SAVEDMODEL_V2,
     ],
 )
-RESNET50_FP32_TF_3X224X224XF32_BATCHES = utils.build_batch_models(
-    template=RESNET50_FP32_TF_3X224X224XF32_BATCH_TEMPLATE,
+RESNET50_FP32_TF_224X224X3XF32_BATCHES = utils.build_batch_models(
+    template=RESNET50_FP32_TF_224X224X3XF32_BATCH_TEMPLATE,
     batch_sizes=[1, 8, 64, 128, 256, 2048])
 
 ALL_MODELS = list(
     itertools.chain(
         T5_LARGE_FP32_TF_512XI32_BATCHES.values(),
         BERT_LARGE_FP32_TF_384XI32_BATCHES.values(),
-        RESNET50_FP32_TF_3X224X224XF32_BATCHES.values(),
+        RESNET50_FP32_TF_224X224X3XF32_BATCHES.values(),
     ))
