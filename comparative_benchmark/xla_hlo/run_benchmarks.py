@@ -218,18 +218,13 @@ def _run(
     verbose: bool,
 ) -> utils.BenchmarkResult:
   model = benchmark.model
-  input_data = benchmark.input_data.artifacts[
-      def_types.ModelTestDataFormat.NUMPY_TENSORS]
-
   data_type = model.model_parameters["data_type"]
   batch_size = model.model_parameters["batch_size"]
-  input_dims = input_data.data_parameters["tensor_dimensions"]
   benchmark_definition = {
       "benchmark_name": benchmark.name,
       "framework": str(model.model_impl.framework_type),
       "data_type": data_type,
       "batch_size": batch_size,
-      "inputs": input_dims,
       "compiler": "xla",
       "device": target_device.name,
       "tags": model.model_impl.tags + model.tags,

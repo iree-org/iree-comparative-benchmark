@@ -7,12 +7,10 @@
 import itertools
 
 from openxla.benchmark.comparative_suite import utils
-from openxla.benchmark.comparative_suite.jax import model_definitions, test_data_definitions
+from openxla.benchmark.comparative_suite.jax import model_definitions
 
 T5_LARGE_FP32_JAX_512XI32_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.T5_LARGE_FP32_JAX_512XI32_BATCHES,
-    batch_inputs=test_data_definitions.
-    INPUT_DATA_T5_LARGE_FP32_JAX_512XI32_BATCHES,
     verify_parameters={
         "absolute_tolerance": 0.5,
     },
@@ -20,8 +18,6 @@ T5_LARGE_FP32_JAX_512XI32_CASES = utils.build_batch_benchmark_cases(
 )
 T5_LARGE_FP16_JAX_512XI32_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.T5_LARGE_FP16_JAX_512XI32_BATCHES,
-    batch_inputs=test_data_definitions.
-    INPUT_DATA_T5_LARGE_FP16_JAX_512XI32_BATCHES,
     verify_parameters={
         "absolute_tolerance": 0.5,
     },
@@ -29,8 +25,6 @@ T5_LARGE_FP16_JAX_512XI32_CASES = utils.build_batch_benchmark_cases(
 )
 T5_LARGE_BF16_JAX_512XI32_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.T5_LARGE_BF16_JAX_512XI32_BATCHES,
-    batch_inputs=test_data_definitions.
-    INPUT_DATA_T5_LARGE_BF16_JAX_512XI32_BATCHES,
     verify_parameters={
         "absolute_tolerance": 0.5,
     },
@@ -38,8 +32,6 @@ T5_LARGE_BF16_JAX_512XI32_CASES = utils.build_batch_benchmark_cases(
 )
 T5_4CG_LARGE_FP32_JAX_512XI32_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.T5_4CG_LARGE_FP32_JAX_512XI32_BATCHES,
-    batch_inputs=test_data_definitions.
-    INPUT_DATA_T5_4CG_LARGE_FP32_JAX_512XI32_BATCHES,
     verify_parameters={
         "absolute_tolerance": 0.5,
     },
@@ -48,8 +40,6 @@ T5_4CG_LARGE_FP32_JAX_512XI32_CASES = utils.build_batch_benchmark_cases(
 
 BERT_LARGE_FP32_JAX_384XI32_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.BERT_LARGE_FP32_JAX_384XI32_BATCHES,
-    batch_inputs=test_data_definitions.
-    INPUT_DATA_BERT_LARGE_FP32_JAX_384XI32_BATCHES,
     verify_parameters={
         "absolute_tolerance": 0.5,
     },
@@ -57,8 +47,6 @@ BERT_LARGE_FP32_JAX_384XI32_CASES = utils.build_batch_benchmark_cases(
 )
 BERT_LARGE_FP16_JAX_384XI32_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.BERT_LARGE_FP16_JAX_384XI32_BATCHES,
-    batch_inputs=test_data_definitions.
-    INPUT_DATA_BERT_LARGE_FP16_JAX_384XI32_BATCHES,
     verify_parameters={
         "absolute_tolerance": 0.5,
     },
@@ -66,8 +54,6 @@ BERT_LARGE_FP16_JAX_384XI32_CASES = utils.build_batch_benchmark_cases(
 )
 BERT_LARGE_BF16_JAX_384XI32_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.BERT_LARGE_BF16_JAX_384XI32_BATCHES,
-    batch_inputs=test_data_definitions.
-    INPUT_DATA_BERT_LARGE_BF16_JAX_384XI32_BATCHES,
     verify_parameters={
         "absolute_tolerance": 0.5,
     },
@@ -76,8 +62,6 @@ BERT_LARGE_BF16_JAX_384XI32_CASES = utils.build_batch_benchmark_cases(
 
 RESNET50_FP32_JAX_3X224X224XF32_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.RESNET50_FP32_JAX_3X224X224XF32_BATCHES,
-    batch_inputs=test_data_definitions.
-    INPUT_DATA_RESNET50_FP32_JAX_3X224X224XF32_BATCHES,
     verify_parameters={
         "absolute_tolerance": 0.5,
     },
@@ -85,8 +69,6 @@ RESNET50_FP32_JAX_3X224X224XF32_CASES = utils.build_batch_benchmark_cases(
 )
 RESNET50_FP16_JAX_3X224X224XF16_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.RESNET50_FP16_JAX_3X224X224XF16_BATCHES,
-    batch_inputs=test_data_definitions.
-    INPUT_DATA_RESNET50_FP16_JAX_3X224X224XF16_BATCHES,
     verify_parameters={
         "absolute_tolerance": 0.5,
     },
@@ -94,8 +76,6 @@ RESNET50_FP16_JAX_3X224X224XF16_CASES = utils.build_batch_benchmark_cases(
 )
 RESNET50_BF16_JAX_3X224X224XBF16_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.RESNET50_BF16_JAX_3X224X224XBF16_BATCHES,
-    batch_inputs=test_data_definitions.
-    INPUT_DATA_RESNET50_BF16_JAX_3X224X224XBF16_BATCHES,
     verify_parameters={
         "absolute_tolerance": 0.5,
     },
