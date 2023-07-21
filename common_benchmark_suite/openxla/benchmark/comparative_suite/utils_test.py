@@ -15,14 +15,12 @@ class UtilsTest(unittest.TestCase):
 
   def test_build_batch_models(self):
     dummy_impl = def_types.ModelImplementation(
-        id="abcd",
         name="TEST",
         tags=["fp32"],
         framework_type=def_types.ModelFrameworkType.JAX,
         module_path=f"test.model",
         source_info="")
     template = utils.ModelTemplate(
-        id=utils.BATCH_ID("1234"),
         name=utils.BATCH_NAME("TEST_MODEL"),
         tags=[utils.BATCH_TAG, "test"],
         model_impl=dummy_impl,
@@ -44,7 +42,6 @@ class UtilsTest(unittest.TestCase):
         models, {
             1:
                 def_types.Model(
-                    id="1234-batch1",
                     name="TEST_MODEL_BATCH1",
                     tags=["batch-1", "test"],
                     model_impl=dummy_impl,
@@ -62,7 +59,6 @@ class UtilsTest(unittest.TestCase):
                 ),
             2:
                 def_types.Model(
-                    id="1234-batch2",
                     name="TEST_MODEL_BATCH2",
                     tags=["batch-2", "test"],
                     model_impl=dummy_impl,

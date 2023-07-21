@@ -7,13 +7,12 @@
 import string
 
 from openxla.benchmark.comparative_suite import utils
-from openxla.benchmark import def_types, unique_ids
+from openxla.benchmark import def_types
 
 PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/tensorflow/tf_models_2.13.0rc2_1688540251/"
 
 # T5-Large inputs.
 INPUT_DATA_T5_LARGE_FP32_TF_512XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.INPUT_DATA_T5_LARGE_FP32_TF_512XI32),
     name=utils.BATCH_NAME("INPUT_DATA_T5_LARGE_FP32_TF_512XI32"),
     tags=["input-data", "seqlen512", utils.BATCH_TAG],
     source_info=
@@ -44,7 +43,6 @@ INPUT_DATA_T5_LARGE_FP32_TF_512XI32_BATCHES = utils.build_batch_model_test_data(
 
 # T5-Large outputs.
 OUTPUT_DATA_T5_LARGE_FP32_TF_512X1024XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_T5_LARGE_FP32_TF_512X1024XF32),
     name=utils.BATCH_NAME("OUTPUT_DATA_T5_LARGE_FP32_TF_512X1024XF32"),
     tags=["output-data", utils.BATCH_TAG],
     source_info="",
@@ -73,7 +71,6 @@ OUTPUT_DATA_T5_LARGE_FP32_TF_512X1024XF32_BATCHES = utils.build_batch_model_test
 
 # Bert-Large inputs.
 INPUT_DATA_BERT_LARGE_FP32_TF_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.INPUT_DATA_BERT_LARGE_FP32_TF_384XI32),
     name=utils.BATCH_NAME("INPUT_DATA_BERT_LARGE_FP32_TF_384XI32"),
     tags=["input-data", "seqlen384", utils.BATCH_TAG],
     source_info="Original text: 'a photo of a cat'.",
@@ -103,7 +100,6 @@ INPUT_DATA_BERT_LARGE_FP32_TF_384XI32_BATCHES = utils.build_batch_model_test_dat
 
 # Bert-Large outputs.
 OUTPUT_DATA_BERT_LARGE_FP32_TF_384X1024XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_BERT_LARGE_FP32_TF_384X1024XF32),
     name=utils.BATCH_NAME("OUTPUT_DATA_BERT_LARGE_FP32_TF_384X1024XF32"),
     tags=["output-data", utils.BATCH_TAG],
     source_info="",
@@ -131,7 +127,6 @@ OUTPUT_DATA_BERT_LARGE_FP32_TF_384X1024XF32_BATCHES = utils.build_batch_model_te
 
 # ResNet50 inputs.
 INPUT_DATA_RESNET50_FP32_TF_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.INPUT_DATA_RESNET50_FP32_TF_3X224X224XF32),
     name=utils.BATCH_NAME("INPUT_DATA_RESNET50_FP32_TF_3X224X224XF32"),
     tags=["input-data", "imagenet", utils.BATCH_TAG],
     source_info=
@@ -157,7 +152,6 @@ INPUT_DATA_RESNET50_FP32_TF_3X224X224XF32_BATCHES = utils.build_batch_model_test
 
 # ResNet50 outputs.
 OUTPUT_DATA_RESNET50_FP32_TF_2048X7X7XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_RESNET50_FP32_TF_2048X7X7XF32),
     name=utils.BATCH_NAME("OUTPUT_DATA_RESNET50_FP32_TF_2048X7X7XF32"),
     tags=["input-data", "imagenet", utils.BATCH_TAG],
     source_info="",

@@ -7,13 +7,12 @@
 import itertools
 import string
 
-from openxla.benchmark import def_types, unique_ids
+from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite import utils
 
 PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.13_1688607404/"
 
 T5_JAX_IMPL = def_types.ModelImplementation(
-    id=unique_ids.MODEL_IMPL_T5_JAX,
     name="T5_JAX",
     tags=["transformer-encoder", "transformer-decoder", "t5"],
     framework_type=def_types.ModelFrameworkType.JAX,
@@ -23,7 +22,6 @@ T5_JAX_IMPL = def_types.ModelImplementation(
 )
 
 T5_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
-    id=utils.BATCH_ID(unique_ids.MODEL_T5_LARGE_FP32_JAX_512XI32),
     name=utils.BATCH_NAME("T5_LARGE_FP32_JAX_512XI32"),
     tags=[utils.BATCH_TAG, "fp32"],
     model_impl=T5_JAX_IMPL,
@@ -53,7 +51,6 @@ T5_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
     },
 )
 T5_LARGE_FP16_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
-    id=utils.BATCH_ID(unique_ids.MODEL_T5_LARGE_FP16_JAX_512XI32),
     name=utils.BATCH_NAME("T5_LARGE_FP16_JAX_512XI32"),
     tags=[utils.BATCH_TAG],
     model_impl=T5_JAX_IMPL,
@@ -82,7 +79,6 @@ T5_LARGE_FP16_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
     },
 )
 T5_LARGE_BF16_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
-    id=utils.BATCH_ID(unique_ids.MODEL_T5_LARGE_BF16_JAX_512XI32),
     name=utils.BATCH_NAME("T5_LARGE_BF16_JAX_512XI32"),
     tags=[utils.BATCH_TAG],
     model_impl=T5_JAX_IMPL,
@@ -123,7 +119,6 @@ T5_LARGE_BF16_JAX_512XI32_BATCHES = utils.build_batch_models(
     batch_sizes=[1, 16, 24, 32, 48, 64, 512])
 
 T5_4CG_JAX_IMPL = def_types.ModelImplementation(
-    id=unique_ids.MODEL_IMPL_T5_4CG_JAX,
     name="T5_4CG_JAX",
     tags=[
         "transformer-encoder", "transformer-decoder", "t5", "auto-regressive"
@@ -136,7 +131,6 @@ T5_4CG_JAX_IMPL = def_types.ModelImplementation(
 )
 
 T5_4CG_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
-    id=utils.BATCH_ID(unique_ids.MODEL_T5_4CG_LARGE_FP32_JAX),
     name=utils.BATCH_NAME("T5_4CG_LARGE_FP32_JAX_512XI32"),
     tags=[utils.BATCH_TAG, "fp32"],
     model_impl=T5_4CG_JAX_IMPL,
@@ -173,7 +167,6 @@ T5_4CG_LARGE_FP32_JAX_512XI32_BATCHES = utils.build_batch_models(
 # Model implementation from https://huggingface.co/docs/transformers/model_doc/bert#transformers.FlaxBertModel.
 # Batch sizes from MLPerf A100 Configs: https://github.com/mlcommons/inference_results_v2.1/tree/master/closed/NVIDIA/configs/bert
 BERT_JAX_IMPL = def_types.ModelImplementation(
-    id=unique_ids.MODEL_IMPL_BERT_JAX,
     name="BERT_JAX",
     tags=["transformer-encoder", "bert"],
     framework_type=def_types.ModelFrameworkType.JAX,
@@ -183,7 +176,6 @@ BERT_JAX_IMPL = def_types.ModelImplementation(
 )
 
 BERT_LARGE_FP32_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
-    id=utils.BATCH_ID(unique_ids.MODEL_BERT_LARGE_FP32_JAX_384XI32),
     name=utils.BATCH_NAME("BERT_LARGE_FP32_JAX_384XI32"),
     tags=[utils.BATCH_TAG],
     model_impl=BERT_JAX_IMPL,
@@ -213,7 +205,6 @@ BERT_LARGE_FP32_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
     })
 
 BERT_LARGE_FP16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
-    id=utils.BATCH_ID(unique_ids.MODEL_BERT_LARGE_FP16_JAX_384XI32),
     name=utils.BATCH_NAME("BERT_LARGE_FP16_JAX_384XI32"),
     tags=[utils.BATCH_TAG],
     model_impl=BERT_JAX_IMPL,
@@ -243,7 +234,6 @@ BERT_LARGE_FP16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
     })
 
 BERT_LARGE_BF16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
-    id=utils.BATCH_ID(unique_ids.MODEL_BERT_LARGE_BF16_JAX_384XI32),
     name=utils.BATCH_NAME("BERT_LARGE_BF16_JAX_384XI32"),
     tags=[utils.BATCH_TAG],
     model_impl=BERT_JAX_IMPL,
@@ -289,7 +279,6 @@ BERT_LARGE_BF16_JAX_384XI32_BATCHES = utils.build_batch_models(
 # Batch sizes from MLPerf A100 Configs: https://github.com/mlcommons/inference_results_v2.1/tree/master/closed/NVIDIA/configs/resnet50
 
 RESNET_JAX_IMPL = def_types.ModelImplementation(
-    id=unique_ids.MODEL_IMPL_RESNET_JAX,
     name="RESNET_JAX",
     tags=["cnn", "resnet"],
     framework_type=def_types.ModelFrameworkType.JAX,
@@ -299,7 +288,6 @@ RESNET_JAX_IMPL = def_types.ModelImplementation(
 )
 
 RESNET50_FP32_JAX_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTemplate(
-    id=utils.BATCH_ID(unique_ids.MODEL_RESNET50_FP32_JAX_3X224X224XF32),
     name=utils.BATCH_NAME("RESNET50_FP32_JAX_3X224X224XF32"),
     tags=[utils.BATCH_TAG],
     model_impl=RESNET_JAX_IMPL,
@@ -328,7 +316,6 @@ RESNET50_FP32_JAX_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTemplate(
     })
 
 RESNET50_FP16_JAX_3X224X224XF16_BATCH_TEMPLATE = utils.ModelTemplate(
-    id=utils.BATCH_ID(unique_ids.MODEL_RESNET50_FP16_JAX_3X224X224XF16),
     name=utils.BATCH_NAME("RESNET50_FP16_JAX_3X224X224XF16"),
     tags=[utils.BATCH_TAG],
     model_impl=RESNET_JAX_IMPL,
@@ -357,7 +344,6 @@ RESNET50_FP16_JAX_3X224X224XF16_BATCH_TEMPLATE = utils.ModelTemplate(
     })
 
 RESNET50_BF16_JAX_3X224X224XBF16_BATCH_TEMPLATE = utils.ModelTemplate(
-    id=utils.BATCH_ID(unique_ids.MODEL_RESNET50_BF16_JAX_3X224X224XBF16),
     name=utils.BATCH_NAME("RESNET50_BF16_JAX_3X224X224XBF16"),
     tags=[utils.BATCH_TAG],
     model_impl=RESNET_JAX_IMPL,
