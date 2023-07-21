@@ -10,7 +10,7 @@ import dataclasses
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
-from openxla.benchmark import def_types
+from openxla.benchmark import def_types, testdata
 
 
 @dataclass(frozen=True)
@@ -100,70 +100,20 @@ def build_batch_models(
   return batch_models
 
 
-@dataclass(frozen=True)
-class ModelTestDataArtifactTemplate:
-  """Template of def_types.ModelTestDataArtifact."""
-  data_format: def_types.ModelTestDataFormat
-  data_parameters: Dict[str, Any]
-  source_url: string.Template
-
-
-@dataclass(frozen=True)
-class ModelTestDataTemplate:
-  """Template of def_types.ModelTestData."""
-  name: string.Template
-  tags: List[Union[str, string.Template]]
-  source_info: str
-  artifacts: Dict[def_types.ModelTestDataFormat, ModelTestDataArtifactTemplate]
-
-
-def build_batch_model_test_data(
-    template: ModelTestDataTemplate,
-    batch_sizes: Sequence[int]) -> Dict[int, def_types.ModelTestData]:
-  """Build model test data with batch sizes by replacing `${batch_size}` in the
-  template.
-
-  Args:
-    template: model test data template with "${batch_size}" to replace.
-    batch_sizes: list of batch sizes to generate.
-
-  Returns:
-    Map of batch size to model test data.
-  """
-
-  batch_test_data = {}
-  for batch_size in batch_sizes:
-    substitute = lambda obj: _substitute_template(obj=obj,
-                                                  batch_size=batch_size)
-    artifacts = {}
-    for artifact_type, artifact_template in template.artifacts.items():
-      artifact = def_types.ModelTestDataArtifact(
-          data_format=artifact_template.data_format,
-          data_parameters=substitute(artifact_template.data_parameters),
-          source_url=substitute(artifact_template.source_url))
-      artifacts[artifact_type] = artifact
-
-    test_data = def_types.ModelTestData(name=substitute(template.name),
-                                        tags=substitute(template.tags),
-                                        source_info=template.source_info,
-                                        artifacts=artifacts)
-    batch_test_data[batch_size] = test_data
-
-  return batch_test_data
-
-
 def build_batch_benchmark_cases(
     batch_models: Dict[int, def_types.Model],
-    batch_inputs: Dict[int, def_types.ModelTestData],
     batch_sizes: Sequence[int],
+    batch_inputs: Optional[Dict[int, def_types.ModelTestData]] = None,
     verify_parameters: Optional[Dict[str, Any]] = None,
 ) -> Dict[int, def_types.BenchmarkCase]:
   """Build benchmark cases for multiple batch sizes."""
   benchmark_cases: Dict[int, def_types.BenchmarkCase] = {}
   for batch_size in batch_sizes:
+    input_data = (testdata.INPUT_DATA_MODEL_DEFAULT
+                  if batch_inputs is None else batch_inputs[batch_size])
     benchmark_case = def_types.BenchmarkCase.build(
         model=batch_models[batch_size],
-        input_data=batch_inputs[batch_size],
+        input_data=input_data,
         verify_parameters=verify_parameters)
     benchmark_cases[batch_size] = benchmark_case
 

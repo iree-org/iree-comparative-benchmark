@@ -39,18 +39,13 @@ def _run(
     verbose: bool,
 ) -> utils.BenchmarkResult:
   model = benchmark.model
-  input_data = benchmark.input_data.artifacts[
-      def_types.ModelTestDataFormat.NUMPY_TENSORS]
-
   data_type = model.model_parameters["data_type"]
   batch_size = model.model_parameters["batch_size"]
-  input_dims = input_data.data_parameters["tensor_dimensions"]
   benchmark_definition = {
       "benchmark_name": benchmark.name,
       "framework": str(model.model_impl.framework_type),
       "data_type": data_type,
       "batch_size": batch_size,
-      "inputs": input_dims,
       "compiler": compiler,
       "device": target_device.name,
       "tags": model.model_impl.tags + model.tags,
@@ -102,10 +97,9 @@ def _download_artifacts(benchmarks: Sequence[def_types.BenchmarkCase],
   for benchmark in benchmarks:
     model = benchmark.model
 
-    input_artifact = benchmark.input_data.artifacts[
-        def_types.ModelTestDataFormat.NUMPY_TENSORS]
     input_path = root_dir / model.name / "inputs_npy.tgz"
-    download_list.append((input_artifact.source_url, input_path))
+    input_url = model.artifacts_url + "/inputs_npy.tgz"
+    download_list.append((input_url, input_path))
 
     expect_path = root_dir / model.name / "outputs_npy.tgz"
     expect_url = model.artifacts_url + "/outputs_npy.tgz"
@@ -204,16 +198,8 @@ def benchmark(
   for benchmark in benchmarks:
     model_dir = root_dir / benchmark.model.name
 
-    input_artifact = benchmark.input_data.artifacts[
-        def_types.ModelTestDataFormat.NUMPY_TENSORS]
-    num_of_inputs = len(input_artifact.data_parameters["tensor_dimensions"])
-    input_npys = []
-    # Check and gather input npy paths.
-    for idx in range(num_of_inputs):
-      path = model_dir / "inputs_npy" / f"input_{idx}.npy"
-      if not path.exists():
-        raise ValueError(f"Missing input data '{path}'.")
-      input_npys.append(path)
+    inputs_npy_dir = model_dir / "inputs_npy"
+    input_npys = list(inputs_npy_dir.glob("input_*.npy"))
 
     outputs_npy_dir = model_dir / "outputs_npy"
     expect_npys = list(outputs_npy_dir.glob("output_*.npy"))

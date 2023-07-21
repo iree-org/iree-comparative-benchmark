@@ -67,35 +67,17 @@ class Model:
     return self.name
 
 
-class ModelTestDataFormat(Enum):
-  """Model input or output data format."""
-  # Pack of numpy tensor files in `.tar.gz`.
-  NUMPY_TENSORS = "npy_tensors"
-
-
-@dataclass(frozen=True)
-class ModelTestDataArtifact:
-  """Model test data in a specific format."""
-  # Test data format.
-  data_format: ModelTestDataFormat
-  # TODO(#12): We should include the raw data to generate this test data.
-  # Parameters to generate the test data.
-  data_parameters: Dict[str, Any]
-  # URL to download the test data.
-  source_url: str
-
-
 @dataclass(frozen=True)
 class ModelTestData:
-  """Model input or expected output data."""
+  """Raw input data to test models."""
   # Friendly name.
   name: str
-  # Tags that describe characteristics additional to `data_source.tags`.
-  tags: List[str]
+  # URL to download the test data.
+  source_url: str
   # Source information.
-  source_info: str
-  # Test data in multiple formats.
-  artifacts: Dict[ModelTestDataFormat, ModelTestDataArtifact]
+  source_info: str = ""
+  # Tags that describe characteristics additional to `data_source.tags`.
+  tags: List[str] = dataclasses.field(default_factory=list)
 
   def __str__(self):
     return self.name
