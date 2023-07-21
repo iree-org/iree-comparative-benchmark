@@ -25,15 +25,8 @@ MODELS_MODULE_PATH = "openxla.benchmark.models"
 # Constants and functions help build batch templates.
 BATCH_NAME = lambda name: string.Template(name + "_BATCH${batch_size}")
 BATCH_TAG = string.Template("batch-${batch_size}")
-BATCH_SIZE_PARAM = TemplateFunc(func=lambda batch_size: batch_size)
+BATCH_SIZE_PARAM = TemplateFunc(func=lambda batch_size, **_unused: batch_size)
 BATCH_TENSOR_DIMS = lambda dims: string.Template("${batch_size}x" + dims)
-
-
-@dataclass(frozen=True)
-class ModelArtifactTemplate:
-  """Template of def_types.ModelArtifact."""
-  artifact_type: def_types.ModelArtifactType
-  source_url: string.Template
 
 
 @dataclass(frozen=True)
@@ -43,7 +36,9 @@ class ModelTemplate:
   tags: List[Union[str, string.Template]]
   model_impl: def_types.ModelImplementation
   model_parameters: Dict[str, Any]
-  artifacts: Dict[def_types.ModelArtifactType, ModelArtifactTemplate]
+  artifacts_url: string.Template
+  exported_model_types: List[def_types.ModelArtifactType] = dataclasses.field(
+      default_factory=list)
 
 
 def _substitute_template(obj: Any, **substitutions) -> Any:
@@ -73,10 +68,14 @@ def _substitute_template(obj: Any, **substitutions) -> Any:
 def build_batch_models(
     template: ModelTemplate,
     batch_sizes: Sequence[int]) -> Dict[int, def_types.Model]:
-  """Build model with batch sizes by replacing `${batch_size}` in the template.
+  """Build model with batch sizes by replacing `${batch_size}`, `${name}` in the
+  template.
+
+  The `${name}` will be replaced by model name. Note that the model name
+  template can't contain `${name}`.
 
   Args:
-    template: model template with "${batch_size}" to replace.
+    template: model template to replace.
     batch_sizes: list of batch sizes to generate.
 
   Returns:
@@ -85,21 +84,17 @@ def build_batch_models(
 
   batch_models = {}
   for batch_size in batch_sizes:
-    substitute = lambda obj: _substitute_template(obj=obj,
-                                                  batch_size=batch_size)
-    artifacts = {}
-    for artifact_type, artifact_template in template.artifacts.items():
-      artifact = def_types.ModelArtifact(
-          artifact_type=artifact_template.artifact_type,
-          source_url=substitute(artifact_template.source_url))
-      artifacts[artifact_type] = artifact
-
-    model = def_types.Model(name=substitute(template.name),
-                            tags=substitute(template.tags),
-                            model_impl=template.model_impl,
-                            model_parameters=substitute(
-                                template.model_parameters),
-                            artifacts=artifacts)
+    name = _substitute_template(obj=template.name, batch_size=batch_size)
+    substitute = lambda obj: _substitute_template(
+        obj=obj, batch_size=batch_size, name=name)
+    model = def_types.Model(
+        name=substitute(template.name),
+        tags=substitute(template.tags),
+        model_impl=template.model_impl,
+        model_parameters=substitute(template.model_parameters),
+        exported_model_types=template.exported_model_types,
+        artifacts_url=substitute(template.artifacts_url),
+    )
     batch_models[batch_size] = model
 
   return batch_models

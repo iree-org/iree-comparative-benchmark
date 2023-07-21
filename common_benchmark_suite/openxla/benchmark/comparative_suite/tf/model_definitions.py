@@ -11,6 +11,7 @@ from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite import utils
 
 PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/tensorflow/tf_models_2.13.0rc2_1688540251/"
+ARTIFACTS_URL_TEMPLATE = string.Template(PARENT_GCS_DIR + "${name}")
 
 # T5-Large models.
 # Model implementation from https://huggingface.co/docs/transformers/model_doc/t5#transformers.TFT5Model
@@ -31,31 +32,12 @@ T5_LARGE_FP32_TF_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "data_type": "fp32",
         "model_name": "t5-large",
     },
-    artifacts={
-        def_types.ModelArtifactType.STABLEHLO_MLIR:
-            utils.ModelArtifactTemplate(
-                artifact_type=def_types.ModelArtifactType.STABLEHLO_MLIR,
-                source_url=string.Template(
-                    PARENT_GCS_DIR +
-                    "T5_LARGE_FP32_TF_512XI32_BATCH${batch_size}/stablehlo.mlirbc"
-                ),
-            ),
-        def_types.ModelArtifactType.XLA_HLO_DUMP:
-            utils.ModelArtifactTemplate(
-                artifact_type=def_types.ModelArtifactType.XLA_HLO_DUMP,
-                source_url=string.Template(
-                    PARENT_GCS_DIR +
-                    "T5_LARGE_FP32_TF_512XI32_BATCH${batch_size}/xla_hlo_before_optimizations.txt"
-                ),
-            ),
-        def_types.ModelArtifactType.TF_SAVEDMODEL_V2:
-            utils.ModelArtifactTemplate(
-                artifact_type=def_types.ModelArtifactType.TF_SAVEDMODEL_V2,
-                source_url=string.Template(
-                    PARENT_GCS_DIR +
-                    "T5_LARGE_FP32_TF_512XI32_BATCH${batch_size}/tf-model.tgz"),
-            ),
-    },
+    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+        def_types.ModelArtifactType.TF_SAVEDMODEL_V2,
+    ],
 )
 T5_LARGE_FP32_TF_512XI32_BATCHES = utils.build_batch_models(
     template=T5_LARGE_FP32_TF_512XI32_BATCH_TEMPLATE,
@@ -82,32 +64,13 @@ BERT_LARGE_FP32_TF_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "seq_len": 384,
         "model_name": "bert-large-uncased",
     },
-    artifacts={
-        def_types.ModelArtifactType.STABLEHLO_MLIR:
-            utils.ModelArtifactTemplate(
-                artifact_type=def_types.ModelArtifactType.STABLEHLO_MLIR,
-                source_url=string.Template(
-                    PARENT_GCS_DIR +
-                    "BERT_LARGE_FP32_TF_384XI32_BATCH${batch_size}/stablehlo.mlirbc"
-                ),
-            ),
-        def_types.ModelArtifactType.XLA_HLO_DUMP:
-            utils.ModelArtifactTemplate(
-                artifact_type=def_types.ModelArtifactType.XLA_HLO_DUMP,
-                source_url=string.Template(
-                    PARENT_GCS_DIR +
-                    "BERT_LARGE_FP32_TF_384XI32_BATCH${batch_size}/xla_hlo_before_optimizations.txt"
-                ),
-            ),
-        def_types.ModelArtifactType.TF_SAVEDMODEL_V2:
-            utils.ModelArtifactTemplate(
-                artifact_type=def_types.ModelArtifactType.TF_SAVEDMODEL_V2,
-                source_url=string.Template(
-                    PARENT_GCS_DIR +
-                    "BERT_LARGE_FP32_TF_384XI32_BATCH${batch_size}/tf-model.tgz"
-                ),
-            ),
-    })
+    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+        def_types.ModelArtifactType.TF_SAVEDMODEL_V2,
+    ],
+)
 BERT_LARGE_FP32_TF_384XI32_BATCHES = utils.build_batch_models(
     template=BERT_LARGE_FP32_TF_384XI32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280])
@@ -132,32 +95,13 @@ RESNET50_FP32_TF_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTemplate(
         "data_type": "fp32",
         "model_name": "microsoft/resnet-50",
     },
-    artifacts={
-        def_types.ModelArtifactType.STABLEHLO_MLIR:
-            utils.ModelArtifactTemplate(
-                artifact_type=def_types.ModelArtifactType.STABLEHLO_MLIR,
-                source_url=string.Template(
-                    PARENT_GCS_DIR +
-                    "RESNET50_FP32_TF_224X224X3XF32_BATCH${batch_size}/stablehlo.mlirbc"
-                ),
-            ),
-        def_types.ModelArtifactType.XLA_HLO_DUMP:
-            utils.ModelArtifactTemplate(
-                artifact_type=def_types.ModelArtifactType.XLA_HLO_DUMP,
-                source_url=string.Template(
-                    PARENT_GCS_DIR +
-                    "RESNET50_FP32_TF_224X224X3XF32_BATCH${batch_size}/xla_hlo_before_optimizations.txt"
-                ),
-            ),
-        def_types.ModelArtifactType.TF_SAVEDMODEL_V2:
-            utils.ModelArtifactTemplate(
-                artifact_type=def_types.ModelArtifactType.TF_SAVEDMODEL_V2,
-                source_url=string.Template(
-                    PARENT_GCS_DIR +
-                    "RESNET50_FP32_TF_224X224X3XF32_BATCH${batch_size}/tf-model.tgz"
-                ),
-            ),
-    })
+    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+        def_types.ModelArtifactType.TF_SAVEDMODEL_V2,
+    ],
+)
 RESNET50_FP32_TF_3X224X224XF32_BATCHES = utils.build_batch_models(
     template=RESNET50_FP32_TF_3X224X224XF32_BATCH_TEMPLATE,
     batch_sizes=[1, 8, 64, 128, 256, 2048])

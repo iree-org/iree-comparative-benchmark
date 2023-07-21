@@ -28,12 +28,8 @@ class UtilsTest(unittest.TestCase):
             "batch_size": utils.BATCH_SIZE_PARAM,
             "data_type": "fp32",
         },
-        artifacts={
-            def_types.ModelArtifactType.STABLEHLO_MLIR:
-                utils.ModelArtifactTemplate(
-                    artifact_type=def_types.ModelArtifactType.STABLEHLO_MLIR,
-                    source_url=string.Template("batch_${batch_size}/x.mlirbc"))
-        },
+        artifacts_url=string.Template("test/${name}/batch_${batch_size}"),
+        exported_model_types=[def_types.ModelArtifactType.STABLEHLO_MLIR],
     )
 
     models = utils.build_batch_models(template=template, batch_sizes=[1, 2])
@@ -49,13 +45,10 @@ class UtilsTest(unittest.TestCase):
                         "batch_size": 1,
                         "data_type": "fp32",
                     },
-                    artifacts={
-                        def_types.ModelArtifactType.STABLEHLO_MLIR:
-                            def_types.ModelArtifact(
-                                artifact_type=def_types.ModelArtifactType.
-                                STABLEHLO_MLIR,
-                                source_url="batch_1/x.mlirbc")
-                    },
+                    artifacts_url="test/TEST_MODEL_BATCH1/batch_1",
+                    exported_model_types=[
+                        def_types.ModelArtifactType.STABLEHLO_MLIR
+                    ],
                 ),
             2:
                 def_types.Model(
@@ -66,13 +59,10 @@ class UtilsTest(unittest.TestCase):
                         "batch_size": 2,
                         "data_type": "fp32",
                     },
-                    artifacts={
-                        def_types.ModelArtifactType.STABLEHLO_MLIR:
-                            def_types.ModelArtifact(
-                                artifact_type=def_types.ModelArtifactType.
-                                STABLEHLO_MLIR,
-                                source_url="batch_2/x.mlirbc")
-                    },
+                    artifacts_url="test/TEST_MODEL_BATCH2/batch_2",
+                    exported_model_types=[
+                        def_types.ModelArtifactType.STABLEHLO_MLIR
+                    ],
                 ),
         })
 
