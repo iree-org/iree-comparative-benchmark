@@ -216,7 +216,7 @@ def benchmark(
       input_npys.append(path)
 
     outputs_npy_dir = model_dir / "outputs_npy"
-    expect_npys = [outputs_npy_dir.glob("output_*.npy")]
+    expect_npys = list(outputs_npy_dir.glob("output_*.npy"))
 
     benchmarks_to_inputs[benchmark.name] = input_npys
     benchmarks_to_expects[benchmark.name] = expect_npys
