@@ -15,7 +15,7 @@ import sys
 import tensorflow as tf
 import time
 
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Dict, Optional, Sequence, Tuple
 
 # Add common_benchmark_suite dir to the search path.
 sys.path.insert(
@@ -27,7 +27,7 @@ sys.path.insert(
 from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite.tf import benchmark_definitions
 from openxla.benchmark.models import model_interfaces
-import benchmark_lib, utils
+import benchmark_lib
 
 _HLO_DUMP_DIR = "/tmp/hlo_dump"
 _TF_CPU_DEVICE = "/CPU:0"
@@ -41,13 +41,11 @@ def bytes_to_mb(bytes: Optional[int]) -> Optional[float]:
 def _run_framework_benchmark(
     model: def_types.Model,
     input_npys: Sequence[pathlib.Path],
-    expect_npys: Sequence[pathlib.Path],
-    verify_params: Dict[str, Any],
     warmup_iterations: int,
     benchmark_iterations: int,
     backend: str,
     verbose: bool,
-) -> Dict[str, Any]:
+) -> Tuple[Dict[str, Any], Any]:
   tf_device = _TF_GPU_DEVICE if backend == "gpu" else _TF_CPU_DEVICE
 
   try:
@@ -60,7 +58,6 @@ def _run_framework_benchmark(
           **model.model_parameters)
 
       inputs = [np.load(path) for path in input_npys]
-      expects = [np.load(path) for path in expect_npys]
 
       # Run warmup.
       warmup_latencies = []
@@ -84,11 +81,6 @@ def _run_framework_benchmark(
       if last_outputs is None:
         raise ValueError("No benchmark runs.")
 
-      utils.check_tensor_outputs(outputs=last_outputs,
-                                 expects=expects,
-                                 verbose=verbose,
-                                 **verify_params)
-
       # Retrieve memory stats.
       if tf_device == _TF_GPU_DEVICE:
         memory_info = tf.config.experimental.get_memory_info(tf_device)
@@ -104,9 +96,9 @@ def _run_framework_benchmark(
 
   except Exception as e:
     print(f"Failed to benchmark model {model.name}. Exception: {e}")
-    return {"error": str(e)}
+    raise
 
-  return {
+  metrics = {
       "min_warmup_latency_ms":
           min(warmup_latencies, default=None),
       "max_warmup_latency_ms":
@@ -136,6 +128,7 @@ def _run_framework_benchmark(
       "device_memory_peak_mb":
           device_peak_mb,
   }
+  return (metrics, last_outputs)
 
 
 def _parse_arguments() -> argparse.Namespace:

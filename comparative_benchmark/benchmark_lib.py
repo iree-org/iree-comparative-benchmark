@@ -6,12 +6,13 @@
 
 import argparse
 import dataclasses
+import numpy as np
 import json
 import multiprocessing
 import pathlib
 import re
 import sys
-from typing import Any, Callable, Dict, Sequence
+from typing import Any, Callable, Dict, Optional, Sequence
 
 # Add common_benchmark_suite dir to the search path.
 sys.path.insert(
@@ -21,9 +22,30 @@ sys.path.insert(
     0, str(pathlib.Path(__file__).parents[2] / "comparative_benchmark"))
 
 from openxla.benchmark import def_types, devices
+import openxla.benchmark.models.utils as model_utils
 import utils
 
 ALL_DEVICE_NAMES = [device.name for device in devices.ALL_DEVICES]
+
+
+def _run_one(benchmark_function: Callable,
+             expect_npys: Optional[Sequence[pathlib.Path]], verbose: bool,
+             verify_params: Dict[str, Any], **kwargs) -> Dict[str, Any]:
+  try:
+    metrics, outputs = benchmark_function(verbose=verbose, **kwargs)
+  except Exception as e:
+    return {"error": str(e)}
+
+  if expect_npys is None:
+    if verbose:
+      print("No expected output, skip verification")
+  else:
+    expects = list(np.load(path) for path in expect_npys)
+    utils.check_tensor_outputs(outputs=outputs,
+                               expects=expects,
+                               verbose=verbose,
+                               **verify_params)
+  return metrics
 
 
 def _run(
@@ -33,7 +55,7 @@ def _run(
     warmup_iterations: int,
     iterations: int,
     input_npys: Sequence[pathlib.Path],
-    expect_npys: Sequence[pathlib.Path],
+    expect_npys: Optional[Sequence[pathlib.Path]],
     benchmark_function: Callable,
     compiler: str,
     verbose: bool,
@@ -59,20 +81,23 @@ def _run(
     kwargs: Dict[str, Any] = dict(
         model=model,
         input_npys=list(input_npys),
-        expect_npys=list(expect_npys),
+        expect_npys=None if expect_npys is None else list(expect_npys),
         verify_params=benchmark.verify_parameters,
         warmup_iterations=warmup_iterations,
         benchmark_iterations=iterations,
         backend=backend,
         verbose=verbose,
     )
+
     if run_in_process:
-      framework_metrics = benchmark_function(**kwargs)
+      framework_metrics = _run_one(benchmark_function=benchmark_function,
+                                   **kwargs)
     else:
       shared_dict = manager.dict()
 
       def wrapped_benchmark_function() -> None:
-        shared_dict.update(benchmark_function(**kwargs))
+        metrics = _run_one(benchmark_function=benchmark_function, **kwargs)
+        shared_dict.update(metrics)
 
       p = multiprocessing.Process(target=wrapped_benchmark_function)
       p.start()
@@ -86,6 +111,19 @@ def _run(
           "framework_level": framework_metrics,
       },
   )
+
+
+def _generate_artifacts(benchmarks: Sequence[def_types.BenchmarkCase],
+                        root_dir: pathlib.Path):
+  for benchmark in benchmarks:
+    model = benchmark.model
+    model_dir = root_dir / model.name
+    model_dir.mkdir(exist_ok=True)
+    model_utils.generate_and_save_inputs(
+        model_obj=model_utils.create_model_obj(model),
+        model_dir=model_dir,
+        archive=False,
+    )
 
 
 def _download_artifacts(benchmarks: Sequence[def_types.BenchmarkCase],
@@ -140,6 +178,7 @@ def configure_parser(parser: argparse.ArgumentParser):
                       default=100,
                       help="The number of iterations to benchmark.")
   parser.add_argument(
+      "--run-in-process",
       "--run_in_process",
       action="store_true",
       help=("Whether to run the benchmark under the same process. Set this to"
@@ -149,6 +188,11 @@ def configure_parser(parser: argparse.ArgumentParser):
                       type=pathlib.Path,
                       default=pathlib.Path("/tmp/openxla-benchmark"),
                       help="Root directory stores benchmark artifacts.")
+  parser.add_argument(
+      "--generate-artifacts",
+      "--generate_artifacts",
+      action="store_true",
+      help="Generate instead of downloading benchmark artifacts.")
   parser.add_argument("--no-download",
                       "--no_download",
                       action="store_true",
@@ -166,6 +210,7 @@ def benchmark(
     iterations: int,
     output: pathlib.Path,
     root_dir: pathlib.Path,
+    generate_artifacts: bool,
     no_download: bool,
     verbose: bool,
     benchmark_function: Callable,
@@ -191,7 +236,21 @@ def benchmark(
     raise ValueError(f'Target device "{target_device_name}" is not defined.'
                      f' Available device options:\n{ALL_DEVICE_NAMES}')
 
-  if not no_download:
+  root_dir.mkdir(exist_ok=True)
+  if generate_artifacts:
+    # Run in a separate process to avoid cross-interaction between frameworks.
+    p = multiprocessing.Process(target=_generate_artifacts,
+                                kwargs=dict(
+                                    benchmarks=benchmarks,
+                                    root_dir=root_dir,
+                                ))
+    p.start()
+    if verbose:
+      print("Generating artifacts...")
+    p.join()
+  elif not no_download:
+    if verbose:
+      print("Downloading artifacts...")
     _download_artifacts(benchmarks=benchmarks,
                         root_dir=root_dir,
                         verbose=verbose)
@@ -204,11 +263,20 @@ def benchmark(
     inputs_npy_dir = model_dir / "inputs_npy"
     input_npys = list(inputs_npy_dir.glob("input_*.npy"))
 
+    benchmarks_to_inputs[benchmark.name] = input_npys
+
+    # If generate_artifacts is enabled, no expected output to compare.
+    if generate_artifacts:
+      benchmarks_to_expects[benchmark.name] = None
+      continue
+
     outputs_npy_dir = model_dir / "outputs_npy"
     expect_npys = list(outputs_npy_dir.glob("output_*.npy"))
 
-    benchmarks_to_inputs[benchmark.name] = input_npys
     benchmarks_to_expects[benchmark.name] = expect_npys
+
+  if verbose:
+    print("Started benchmarking...")
 
   for benchmark in benchmarks:
     result = _run(benchmark=benchmark,

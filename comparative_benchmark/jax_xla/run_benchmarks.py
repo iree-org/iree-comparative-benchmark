@@ -14,7 +14,7 @@ import pathlib
 import statistics
 import sys
 import time
-from typing import Any, Dict, Sequence
+from typing import Any, Dict, Sequence, Tuple
 
 # Add common_benchmark_suite dir to the search path.
 sys.path.insert(
@@ -26,26 +26,23 @@ sys.path.insert(
 from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite.jax import benchmark_definitions
 from openxla.benchmark.models import model_interfaces
-import benchmark_lib, utils
+import benchmark_lib
 
 
 def _run_framework_benchmark(
     model: def_types.Model,
     input_npys: Sequence[pathlib.Path],
-    expect_npys: Sequence[pathlib.Path],
-    verify_params: Dict[str, Any],
     warmup_iterations: int,
     benchmark_iterations: int,
     backend: str,
     verbose: bool,
-) -> Dict[str, Any]:
+) -> Tuple[Dict[str, Any], Any]:
 
   model_module = importlib.import_module(model.model_impl.module_path)
   model_obj: model_interfaces.InferenceModel = model_module.create_model(
       **model.model_parameters)
 
   inputs = [np.load(path) for path in input_npys]
-  expects = [np.load(path) for path in expect_npys]
 
   try:
     with jax.default_device(jax.devices(backend)[0]):
@@ -83,16 +80,11 @@ def _run_framework_benchmark(
       if last_outputs is None:
         raise ValueError("No benchmark runs.")
 
-      utils.check_tensor_outputs(outputs=last_outputs,
-                                 expects=expects,
-                                 verbose=verbose,
-                                 **verify_params)
-
   except Exception as e:
     print(f"Failed to benchmark model {model.name}. Exception: {e}")
-    return {"error": str(e)}
+    raise
 
-  return {
+  metrics = {
       "min_warmup_latency_ms":
           min(warmup_latencies, default=None),
       "max_warmup_latency_ms":
@@ -122,6 +114,7 @@ def _run_framework_benchmark(
       "input_data_transfer_ms":
           input_data_transfer_ms,
   }
+  return (metrics, last_outputs)
 
 
 def _parse_arguments() -> argparse.Namespace:
