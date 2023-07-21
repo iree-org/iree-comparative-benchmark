@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 from PIL import Image
+import importlib
 import io
 import numpy as np
 import os
@@ -13,9 +14,10 @@ import re
 import requests
 import shutil
 import tarfile
-
-from openxla.benchmark.models import model_interfaces
 from typing import Any, Tuple
+
+from openxla.benchmark import def_types
+from openxla.benchmark.models import model_interfaces
 
 
 def download_and_read_img(url: str,
@@ -28,23 +30,32 @@ def download_and_read_img(url: str,
   return img
 
 
+def create_model_obj(model: def_types.Model) -> Any:
+  """Create model object with the bound parameters."""
+  model_module = importlib.import_module(model.model_impl.module_path)
+  return model_module.create_model(**model.model_parameters)
+
+
 def generate_and_save_inputs(model_obj: model_interfaces.InferenceModel,
-                             model_dir: pathlib.Path) -> Tuple[Any, ...]:
+                             model_dir: pathlib.Path,
+                             archive: bool = True) -> Tuple[Any, ...]:
   """Generates and preprocesses inputs, then saves it into `model_dir/input_npy.tz`."""
   # TODO(#44): Support multiple raw inputs.
   raw_inputs = model_obj.generate_default_inputs()
   inputs = model_obj.preprocess(raw_inputs)
 
   # Save inputs.
-  inputs_dir = model_dir.joinpath("inputs")
+  inputs_dir = model_dir / "inputs_npy"
   inputs_dir.mkdir(exist_ok=True)
   for idx, input in enumerate(inputs):
-    input_path = inputs_dir.joinpath(f"input_{idx}.npy")
+    input_path = inputs_dir / f"input_{idx}.npy"
     np.save(input_path, input)
 
-  with tarfile.open(model_dir.joinpath("inputs_npy.tgz"), "w:gz") as tar:
-    tar.add(f"{inputs_dir}/", arcname="")
-  shutil.rmtree(inputs_dir)
+  if archive:
+    with tarfile.open(model_dir.joinpath("inputs_npy.tgz"), "w:gz") as tar:
+      tar.add(f"{inputs_dir}/", arcname="")
+    shutil.rmtree(inputs_dir)
+
   return inputs
 
 
