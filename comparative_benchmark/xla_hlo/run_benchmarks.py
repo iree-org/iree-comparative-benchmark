@@ -228,7 +228,6 @@ def _run(
   input_dims = input_data.data_parameters["tensor_dimensions"]
   output_dims = expected_output.data_parameters["tensor_dimensions"]
   benchmark_definition = {
-      "benchmark_id": benchmark.id,
       "benchmark_name": benchmark.name,
       "framework": str(model.model_impl.framework_type),
       "data_type": data_type,
