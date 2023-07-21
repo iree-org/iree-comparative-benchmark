@@ -106,7 +106,6 @@ class ModelTestDataArtifactTemplate:
   data_format: def_types.ModelTestDataFormat
   data_parameters: Dict[str, Any]
   source_url: string.Template
-  verify_parameters: Dict[str, Any] = dataclasses.field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -141,7 +140,6 @@ def build_batch_model_test_data(
       artifact = def_types.ModelTestDataArtifact(
           data_format=artifact_template.data_format,
           data_parameters=substitute(artifact_template.data_parameters),
-          verify_parameters=substitute(artifact_template.verify_parameters),
           source_url=substitute(artifact_template.source_url))
       artifacts[artifact_type] = artifact
 
@@ -157,8 +155,8 @@ def build_batch_model_test_data(
 def build_batch_benchmark_cases(
     batch_models: Dict[int, def_types.Model],
     batch_inputs: Dict[int, def_types.ModelTestData],
-    batch_expected_outputs: Dict[int, def_types.ModelTestData],
     batch_sizes: Sequence[int],
+    verify_parameters: Optional[Dict[str, Any]] = None,
 ) -> Dict[int, def_types.BenchmarkCase]:
   """Build benchmark cases for multiple batch sizes."""
   benchmark_cases: Dict[int, def_types.BenchmarkCase] = {}
@@ -166,7 +164,7 @@ def build_batch_benchmark_cases(
     benchmark_case = def_types.BenchmarkCase.build(
         model=batch_models[batch_size],
         input_data=batch_inputs[batch_size],
-        expected_output=batch_expected_outputs[batch_size])
+        verify_parameters=verify_parameters)
     benchmark_cases[batch_size] = benchmark_case
 
   return benchmark_cases

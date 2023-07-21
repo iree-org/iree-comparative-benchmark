@@ -41,34 +41,6 @@ INPUT_DATA_T5_LARGE_FP32_TF_512XI32_BATCHES = utils.build_batch_model_test_data(
     template=INPUT_DATA_T5_LARGE_FP32_TF_512XI32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512])
 
-# T5-Large outputs.
-OUTPUT_DATA_T5_LARGE_FP32_TF_512X1024XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    name=utils.BATCH_NAME("OUTPUT_DATA_T5_LARGE_FP32_TF_512X1024XF32"),
-    tags=["output-data", utils.BATCH_TAG],
-    source_info="",
-    artifacts={
-        def_types.ModelTestDataFormat.NUMPY_TENSORS:
-            utils.ModelTestDataArtifactTemplate(
-                data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
-                data_parameters={
-                    "tensor_names": ["output_0"],
-                    "tensor_dimensions": [
-                        utils.BATCH_TENSOR_DIMS("512x1024xi32"),
-                    ]
-                },
-                verify_parameters={
-                    "absolute_tolerance": 0.5,
-                },
-                source_url=string.Template(
-                    PARENT_GCS_DIR +
-                    "T5_LARGE_FP32_TF_512XI32_BATCH${batch_size}/outputs_npy.tgz"
-                ),
-            )
-    })
-OUTPUT_DATA_T5_LARGE_FP32_TF_512X1024XF32_BATCHES = utils.build_batch_model_test_data(
-    template=OUTPUT_DATA_T5_LARGE_FP32_TF_512X1024XF32_BATCH_TEMPLATE,
-    batch_sizes=[1, 16, 24, 32, 48, 64, 512])
-
 # Bert-Large inputs.
 INPUT_DATA_BERT_LARGE_FP32_TF_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
     name=utils.BATCH_NAME("INPUT_DATA_BERT_LARGE_FP32_TF_384XI32"),
@@ -98,33 +70,6 @@ INPUT_DATA_BERT_LARGE_FP32_TF_384XI32_BATCHES = utils.build_batch_model_test_dat
     template=INPUT_DATA_BERT_LARGE_FP32_TF_384XI32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280])
 
-# Bert-Large outputs.
-OUTPUT_DATA_BERT_LARGE_FP32_TF_384X1024XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    name=utils.BATCH_NAME("OUTPUT_DATA_BERT_LARGE_FP32_TF_384X1024XF32"),
-    tags=["output-data", utils.BATCH_TAG],
-    source_info="",
-    artifacts={
-        def_types.ModelTestDataFormat.NUMPY_TENSORS:
-            utils.ModelTestDataArtifactTemplate(
-                data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
-                data_parameters={
-                    "tensor_names": ["output_0"],
-                    "tensor_dimensions": [
-                        utils.BATCH_TENSOR_DIMS("384x1024xf32")
-                    ],
-                },
-                verify_parameters={
-                    "absolute_tolerance": 0.5,
-                },
-                source_url=string.Template(
-                    PARENT_GCS_DIR +
-                    "BERT_LARGE_FP32_TF_384XI32_BATCH${batch_size}/outputs_npy.tgz"
-                ))
-    })
-OUTPUT_DATA_BERT_LARGE_FP32_TF_384X1024XF32_BATCHES = utils.build_batch_model_test_data(
-    template=OUTPUT_DATA_BERT_LARGE_FP32_TF_384X1024XF32_BATCH_TEMPLATE,
-    batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280])
-
 # ResNet50 inputs.
 INPUT_DATA_RESNET50_FP32_TF_224X224X3XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
     name=utils.BATCH_NAME("INPUT_DATA_RESNET50_FP32_TF_224X224X3XF32"),
@@ -148,32 +93,4 @@ INPUT_DATA_RESNET50_FP32_TF_224X224X3XF32_BATCH_TEMPLATE = utils.ModelTestDataTe
     })
 INPUT_DATA_RESNET50_FP32_TF_224X224X3XF32_BATCHES = utils.build_batch_model_test_data(
     template=INPUT_DATA_RESNET50_FP32_TF_224X224X3XF32_BATCH_TEMPLATE,
-    batch_sizes=[1, 8, 64, 128, 256, 2048])
-
-# ResNet50 outputs.
-OUTPUT_DATA_RESNET50_FP32_TF_2048X7X7XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    name=utils.BATCH_NAME("OUTPUT_DATA_RESNET50_FP32_TF_2048X7X7XF32"),
-    tags=["input-data", "imagenet", utils.BATCH_TAG],
-    source_info="",
-    artifacts={
-        def_types.ModelTestDataFormat.NUMPY_TENSORS:
-            utils.ModelTestDataArtifactTemplate(
-                data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
-                data_parameters={
-                    "tensor_names": ["output_0"],
-                    "tensor_dimensions": [
-                        utils.BATCH_TENSOR_DIMS("2048x7x7xf32")
-                    ],
-                },
-                verify_parameters={
-                    "absolute_tolerance": 0.5,
-                },
-                source_url=string.Template(
-                    PARENT_GCS_DIR +
-                    "RESNET50_FP32_TF_224X224X3XF32_BATCH${batch_size}/outputs_npy.tgz"
-                ))
-    })
-
-OUTPUT_DATA_RESNET50_FP32_TF_2048X7X7XF32_BATCHES = utils.build_batch_model_test_data(
-    template=OUTPUT_DATA_RESNET50_FP32_TF_2048X7X7XF32_BATCH_TEMPLATE,
     batch_sizes=[1, 8, 64, 128, 256, 2048])
