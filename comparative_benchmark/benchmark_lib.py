@@ -49,7 +49,6 @@ def _run(
   input_dims = input_data.data_parameters["tensor_dimensions"]
   output_dims = expected_output.data_parameters["tensor_dimensions"]
   benchmark_definition = {
-      "benchmark_id": benchmark.id,
       "benchmark_name": benchmark.name,
       "framework": str(model.model_impl.framework_type),
       "data_type": data_type,
@@ -230,8 +229,8 @@ def benchmark(
         raise ValueError(f"Missing expected data '{path}'.")
       expect_npys.append(path)
 
-    benchmarks_to_inputs[benchmark.id] = input_npys
-    benchmarks_to_expects[benchmark.id] = expect_npys
+    benchmarks_to_inputs[benchmark.name] = input_npys
+    benchmarks_to_expects[benchmark.name] = expect_npys
 
   for benchmark in benchmarks:
     result = _run(benchmark=benchmark,
@@ -239,8 +238,8 @@ def benchmark(
                   run_in_process=run_in_process,
                   warmup_iterations=warmup_iterations,
                   iterations=iterations,
-                  input_npys=benchmarks_to_inputs[benchmark.id],
-                  expect_npys=benchmarks_to_expects[benchmark.id],
+                  input_npys=benchmarks_to_inputs[benchmark.name],
+                  expect_npys=benchmarks_to_expects[benchmark.name],
                   benchmark_function=benchmark_function,
                   compiler=compiler,
                   verbose=verbose)

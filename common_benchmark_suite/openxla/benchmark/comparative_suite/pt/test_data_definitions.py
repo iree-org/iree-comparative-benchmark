@@ -7,13 +7,12 @@
 import string
 
 from openxla.benchmark.comparative_suite import utils
-from openxla.benchmark import def_types, unique_ids
+from openxla.benchmark import def_types
 
 PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/pytorch/pt_models_20230709.894_1688992116/"
 
 # Bert large inputs.
 INPUT_DATA_BERT_LARGE_FP32_PT_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.INPUT_DATA_BERT_LARGE_FP32_PT_384XI32),
     name=utils.BATCH_NAME("INPUT_DATA_BERT_LARGE_FP32_PT_384XI32"),
     tags=["input-data", "seqlen384", utils.BATCH_TAG],
     source_info="Original text: 'a photo of a cat'.",
@@ -36,7 +35,6 @@ INPUT_DATA_BERT_LARGE_FP32_PT_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTempla
     })
 
 INPUT_DATA_BERT_LARGE_FP16_PT_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.INPUT_DATA_BERT_LARGE_FP16_PT_384XI32),
     name=utils.BATCH_NAME("INPUT_DATA_BERT_LARGE_FP16_PT_384XI32"),
     tags=["input-data", "seqlen384", utils.BATCH_TAG],
     source_info="Original text: 'a photo of a cat'.",
@@ -67,7 +65,6 @@ INPUT_DATA_BERT_LARGE_FP16_PT_384XI32_BATCHES = utils.build_batch_model_test_dat
 
 # Bert large outputs.
 OUTPUT_DATA_BERT_LARGE_FP32_PT_384X1024XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_BERT_LARGE_FP32_PT_384X1024XF32),
     name=utils.BATCH_NAME("OUTPUT_DATA_BERT_LARGE_FP32_PT_384X1024XF32"),
     tags=["output-data", utils.BATCH_TAG],
     source_info="",
@@ -92,7 +89,6 @@ OUTPUT_DATA_BERT_LARGE_FP32_PT_384X1024XF32_BATCH_TEMPLATE = utils.ModelTestData
     })
 
 OUTPUT_DATA_BERT_LARGE_FP16_PT_384X1024XF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_BERT_LARGE_FP16_PT_384X1024XF16),
     name=utils.BATCH_NAME("OUTPUT_DATA_BERT_LARGE_FP16_PT_384X1024XF16"),
     tags=["output-data", utils.BATCH_TAG],
     source_info="",
@@ -125,7 +121,6 @@ OUTPUT_DATA_BERT_LARGE_FP16_PT_384X1024XF16_BATCHES = utils.build_batch_model_te
 
 # ResNet50 inputs
 INPUT_DATA_RESNET50_FP32_PT_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.INPUT_DATA_RESNET50_FP32_PT_3X224X224XF32),
     name=utils.BATCH_NAME("INPUT_DATA_RESNET50_FP32_PT_3X224X224XF32"),
     tags=["input-data", "imagenet", utils.BATCH_TAG],
     source_info=
@@ -149,7 +144,6 @@ INPUT_DATA_RESNET50_FP32_PT_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTestDataTe
     })
 
 INPUT_DATA_RESNET50_FP16_PT_3X224X224XF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.INPUT_DATA_RESNET50_FP16_PT_3X224X224XF16),
     name=utils.BATCH_NAME("INPUT_DATA_RESNET50_FP16_PT_3X224X224XF16"),
     tags=["input-data", "imagenet", utils.BATCH_TAG],
     source_info=
@@ -181,7 +175,6 @@ INPUT_DATA_RESNET50_FP16_PT_3X224X224XF16_BATCHES = utils.build_batch_model_test
 
 # ResNet50 outputs
 OUTPUT_DATA_RESNET50_FP32_PT_2048X7X7XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_RESNET50_FP32_PT_2048X7X7XF32),
     name=utils.BATCH_NAME("OUTPUT_DATA_RESNET50_FP32_PT_2048X7X7XF32"),
     tags=["output-data", "imagenet", utils.BATCH_TAG],
     source_info="",
@@ -206,7 +199,6 @@ OUTPUT_DATA_RESNET50_FP32_PT_2048X7X7XF32_BATCH_TEMPLATE = utils.ModelTestDataTe
     })
 
 OUTPUT_DATA_RESNET50_FP16_PT_2048X7X7XF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_RESNET50_FP16_PT_2048X7X7XF16),
     name=utils.BATCH_NAME("OUTPUT_DATA_RESNET50_FP16_PT_2048X7X7XF16"),
     tags=["output-data", "imagenet", utils.BATCH_TAG],
     source_info="",

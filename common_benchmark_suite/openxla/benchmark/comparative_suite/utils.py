@@ -23,7 +23,6 @@ class TemplateFunc:
 MODELS_MODULE_PATH = "openxla.benchmark.models"
 
 # Constants and functions help build batch templates.
-BATCH_ID = lambda model_id: string.Template(model_id + "-batch${batch_size}")
 BATCH_NAME = lambda name: string.Template(name + "_BATCH${batch_size}")
 BATCH_TAG = string.Template("batch-${batch_size}")
 BATCH_SIZE_PARAM = TemplateFunc(func=lambda batch_size: batch_size)
@@ -40,7 +39,6 @@ class ModelArtifactTemplate:
 @dataclass(frozen=True)
 class ModelTemplate:
   """Template of def_types.Model."""
-  id: string.Template
   name: string.Template
   tags: List[Union[str, string.Template]]
   model_impl: def_types.ModelImplementation
@@ -96,8 +94,7 @@ def build_batch_models(
           source_url=substitute(artifact_template.source_url))
       artifacts[artifact_type] = artifact
 
-    model = def_types.Model(id=substitute(template.id),
-                            name=substitute(template.name),
+    model = def_types.Model(name=substitute(template.name),
                             tags=substitute(template.tags),
                             model_impl=template.model_impl,
                             model_parameters=substitute(
@@ -120,7 +117,6 @@ class ModelTestDataArtifactTemplate:
 @dataclass(frozen=True)
 class ModelTestDataTemplate:
   """Template of def_types.ModelTestData."""
-  id: string.Template
   name: string.Template
   tags: List[Union[str, string.Template]]
   source_info: str
@@ -154,8 +150,7 @@ def build_batch_model_test_data(
           source_url=substitute(artifact_template.source_url))
       artifacts[artifact_type] = artifact
 
-    test_data = def_types.ModelTestData(id=substitute(template.id),
-                                        name=substitute(template.name),
+    test_data = def_types.ModelTestData(name=substitute(template.name),
                                         tags=substitute(template.tags),
                                         source_info=template.source_info,
                                         artifacts=artifacts)

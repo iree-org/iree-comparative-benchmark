@@ -21,7 +21,6 @@ class ModelFrameworkType(Enum):
 @dataclass(frozen=True)
 class ModelImplementation:
   """Model implementation with configurable parameters."""
-  id: str
   # Friendly unique name.
   name: str
   # Tags that describe the model characteristics.
@@ -56,7 +55,6 @@ class ModelArtifact:
 @dataclass(frozen=True)
 class Model:
   """A model with concrete parameters to initialize."""
-  id: str
   # Friendly unique name.
   name: str
   # Tags that describe the characteristics additional to `model_impl.tags`.
@@ -95,7 +93,6 @@ class ModelTestDataArtifact:
 @dataclass(frozen=True)
 class ModelTestData:
   """Model input or expected output data."""
-  id: str
   # Friendly name.
   name: str
   # Tags that describe characteristics additional to `data_source.tags`.
@@ -112,7 +109,6 @@ class ModelTestData:
 @dataclass(frozen=True)
 class DeviceSpec:
   """Device specification to run benchmarks."""
-  id: str
   # Friendly unique name.
   name: str
   # Describes the host that runs the runtime and talks to the accelerator.
@@ -141,7 +137,6 @@ class DeviceSpec:
 @dataclass(frozen=True)
 class BenchmarkCase:
   """A benchmark case."""
-  id: str
   # Unique name.
   name: str
   model: Model
@@ -155,14 +150,6 @@ class BenchmarkCase:
       input_data: ModelTestData,
       expected_output: ModelTestData,
   ):
-    benchmark_id = "/".join([
-        "models",
-        model.id,
-        "inputs",
-        input_data.id,
-        "expected_outputs",
-        expected_output.id,
-    ])
     name = "/".join([
         "models",
         model.name,
@@ -171,8 +158,7 @@ class BenchmarkCase:
         "expected_outputs",
         expected_output.name,
     ])
-    return cls(id=benchmark_id,
-               name=name,
+    return cls(name=name,
                model=model,
                input_data=input_data,
                expected_output=expected_output)

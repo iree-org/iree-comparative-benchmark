@@ -7,13 +7,12 @@
 import string
 
 from openxla.benchmark.comparative_suite import utils
-from openxla.benchmark import def_types, unique_ids
+from openxla.benchmark import def_types
 
 PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.13_1688607404/"
 
 # T5 large inputs.
 INPUT_DATA_T5_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.INPUT_DATA_T5_LARGE_FP32_JAX_512XI32),
     name=utils.BATCH_NAME("INPUT_DATA_T5_LARGE_FP32_JAX_512XI32"),
     tags=["input-data", "seqlen512", utils.BATCH_TAG],
     source_info=
@@ -35,7 +34,6 @@ INPUT_DATA_T5_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplat
                 ))
     })
 INPUT_DATA_T5_LARGE_FP16_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.INPUT_DATA_T5_LARGE_FP16_JAX_512XI32),
     name=utils.BATCH_NAME("INPUT_DATA_T5_LARGE_FP16_JAX_512XI32"),
     tags=["input-data", "seqlen512", utils.BATCH_TAG],
     source_info=
@@ -57,7 +55,6 @@ INPUT_DATA_T5_LARGE_FP16_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplat
                 ))
     })
 INPUT_DATA_T5_LARGE_BF16_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.INPUT_DATA_T5_LARGE_BF16_JAX_512XI32),
     name=utils.BATCH_NAME("INPUT_DATA_T5_LARGE_BF16_JAX_512XI32"),
     tags=["input-data", "seqlen512", utils.BATCH_TAG],
     source_info=
@@ -90,7 +87,6 @@ INPUT_DATA_T5_LARGE_BF16_JAX_512XI32_BATCHES = utils.build_batch_model_test_data
 
 # T5 large outputs.
 OUTPUT_DATA_T5_LARGE_FP32_JAX_512X1024XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_T5_LARGE_FP32_JAX_512X1024XF32),
     name=utils.BATCH_NAME("OUTPUT_DATA_T5_LARGE_FP32_JAX_512X1024XF32"),
     tags=["output-data", utils.BATCH_TAG],
     source_info="",
@@ -113,7 +109,6 @@ OUTPUT_DATA_T5_LARGE_FP32_JAX_512X1024XF32_BATCH_TEMPLATE = utils.ModelTestDataT
                 ))
     })
 OUTPUT_DATA_T5_LARGE_FP16_JAX_512X1024XF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_T5_LARGE_FP16_JAX_512X1024XF16),
     name=utils.BATCH_NAME("OUTPUT_DATA_T5_LARGE_FP16_JAX_512X1024XF16"),
     tags=["output-data", utils.BATCH_TAG],
     source_info="",
@@ -136,7 +131,6 @@ OUTPUT_DATA_T5_LARGE_FP16_JAX_512X1024XF16_BATCH_TEMPLATE = utils.ModelTestDataT
                 ))
     })
 OUTPUT_DATA_T5_LARGE_BF16_JAX_512X1024XBF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_T5_LARGE_BF16_JAX_512X1024XBF16),
     name=utils.BATCH_NAME("OUTPUT_DATA_T5_LARGE_BF16_JAX_512X1024XBF16"),
     tags=["output-data", utils.BATCH_TAG],
     source_info="",
@@ -170,7 +164,6 @@ OUTPUT_DATA_T5_LARGE_BF16_JAX_512X1024XBF16_BATCHES = utils.build_batch_model_te
 
 # T5-Large for Conditional Generation inputs.
 INPUT_DATA_T5_4CG_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.INPUT_DATA_T5_4CG_LARGE_FP32_JAX_512XI32),
     name=utils.BATCH_NAME("INPUT_DATA_T5_4CG_LARGE_FP32_JAX_512XI32"),
     tags=["input-data", "seqlen512", utils.BATCH_TAG],
     source_info=
@@ -197,8 +190,6 @@ INPUT_DATA_T5_4CG_LARGE_FP32_JAX_512XI32_BATCHES = utils.build_batch_model_test_
 
 # T5-Large for Conditional Generation outputs.
 OUTPUT_DATA_T5_4CG_LARGE_FP32_JAX_512X1024XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(
-        unique_ids.OUTPUT_DATA_T5_4CG_LARGE_FP32_JAX_512X1024XF32),
     name=utils.BATCH_NAME("OUTPUT_DATA_T5_4CG_LARGE_FP32_JAX_512X1024XF32"),
     tags=["output-data", utils.BATCH_TAG],
     source_info="",
@@ -226,7 +217,6 @@ OUTPUT_DATA_T5_4CG_LARGE_FP32_JAX_512X1024XF32_BATCHES = utils.build_batch_model
 
 # Bert large inputs.
 INPUT_DATA_BERT_LARGE_FP32_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.INPUT_DATA_BERT_LARGE_FP32_JAX_384XI32),
     name=utils.BATCH_NAME("INPUT_DATA_BERT_LARGE_FP32_JAX_384XI32"),
     tags=["input-data", "seqlen384", utils.BATCH_TAG],
     source_info="Original text: 'a photo of a cat'.",
@@ -248,7 +238,6 @@ INPUT_DATA_BERT_LARGE_FP32_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTempl
     })
 
 INPUT_DATA_BERT_LARGE_FP16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.INPUT_DATA_BERT_LARGE_FP16_JAX_384XI32),
     name=utils.BATCH_NAME("INPUT_DATA_BERT_LARGE_FP16_JAX_384XI32"),
     tags=["input-data", "seqlen384", utils.BATCH_TAG],
     source_info="Original text: 'a photo of a cat'.",
@@ -270,7 +259,6 @@ INPUT_DATA_BERT_LARGE_FP16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTempl
     })
 
 INPUT_DATA_BERT_LARGE_BF16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.INPUT_DATA_BERT_LARGE_BF16_JAX_384XI32),
     name=utils.BATCH_NAME("INPUT_DATA_BERT_LARGE_BF16_JAX_384XI32"),
     tags=["input-data", "seqlen384", utils.BATCH_TAG],
     source_info="Original text: 'a photo of a cat'.",
@@ -303,7 +291,6 @@ INPUT_DATA_BERT_LARGE_BF16_JAX_384XI32_BATCHES = utils.build_batch_model_test_da
 
 # Bert large Outputs.
 OUTPUT_DATA_BERT_LARGE_FP32_JAX_384X1024XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_BERT_LARGE_FP32_JAX_384X1024XF32),
     name=utils.BATCH_NAME("OUTPUT_DATA_BERT_LARGE_FP32_JAX_384X1024XF32"),
     tags=["output-data", utils.BATCH_TAG],
     source_info="",
@@ -327,7 +314,6 @@ OUTPUT_DATA_BERT_LARGE_FP32_JAX_384X1024XF32_BATCH_TEMPLATE = utils.ModelTestDat
     })
 
 OUTPUT_DATA_BERT_LARGE_FP16_JAX_384X1024XF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_BERT_LARGE_FP16_JAX_384X1024XF16),
     name=utils.BATCH_NAME("OUTPUT_DATA_BERT_LARGE_FP16_JAX_384X1024XF16"),
     tags=["output-data", utils.BATCH_TAG],
     source_info="",
@@ -351,7 +337,6 @@ OUTPUT_DATA_BERT_LARGE_FP16_JAX_384X1024XF16_BATCH_TEMPLATE = utils.ModelTestDat
     })
 
 OUTPUT_DATA_BERT_LARGE_BF16_JAX_384X1024XBF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_BERT_LARGE_BF16_JAX_384X1024XBF16),
     name=utils.BATCH_NAME("OUTPUT_DATA_BERT_LARGE_BF16_JAX_384X1024XBF16"),
     tags=["output-data", utils.BATCH_TAG],
     source_info="",
@@ -388,7 +373,6 @@ OUTPUT_DATA_BERT_LARGE_BF16_JAX_384X1024XBF16_BATCHES = utils.build_batch_model_
 
 # ResNet50 inputs.
 INPUT_DATA_RESNET50_FP32_JAX_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.INPUT_DATA_RESNET50_FP32_JAX_3X224X224XF32),
     name=utils.BATCH_NAME("INPUT_DATA_RESNET50_FP32_JAX_3X224X224XF32"),
     tags=["input-data", "imagenet", utils.BATCH_TAG],
     source_info=
@@ -411,7 +395,6 @@ INPUT_DATA_RESNET50_FP32_JAX_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTestDataT
     })
 
 INPUT_DATA_RESNET50_FP16_JAX_3X224X224XF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.INPUT_DATA_RESNET50_FP16_JAX_3X224X224XF16),
     name=utils.BATCH_NAME("INPUT_DATA_RESNET50_FP16_JAX_3X224X224XF16"),
     tags=["input-data", "imagenet", utils.BATCH_TAG],
     source_info=
@@ -434,7 +417,6 @@ INPUT_DATA_RESNET50_FP16_JAX_3X224X224XF16_BATCH_TEMPLATE = utils.ModelTestDataT
     })
 
 INPUT_DATA_RESNET50_BF16_JAX_3X224X224XBF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.INPUT_DATA_RESNET50_BF16_JAX_3X224X224XBF16),
     name=utils.BATCH_NAME("INPUT_DATA_RESNET50_BF16_JAX_3X224X224XBF16"),
     tags=["input-data", "imagenet", utils.BATCH_TAG],
     source_info=
@@ -470,7 +452,6 @@ INPUT_DATA_RESNET50_BF16_JAX_3X224X224XBF16_BATCHES = utils.build_batch_model_te
 
 # ResNet50 outputs.
 OUTPUT_DATA_RESNET50_FP32_JAX_2048X7X7XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_RESNET50_FP32_JAX_2048X7X7XF32),
     name=utils.BATCH_NAME("OUTPUT_DATA_RESNET50_FP32_JAX_2048X7X7XF32"),
     tags=["output-data", "imagenet", utils.BATCH_TAG],
     source_info="",
@@ -494,7 +475,6 @@ OUTPUT_DATA_RESNET50_FP32_JAX_2048X7X7XF32_BATCH_TEMPLATE = utils.ModelTestDataT
     })
 
 OUTPUT_DATA_RESNET50_FP16_JAX_2048X7X7XF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_RESNET50_FP16_JAX_2048X7X7XF16),
     name=utils.BATCH_NAME("OUTPUT_DATA_RESNET50_FP16_JAX_2048X7X7XF16"),
     tags=["output-data", "imagenet", utils.BATCH_TAG],
     source_info="",
@@ -518,7 +498,6 @@ OUTPUT_DATA_RESNET50_FP16_JAX_2048X7X7XF16_BATCH_TEMPLATE = utils.ModelTestDataT
     })
 
 OUTPUT_DATA_RESNET50_BF16_JAX_2048X7X7XBF16_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    id=utils.BATCH_ID(unique_ids.OUTPUT_DATA_RESNET50_BF16_JAX_2048X7X7XBF16),
     name=utils.BATCH_NAME("OUTPUT_DATA_RESNET50_BF16_JAX_2048X7X7XBF16"),
     tags=["output-data", "imagenet", utils.BATCH_TAG],
     source_info="",
