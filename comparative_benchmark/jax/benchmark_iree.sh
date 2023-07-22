@@ -41,10 +41,8 @@ python -m pip install --upgrade pip || echo "Could not upgrade pip"
 
 VENV_DIR_PATH="$(realpath ${VENV_DIR})"
 
-export IREE_COMPILER_OPTIONS="--iree-hal-target-backends=llvm-cpu --iree-flow-enable-data-tiling --iree-llvmcpu-enable-microkernels --iree-llvmcpu-fail-on-out-of-bounds-stack-allocation=false"
-
 # Build pjrt plugin.
-git clone -b enable-microkernels https://github.com/openxla/openxla-pjrt-plugin.git
+git clone https://github.com/openxla/openxla-pjrt-plugin.git
 pushd openxla-pjrt-plugin
 
 python ./sync_deps.py
@@ -133,6 +131,7 @@ sed -i -e "s/: Optional\[jnp.DeviceArray\] = None/=None/g" "${T5_SOURCE_PATH}"
 for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
   JAX_PLATFORMS="${DEVICE}" "${TD}/run_benchmarks.py" \
     --benchmark_name="${benchmark_name}" \
+    --target_device="${TARGET_DEVICE}" \
     --output="${OUTPUT_PATH}" \
     --iterations="${ITERATIONS}" \
     --compiler="iree" \
