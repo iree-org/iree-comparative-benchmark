@@ -69,25 +69,29 @@ popd
 popd
 
 declare -a GPU_BENCHMARK_NAMES=(
-  "models/RESNET50_FP32_JAX_.+/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
-  "models/BERT_LARGE_FP32_JAX_.+/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
-  "models/T5_LARGE_FP32_JAX_.+/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
-  "models/T5_4CG_LARGE_FP32_JAX_.+/inputs/.+/expected_outputs/.+/target_devices/a2-highgpu-1g"
+  "models/RESNET50_FP32_JAX_.+"
+  "models/BERT_LARGE_FP32_JAX_.+"
+  "models/T5_LARGE_FP32_JAX_.+"
+  "models/T5_4CG_LARGE_FP32_JAX_.+"
+  "models/GPT2LMHEAD_FP32_JAX_.+"
 )
 
 declare -a CPU_BENCHMARK_NAMES=(
-  "models/RESNET50_FP32_JAX_.+_BATCH1/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
-  "models/RESNET50_FP32_JAX_.+_BATCH64/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
-  "models/RESNET50_FP32_JAX_.+_BATCH128/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
-  "models/BERT_LARGE_FP32_JAX_.+_BATCH1/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
-  "models/BERT_LARGE_FP32_JAX_.+_BATCH32/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
-  "models/BERT_LARGE_FP32_JAX_.+_BATCH64/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
-  "models/T5_LARGE_FP32_JAX_.+_BATCH1/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
-  "models/T5_LARGE_FP32_JAX_.+_BATCH16/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
-  "models/T5_LARGE_FP32_JAX_.+_BATCH32/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
-  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH1/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
-  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH16/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
-  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH32/inputs/.+/expected_outputs/.+/target_devices/c2-standard-16"
+  "models/RESNET50_FP32_JAX_.+_BATCH1/.+"
+  "models/RESNET50_FP32_JAX_.+_BATCH64/.+"
+  "models/RESNET50_FP32_JAX_.+_BATCH128/.+"
+  "models/BERT_LARGE_FP32_JAX_.+_BATCH1/.+"
+  "models/BERT_LARGE_FP32_JAX_.+_BATCH32/.+"
+  "models/BERT_LARGE_FP32_JAX_.+_BATCH64/.+"
+  "models/T5_LARGE_FP32_JAX_.+_BATCH1/.+"
+  "models/T5_LARGE_FP32_JAX_.+_BATCH16/.+"
+  "models/T5_LARGE_FP32_JAX_.+_BATCH32/.+"
+  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH1/.+"
+  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH16/.+"
+  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH32/.+"
+  "models/GPT2LMHEAD_FP32_JAX_.+_BATCH1/.+"
+  "models/GPT2LMHEAD_FP32_JAX_.+_BATCH64/.+"
+  "models/GPT2LMHEAD_FP32_JAX_.+_BATCH128/.+"
 )
 
 if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then
@@ -97,6 +101,10 @@ if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then
 elif [ "${TARGET_DEVICE}" = "c2-standard-16" ]; then
   BENCHMARK_NAMES=("${CPU_BENCHMARK_NAMES[@]}")
   ITERATIONS=10
+  DEVICE="iree_cpu"
+elif [ "${TARGET_DEVICE}" = "c2-standard-60" ]; then
+  BENCHMARK_NAMES=("${CPU_BENCHMARK_NAMES[@]}")
+  ITERATIONS=3
   DEVICE="iree_cpu"
 else
   echo "Unsupported target device ${TARGET_DEVICE}."
