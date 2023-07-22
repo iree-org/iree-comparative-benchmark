@@ -38,6 +38,7 @@ declare -a GPU_BENCHMARK_NAMES=(
   "models/BERT_LARGE_FP32_JAX_.+"
   "models/T5_LARGE_FP32_JAX_.+"
   "models/T5_4CG_LARGE_FP32_JAX_.+"
+  "models/GPT2LMHEAD_FP32_JAX_.+"
 )
 
 declare -a CPU_BENCHMARK_NAMES=(
@@ -49,7 +50,13 @@ declare -a CPU_BENCHMARK_NAMES=(
   #"models/BERT_LARGE_FP32_JAX_.+_BATCH64/.+"
   #"models/T5_LARGE_FP32_JAX_.+_BATCH1/.+"
   #"models/T5_LARGE_FP32_JAX_.+_BATCH16/.+"
-  "models/T5_LARGE_FP32_JAX_.+_BATCH32/.+"
+  #"models/T5_LARGE_FP32_JAX_.+_BATCH32/.+"
+  #"models/T5_4CG_LARGE_FP32_JAX_.+_BATCH1/.+"
+  #"models/T5_4CG_LARGE_FP32_JAX_.+_BATCH16/.+"
+  #"models/T5_4CG_LARGE_FP32_JAX_.+_BATCH32/.+"
+  "models/GPT2LMHEAD_FP32_JAX_.+_BATCH1/.+"
+  "models/GPT2LMHEAD_FP32_JAX_.+_BATCH64/.+"
+  "models/GPT2LMHEAD_FP32_JAX_.+_BATCH128/.+"
 )
 
 if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then
@@ -92,15 +99,3 @@ if [ "${TARGET_DEVICE}" = "c2-standard-16" ]; then
   done
 fi
 
-# If running on CPU, also benchmark XLA CPU-Next.
-if [ "${TARGET_DEVICE}" = "c2-standard-60" ]; then
-  for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
-    "${TD}/run_benchmarks.py" \
-      --benchmark_name="${benchmark_name}" \
-      --target_device="${TARGET_DEVICE}" \
-      --output="${OUTPUT_PATH}" \
-      --iterations="${ITERATIONS}" \
-      --compiler="xla_cpu_next" \
-      --verbose
-  done
-fi

@@ -25,24 +25,9 @@ class GPT2LMHead(model_interfaces.InferenceModel):
       self,
       batch_size: int,
       seq_len: int,
-      dtype: Any,
       model_name: str,
   ):
-    if dtype == jnp.int8:
-      self.model = FlaxGPT2LMHeadModel.from_pretrained(model_name, load_in_8bit=True, device_map="auto")
-    else:
-      self.model = FlaxGPT2LMHeadModel.from_pretrained(model_name, dtype=dtype)
-
-    if dtype == jnp.float32 or dtype == jnp.int8:
-      # The model is already in the requested dtype.
-      pass
-    elif dtype == jnp.float16:
-      self.model.params = self.model.to_fp16(self.model.params)
-    elif dtype == jnp.bfloat16:
-      self.model.params = self.model.to_bf16(self.model.params)
-    else:
-      raise ValueError(f"Unsupported data type '{dtype}'.")
-
+    self.model = FlaxGPT2LMHeadModel.from_pretrained(model_name)
     self.model_name = model_name
     self.batch_size = batch_size
     self.seq_len = seq_len
@@ -70,21 +55,12 @@ class GPT2LMHead(model_interfaces.InferenceModel):
     return (output,)
 
   def postprocess(self, outputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    # No-op.
-    return outputs
-
-
-DTYPE_MAP = {
-    "int8": jnp.int8,
-    "fp32": jnp.float32,
-    "fp16": jnp.float16,
-    "bf16": jnp.bfloat16,
-}
+    output, = outputs
+    return self.tokenizer.batch_decode(output, skip_special_tokens=True)
 
 
 def create_model(batch_size: int = 1,
                  seq_len: int = 512,
-                 data_type: str = "fp32",
                  model_name: str = "gpt2",
                  **_unused_params) -> GPT2LMHead:
   """Configure and create a JAX GPT2LMHead model instance.
@@ -100,5 +76,4 @@ def create_model(batch_size: int = 1,
   """
   return GPT2LMHead(batch_size=batch_size,
                     seq_len=seq_len,
-                    dtype=DTYPE_MAP[data_type],
                     model_name=model_name)
