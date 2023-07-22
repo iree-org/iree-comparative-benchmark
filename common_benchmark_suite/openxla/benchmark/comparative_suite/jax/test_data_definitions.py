@@ -541,19 +541,19 @@ INPUT_DATA_GPT2LMHEAD_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTestDataTempl
     source_info="Original text: 'a photo of a cat'.",
     artifacts={
         def_types.ModelTestDataFormat.NUMPY_TENSORS:
-          utils.ModelTestDataArtifactTemplate(
-              data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
-              data_parameters={
-                  "tensor_names": ["input_ids", "attention_mask"],
-                  "tensor_dimensions": [
-                      utils.BATCH_TENSOR_DIMS("512xi32"),
-                      utils.BATCH_TENSOR_DIMS("512xi32"),
-                  ],
-              },
-              source_url=string.Template(
-                  GPT2LMHEAD_GCS_DIR +
-                  "GPT2LMHEAD_FP32_JAX_512XI32_BATCH{batch_size}/inputs_npy.tgz"
-              ))
+            utils.ModelTestDataArtifactTemplate(
+                data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
+                data_parameters={
+                    "tensor_names": ["input_ids", "attention_mask"],
+                    "tensor_dimensions": [
+                        utils.BATCH_TENSOR_DIMS("512xi32"),
+                        utils.BATCH_TENSOR_DIMS("512xi32"),
+                    ],
+                },
+                source_url=string.Template(
+                    GPT2LMHEAD_GCS_DIR +
+                    "GPT2LMHEAD_FP32_JAX_512XI32_BATCH${batch_size}/inputs_npy.tgz"
+                ))
     })
 
 INPUT_DATA_GPT2LMHEAD_FP32_JAX_512XI32_BATCHES = utils.build_batch_model_test_data(
@@ -567,21 +567,21 @@ OUTPUT_DATA_GPT2LMHEAD_FP32_JAX_512X50257XF32_BATCH_TEMPLATE = utils.ModelTestDa
     source_info="",
     artifacts={
         def_types.ModelTestDataFormat.NUMPY_TENSORS:
-          utils.ModelTestDataArtifactTemplate(
-              data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
-              data_parameters={
-                  "tensor_names": ["output_0"],
-                  "tensor_dimensions": [
-                      utils.BATCH_TENSOR_DIMS("512x50257xf32")
-                  ],
-              },
-              verify_parameters={
-                  "absolute_tolerance": 0.5,
-              },
-              source_url=string.Template(
-                  GPT2LMHEAD_GCS_DIR +
-                  "GPT2LMHEAD_FP32_JAX_512XI32_BATCH{batch_size}/outputs_npy.tgz"
-              ))
+            utils.ModelTestDataArtifactTemplate(
+                data_format=def_types.ModelTestDataFormat.NUMPY_TENSORS,
+                data_parameters={
+                    "tensor_names": ["output_0"],
+                    "tensor_dimensions": [
+                        utils.BATCH_TENSOR_DIMS("512x50257xf32")
+                    ],
+                },
+                verify_parameters={
+                    "absolute_tolerance": 0.5,
+                },
+                source_url=string.Template(
+                    GPT2LMHEAD_GCS_DIR +
+                    "GPT2LMHEAD_FP32_JAX_512XI32_BATCH${batch_size}/outputs_npy.tgz"
+                ))
     })
 
 OUTPUT_DATA_GPT2LMHEAD_FP32_JAX_512X50257XF32_BATCHES = utils.build_batch_model_test_data(

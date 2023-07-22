@@ -218,30 +218,30 @@ jobs:
 #              "${TARGET_DEVICE}"\
 #              "${RESULTS_PATH}"
 #          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
-#      - name: "Benchmarking JAX-XLA:CPU"
-#        env:
-#          JAX_XLA_RESULTS_JSON: jax-xla.json
-#          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
-#        run: |
-#          RESULTS_PATH="${RESULTS_DIR}/${JAX_XLA_RESULTS_JSON}"
-#          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-#            "gcr.io/iree-oss/openxla-benchmark/base@sha256:692bb3ca648c474e89bad21ef89f4b33a9741e3d1cc477fa61844caddd798ba0" \
-#            ./comparative_benchmark/jax_xla/benchmark_all.sh \
-#              "${TARGET_DEVICE}"\
-#              "${RESULTS_PATH}"
-#          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
-      - name: "Benchmarking JAX-IREE:CPU"
+      - name: "Benchmarking JAX-XLA:CPU"
         env:
-          JAX_IREE_RESULTS_JSON: jax-iree.json
+          JAX_XLA_RESULTS_JSON: jax-xla.json
           RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
         run: |
-          RESULTS_PATH="${RESULTS_DIR}/${JAX_IREE_RESULTS_JSON}"
+          RESULTS_PATH="${RESULTS_DIR}/${JAX_XLA_RESULTS_JSON}"
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
             "gcr.io/iree-oss/openxla-benchmark/base@sha256:692bb3ca648c474e89bad21ef89f4b33a9741e3d1cc477fa61844caddd798ba0" \
-            ./comparative_benchmark/jax/benchmark_iree.sh \
+            ./comparative_benchmark/jax/benchmark_xla.sh \
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
           gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+#      - name: "Benchmarking JAX-IREE:CPU"
+#        env:
+#          JAX_IREE_RESULTS_JSON: jax-iree.json
+#          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+#        run: |
+#          RESULTS_PATH="${RESULTS_DIR}/${JAX_IREE_RESULTS_JSON}"
+#          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+#            "gcr.io/iree-oss/openxla-benchmark/base@sha256:692bb3ca648c474e89bad21ef89f4b33a9741e3d1cc477fa61844caddd798ba0" \
+#            ./comparative_benchmark/jax/benchmark_iree.sh \
+#              "${TARGET_DEVICE}"\
+#              "${RESULTS_PATH}"
+#          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
 #      - name: "Benchmarking TF-XLA:CPU"
 #        env:
 #          TF_XLA_RESULTS_JSON: tf-xla.json
