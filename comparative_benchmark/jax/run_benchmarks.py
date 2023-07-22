@@ -30,7 +30,7 @@ import benchmark_lib
 
 _COMPILER_XLA = "xla"
 _COMPILER_XLA_CPU_NEXT = "xla_cpu_next"
-
+_COMPILER_IREE = "iree"
 
 def _run_framework_benchmark(
     model: def_types.Model,
@@ -131,8 +131,8 @@ def _parse_arguments() -> argparse.Namespace:
                       "--compiler",
                       type=str,
                       default=_COMPILER_XLA,
-                      choices=[_COMPILER_XLA, _COMPILER_XLA_CPU_NEXT],
-                      help="Compiler to use. Supported: `xla`, `xla_cpu_next`.")
+                      choices=[_COMPILER_XLA, _COMPILER_XLA_CPU_NEXT, _COMPILER_IREE],
+                      help="Compiler to use. Supported: `xla`, `xla_cpu_next`, `iree")
   benchmark_lib.configure_parser(parser)
   return parser.parse_args()
 

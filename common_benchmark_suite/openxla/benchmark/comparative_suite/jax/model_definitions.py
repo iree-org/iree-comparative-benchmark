@@ -262,6 +262,8 @@ RESNET50_BF16_JAX_3X224X224XBF16_BATCHES = utils.build_batch_models(
 
 # GPT2 models.
 # Model implementation from https://huggingface.co/docs/transformers/model_doc/gpt2#transformers.FlaxGPT2LMHeadModel.
+GPT2LMHEAD_GCS_DIR= "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.13_1690046172/"
+GPT2LMHEAD_ARTIFACTS_DIR_URL_TEMPLATE = string.Template(GPT2LMHEAD_GCS_DIR + "${name}")
 
 GPT2LMHEAD_JAX_IMPL = def_types.ModelImplementation(
     name="GPT2LMHEAD_JAX",
@@ -281,24 +283,12 @@ GPT2LMHEAD_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "data_type": "fp32",
         "model_name": "gpt2",
     },
-    artifacts={
-        def_types.ModelArtifactType.STABLEHLO_MLIR:
-          utils.ModelArtifactTemplate(
-              artifact_type=def_types.ModelArtifactType.STABLEHLO_MLIR,
-              source_url=string.Template(
-                  PARENT_GCS_DIR +
-                  "GPT2LMHEAD_FP32_JAX_512XI32_BATCH${batch_size}/stablehlo.mlirbc"
-              ),
-          ),
-        def_types.ModelArtifactType.XLA_HLO_DUMP:
-          utils.ModelArtifactTemplate(
-              artifact_type=def_types.ModelArtifactType.XLA_HLO_DUMP,
-              source_url=string.Template(
-                  PARENT_GCS_DIR +
-                  "GPT2LMHEAD_FP32_JAX_512XI32_BATCH${batch_size}/xla_hlo_before_optimizations.txt"
-              ),
-          ),
-    })
+    artifacts_dir_url=GPT2LMHEAD_ARTIFACTS_DIR_URL_TEMPLATE,
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+)
 
 GPT2LMHEAD_FP32_JAX_512XI32_BATCHES = utils.build_batch_models(
     template=GPT2LMHEAD_FP32_JAX_512XI32_BATCH_TEMPLATE,
