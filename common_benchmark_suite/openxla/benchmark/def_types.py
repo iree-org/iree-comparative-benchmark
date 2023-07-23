@@ -58,7 +58,7 @@ class Model:
   # Parameters to initialize the model, e.g., input batch size, sequence length.
   model_parameters: Dict[str, Any]
   # URLs to download exported models and generated test data.
-  artifacts_url: str
+  artifacts_dir_url: str
   # Types of exported models.
   exported_model_types: List[ModelArtifactType] = dataclasses.field(
       default_factory=list)

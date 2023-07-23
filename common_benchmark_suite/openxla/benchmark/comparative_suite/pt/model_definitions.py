@@ -11,7 +11,7 @@ from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite import utils
 
 PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/pytorch/pt_models_20230709.894_1688992116/"
-ARTIFACTS_URL_TEMPLATE = string.Template(PARENT_GCS_DIR + "${name}")
+ARTIFACTS_DIR_URL_TEMPLATE = string.Template(PARENT_GCS_DIR + "${name}")
 
 # Bert models.
 # Model implementation from https://huggingface.co/docs/transformers/model_doc/bert#transformers.BertModel.
@@ -37,7 +37,7 @@ BERT_LARGE_FP32_PT_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "import_on_gpu": False,
         "import_with_fx": True,
     },
-    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -56,7 +56,7 @@ BERT_LARGE_FP16_PT_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "import_on_gpu": True,
         "import_with_fx": True,
     },
-    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -92,7 +92,7 @@ RESNET50_FP32_PT_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTemplate(
         "import_on_gpu": False,
         "import_with_fx": True,
     },
-    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -109,7 +109,7 @@ RESNET50_FP16_PT_3X224X224XF16_BATCH_TEMPLATE = utils.ModelTemplate(
         "import_on_gpu": True,
         "import_with_fx": False,
     },
-    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,

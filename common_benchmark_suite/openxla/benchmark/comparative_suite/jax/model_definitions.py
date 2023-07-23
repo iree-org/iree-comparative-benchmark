@@ -11,7 +11,7 @@ from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite import utils
 
 PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.13_1688607404/"
-ARTIFACTS_URL_TEMPLATE = string.Template(PARENT_GCS_DIR + "${name}")
+ARTIFACTS_DIR_URL_TEMPLATE = string.Template(PARENT_GCS_DIR + "${name}")
 
 T5_JAX_IMPL = def_types.ModelImplementation(
     name="T5_JAX",
@@ -32,7 +32,7 @@ T5_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "model_name": "t5-large",
         "seq_len": 512,
     },
-    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -47,7 +47,7 @@ T5_LARGE_FP16_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "data_type": "fp16",
         "model_name": "t5-large",
     },
-    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -62,7 +62,7 @@ T5_LARGE_BF16_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "data_type": "bf16",
         "model_name": "t5-large",
     },
-    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -102,7 +102,7 @@ T5_4CG_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "model_name": "t5-large",
         "seq_len": 512
     },
-    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -134,7 +134,7 @@ BERT_LARGE_FP32_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "seq_len": 384,
         "model_name": "bert-large-uncased",
     },
-    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -151,7 +151,7 @@ BERT_LARGE_FP16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "seq_len": 384,
         "model_name": "bert-large-uncased",
     },
-    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -168,7 +168,7 @@ BERT_LARGE_BF16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "seq_len": 384,
         "model_name": "bert-large-uncased",
     },
-    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -209,7 +209,7 @@ RESNET50_FP32_JAX_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTemplate(
         "data_type": "fp32",
         "model_name": "microsoft/resnet-50",
     },
-    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -225,7 +225,7 @@ RESNET50_FP16_JAX_3X224X224XF16_BATCH_TEMPLATE = utils.ModelTemplate(
         "data_type": "fp16",
         "model_name": "microsoft/resnet-50",
     },
-    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -241,7 +241,7 @@ RESNET50_BF16_JAX_3X224X224XBF16_BATCH_TEMPLATE = utils.ModelTemplate(
         "data_type": "bf16",
         "model_name": "microsoft/resnet-50",
     },
-    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,

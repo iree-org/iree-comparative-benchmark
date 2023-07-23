@@ -11,7 +11,7 @@ from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite import utils
 
 PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/tensorflow/tf_models_2.13.0rc2_1688540251/"
-ARTIFACTS_URL_TEMPLATE = string.Template(PARENT_GCS_DIR + "${name}")
+ARTIFACTS_DIR_URL_TEMPLATE = string.Template(PARENT_GCS_DIR + "${name}")
 
 # T5-Large models.
 # Model implementation from https://huggingface.co/docs/transformers/model_doc/t5#transformers.TFT5Model
@@ -32,7 +32,7 @@ T5_LARGE_FP32_TF_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "data_type": "fp32",
         "model_name": "t5-large",
     },
-    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -64,7 +64,7 @@ BERT_LARGE_FP32_TF_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "seq_len": 384,
         "model_name": "bert-large-uncased",
     },
-    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -95,7 +95,7 @@ RESNET50_FP32_TF_224X224X3XF32_BATCH_TEMPLATE = utils.ModelTemplate(
         "data_type": "fp32",
         "model_name": "microsoft/resnet-50",
     },
-    artifacts_url=ARTIFACTS_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,

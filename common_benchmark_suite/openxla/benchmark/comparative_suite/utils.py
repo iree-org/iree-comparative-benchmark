@@ -36,7 +36,7 @@ class ModelTemplate:
   tags: List[Union[str, string.Template]]
   model_impl: def_types.ModelImplementation
   model_parameters: Dict[str, Any]
-  artifacts_url: string.Template
+  artifacts_dir_url: string.Template
   exported_model_types: List[def_types.ModelArtifactType] = dataclasses.field(
       default_factory=list)
 
@@ -93,7 +93,7 @@ def build_batch_models(
         model_impl=template.model_impl,
         model_parameters=substitute(template.model_parameters),
         exported_model_types=template.exported_model_types,
-        artifacts_url=substitute(template.artifacts_url),
+        artifacts_dir_url=substitute(template.artifacts_dir_url),
     )
     batch_models[batch_size] = model
 

@@ -28,7 +28,7 @@ class UtilsTest(unittest.TestCase):
             "batch_size": utils.BATCH_SIZE_PARAM,
             "data_type": "fp32",
         },
-        artifacts_url=string.Template("test/${name}/batch_${batch_size}"),
+        artifacts_dir_url=string.Template("test/${name}/batch_${batch_size}"),
         exported_model_types=[def_types.ModelArtifactType.STABLEHLO_MLIR],
     )
 
@@ -45,7 +45,7 @@ class UtilsTest(unittest.TestCase):
                         "batch_size": 1,
                         "data_type": "fp32",
                     },
-                    artifacts_url="test/TEST_MODEL_BATCH1/batch_1",
+                    artifacts_dir_url="test/TEST_MODEL_BATCH1/batch_1",
                     exported_model_types=[
                         def_types.ModelArtifactType.STABLEHLO_MLIR
                     ],
@@ -59,7 +59,7 @@ class UtilsTest(unittest.TestCase):
                         "batch_size": 2,
                         "data_type": "fp32",
                     },
-                    artifacts_url="test/TEST_MODEL_BATCH2/batch_2",
+                    artifacts_dir_url="test/TEST_MODEL_BATCH2/batch_2",
                     exported_model_types=[
                         def_types.ModelArtifactType.STABLEHLO_MLIR
                     ],

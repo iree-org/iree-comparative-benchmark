@@ -273,7 +273,7 @@ def _download_artifacts(benchmarks: Sequence[def_types.BenchmarkCase],
     if (def_types.ModelArtifactType.XLA_HLO_DUMP
         not in model.exported_model_types):
       raise ValueError(f"XLA HLO dump isn't provided by '{model.name}'.")
-    model_url = model.artifacts_url + "/" + HLO_FILENAME
+    model_url = model.artifacts_dir_url + "/" + HLO_FILENAME
     model_path = root_dir / model.name / HLO_FILENAME
     download_list.append((model_url, model_path))
 
