@@ -98,11 +98,11 @@ def _download_artifacts(benchmarks: Sequence[def_types.BenchmarkCase],
     model = benchmark.model
 
     input_path = root_dir / model.name / "inputs_npy.tgz"
-    input_url = model.artifacts_url + "/inputs_npy.tgz"
+    input_url = model.artifacts_dir_url + "/inputs_npy.tgz"
     download_list.append((input_url, input_path))
 
     expect_path = root_dir / model.name / "outputs_npy.tgz"
-    expect_url = model.artifacts_url + "/outputs_npy.tgz"
+    expect_url = model.artifacts_dir_url + "/outputs_npy.tgz"
     download_list.append((expect_url, expect_path))
 
   utils.download_files(download_list, verbose=verbose)
