@@ -8,7 +8,7 @@
 import dataclasses
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 
 class ModelFrameworkType(Enum):
@@ -58,7 +58,7 @@ class Model:
   # Parameters to initialize the model, e.g., input batch size, sequence length.
   model_parameters: Dict[str, Any]
   # URLs to download exported models and generated test data.
-  artifacts_dir_url: str
+  artifacts_dir_url: Optional[str] = None
   # Types of exported models.
   exported_model_types: List[ModelArtifactType] = dataclasses.field(
       default_factory=list)

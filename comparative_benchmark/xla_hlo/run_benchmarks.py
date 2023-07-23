@@ -270,7 +270,8 @@ def _download_artifacts(benchmarks: Sequence[def_types.BenchmarkCase],
   download_list = []
   for benchmark in benchmarks:
     model = benchmark.model
-    if (def_types.ModelArtifactType.XLA_HLO_DUMP
+    if (model.artifacts_dir_url is None or
+        def_types.ModelArtifactType.XLA_HLO_DUMP
         not in model.exported_model_types):
       raise ValueError(f"XLA HLO dump isn't provided by '{model.name}'.")
     model_url = model.artifacts_dir_url + "/" + HLO_FILENAME

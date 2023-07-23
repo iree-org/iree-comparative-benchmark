@@ -8,7 +8,7 @@
 import string
 import dataclasses
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Union, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 from openxla.benchmark import def_types
 
@@ -36,7 +36,7 @@ class ModelTemplate:
   tags: List[Union[str, string.Template]]
   model_impl: def_types.ModelImplementation
   model_parameters: Dict[str, Any]
-  artifacts_dir_url: string.Template
+  artifacts_dir_url: Optional[string.Template] = None
   exported_model_types: List[def_types.ModelArtifactType] = dataclasses.field(
       default_factory=list)
 
