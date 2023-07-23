@@ -96,13 +96,16 @@ def _download_artifacts(benchmarks: Sequence[def_types.BenchmarkCase],
   download_list = []
   for benchmark in benchmarks:
     model = benchmark.model
+    artifacts_dir_url = model.artifacts_dir_url
+    if artifacts_dir_url is None:
+      raise ValueError(f"Artifacts dir URL is not found in '{model.name}'.")
 
     input_path = root_dir / model.name / "inputs_npy.tgz"
-    input_url = model.artifacts_dir_url + "/inputs_npy.tgz"
+    input_url = artifacts_dir_url + "/inputs_npy.tgz"
     download_list.append((input_url, input_path))
 
     expect_path = root_dir / model.name / "outputs_npy.tgz"
-    expect_url = model.artifacts_dir_url + "/outputs_npy.tgz"
+    expect_url = artifacts_dir_url + "/outputs_npy.tgz"
     download_list.append((expect_url, expect_path))
 
   utils.download_files(download_list, verbose=verbose)
