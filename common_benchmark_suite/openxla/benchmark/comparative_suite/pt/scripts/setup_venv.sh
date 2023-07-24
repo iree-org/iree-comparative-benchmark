@@ -17,6 +17,7 @@ TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR="${VENV_DIR:-pt-models.venv}"
 WITH_CUDA="${WITH_CUDA:-}"
 PYTHON="${PYTHON:-"$(which python)"}"
+SKIP_TORCH_MLIR_GEN="${SKIP_TORCH_MLIR_GEN:-0}"
 
 echo "Setting up venv dir: ${VENV_DIR}"
 
@@ -36,13 +37,14 @@ find "${PT_MODELS_DIR}" -type d | while read dir; do
   fi
 done
 
-if [ -z "$WITH_CUDA" ]
-then
-  echo "Installing torch-mlir and dependencies without cuda support; set WITH_CUDA to enable cuda support."
-  python -m pip install --pre torch-mlir torchvision -f https://llvm.github.io/torch-mlir/package-index/ -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
-else
-  echo "Installing torch-mlir and dependencies with cuda support"
-  python -m pip install --pre torch-mlir torchvision -f https://llvm.github.io/torch-mlir/package-index/ --index-url https://download.pytorch.org/whl/nightly/cu118
+if (( SKIP_TORCH_MLIR_GEN == 0 )); then
+  if [[ -z "${WITH_CUDA}" ]]; then
+    echo "Installing torch-mlir and dependencies without cuda support; set WITH_CUDA to enable cuda support."
+    python -m pip install --pre torch-mlir torchvision -f https://llvm.github.io/torch-mlir/package-index/ -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
+  else
+    echo "Installing torch-mlir and dependencies with cuda support"
+    python -m pip install --pre torch-mlir torchvision -f https://llvm.github.io/torch-mlir/package-index/ --index-url https://download.pytorch.org/whl/nightly/cu118
+  fi
 fi
 
 # Install accelerate after torch-mlir and torch installation to automatically pick a compatible version
