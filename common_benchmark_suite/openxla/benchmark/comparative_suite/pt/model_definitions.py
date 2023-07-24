@@ -26,6 +26,12 @@ EXAMPLE_FP32_PT_BATCH_TEMPLATE = utils.ModelTemplate(
         "batch_size": utils.BATCH_SIZE_PARAM,
         "data_type": "fp32",
     },
+    artifacts_dir_url=string.Template(
+        "https://storage.googleapis.com/iree-model-artifacts/pytorch/pt_models_20230723.908_1690223270/${name}"
+    ),
+    exported_model_types=[
+        def_types.ModelArtifactType.LINALG_MLIR,
+    ],
 )
 EXAMPLE_FP32_PT_BATCHES = utils.build_batch_models(
     template=EXAMPLE_FP32_PT_BATCH_TEMPLATE, batch_sizes=[1, 16, 32])
