@@ -21,6 +21,10 @@
 #   VENV_DIR=pt-models.venv
 #   PYTHON=/usr/bin/python3.11
 #   WITH_CUDA=1
+#   SKIP_TORCH_MLIR_GEN=""
+#
+# Positional arguments:
+#   FILTER (Optional): Regex to match models, e.g., EXAMPLE_FP32_PT_.+
 
 set -xeuo pipefail
 
@@ -28,6 +32,8 @@ TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR="${VENV_DIR:-pt-models.venv}"
 PYTHON="${PYTHON:-"$(which python)"}"
 WITH_CUDA="${WITH_CUDA:-}"
+SKIP_TORCH_MLIR_GEN="${SKIP_TORCH_MLIR_GEN:-""}"
+FILTER="${1:-".*"}"
 
 VENV_DIR=${VENV_DIR} PYTHON=${PYTHON} WITH_CUDA=${WITH_CUDA} "${TD}/setup_venv.sh"
 source ${VENV_DIR}/bin/activate
@@ -40,4 +46,13 @@ mkdir "${OUTPUT_DIR}"
 
 pip list > "${OUTPUT_DIR}/models_version_info.txt"
 
-python "${TD}/generate_model_artifacts.py" -o "${OUTPUT_DIR}"
+declare -a ARGS=(
+  -o="${OUTPUT_DIR}"
+  --filter="${FILTER}"
+)
+
+if [[ -n "${SKIP_TORCH_MLIR_GEN}" ]]; then
+  ARGS+=("--skip-torch-mlir-gen")
+fi
+
+python "${TD}/generate_model_artifacts.py" "${ARGS[@]}"
