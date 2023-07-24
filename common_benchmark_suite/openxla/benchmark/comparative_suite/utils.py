@@ -103,14 +103,12 @@ def build_batch_models(
 def build_batch_benchmark_cases(
     batch_models: Dict[int, def_types.Model],
     batch_sizes: Sequence[int],
-    batch_inputs: Optional[Dict[int, def_types.ModelTestData]] = None,
+    input_data: def_types.ModelTestData = testdata.INPUT_DATA_MODEL_DEFAULT,
     verify_parameters: Optional[Dict[str, Any]] = None,
 ) -> Dict[int, def_types.BenchmarkCase]:
   """Build benchmark cases for multiple batch sizes."""
   benchmark_cases: Dict[int, def_types.BenchmarkCase] = {}
   for batch_size in batch_sizes:
-    input_data = (testdata.INPUT_DATA_MODEL_DEFAULT
-                  if batch_inputs is None else batch_inputs[batch_size])
     benchmark_case = def_types.BenchmarkCase.build(
         model=batch_models[batch_size],
         input_data=input_data,
