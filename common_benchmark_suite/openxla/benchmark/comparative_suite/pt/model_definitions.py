@@ -11,6 +11,7 @@ from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite import utils
 
 PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/pytorch/pt_models_20230709.894_1688992116/"
+ARTIFACTS_DIR_URL_TEMPLATE = string.Template(PARENT_GCS_DIR + "${name}")
 
 # Bert models.
 # Model implementation from https://huggingface.co/docs/transformers/model_doc/bert#transformers.BertModel.
@@ -36,16 +37,12 @@ BERT_LARGE_FP32_PT_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "import_on_gpu": False,
         "import_with_fx": True,
     },
-    artifacts={
-        def_types.ModelArtifactType.LINALG_MLIR:
-            utils.ModelArtifactTemplate(
-                artifact_type=def_types.ModelArtifactType.STABLEHLO_MLIR,
-                source_url=string.Template(
-                    PARENT_GCS_DIR +
-                    "BERT_LARGE_FP32_PT_384XI32_BATCH${batch_size}/linalg.mlirbc"
-                ),
-            ),
-    })
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+)
 
 BERT_LARGE_FP16_PT_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
     name=utils.BATCH_NAME("BERT_LARGE_FP16_PT_384XI32"),
@@ -59,16 +56,12 @@ BERT_LARGE_FP16_PT_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "import_on_gpu": True,
         "import_with_fx": True,
     },
-    artifacts={
-        def_types.ModelArtifactType.LINALG_MLIR:
-            utils.ModelArtifactTemplate(
-                artifact_type=def_types.ModelArtifactType.STABLEHLO_MLIR,
-                source_url=string.Template(
-                    PARENT_GCS_DIR +
-                    "BERT_LARGE_FP16_PT_384XI32_BATCH${batch_size}/linalg.mlirbc"
-                ),
-            ),
-    })
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+)
 
 BERT_LARGE_FP32_PT_384XI32_BATCHES = utils.build_batch_models(
     template=BERT_LARGE_FP32_PT_384XI32_BATCH_TEMPLATE,
@@ -99,16 +92,12 @@ RESNET50_FP32_PT_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTemplate(
         "import_on_gpu": False,
         "import_with_fx": True,
     },
-    artifacts={
-        def_types.ModelArtifactType.LINALG_MLIR:
-            utils.ModelArtifactTemplate(
-                artifact_type=def_types.ModelArtifactType.STABLEHLO_MLIR,
-                source_url=string.Template(
-                    PARENT_GCS_DIR +
-                    "RESNET50_FP32_PT_3X224X224XF32_BATCH${batch_size}/linalg.mlirbc"
-                ),
-            ),
-    })
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+)
 RESNET50_FP16_PT_3X224X224XF16_BATCH_TEMPLATE = utils.ModelTemplate(
     name=utils.BATCH_NAME("RESNET50_FP16_PT_3X224X224XF16"),
     tags=[utils.BATCH_TAG],
@@ -120,16 +109,12 @@ RESNET50_FP16_PT_3X224X224XF16_BATCH_TEMPLATE = utils.ModelTemplate(
         "import_on_gpu": True,
         "import_with_fx": False,
     },
-    artifacts={
-        def_types.ModelArtifactType.LINALG_MLIR:
-            utils.ModelArtifactTemplate(
-                artifact_type=def_types.ModelArtifactType.STABLEHLO_MLIR,
-                source_url=string.Template(
-                    PARENT_GCS_DIR +
-                    "RESNET50_FP16_PT_3X224X224XF16_BATCH${batch_size}/linalg.mlirbc"
-                ),
-            ),
-    })
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+)
 
 RESNET50_FP32_PT_3X224X224XF32_BATCHES = utils.build_batch_models(
     template=RESNET50_FP32_PT_3X224X224XF32_BATCH_TEMPLATE,

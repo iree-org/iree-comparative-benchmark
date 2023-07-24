@@ -5,9 +5,10 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 """Types of the benchmark definitions."""
 
+import dataclasses
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 
 class ModelFrameworkType(Enum):
@@ -46,13 +47,6 @@ class ModelArtifactType(Enum):
 
 
 @dataclass(frozen=True)
-class ModelArtifact:
-  """A specific derived model."""
-  artifact_type: ModelArtifactType
-  source_url: str
-
-
-@dataclass(frozen=True)
 class Model:
   """A model with concrete parameters to initialize."""
   # Friendly unique name.
@@ -63,8 +57,11 @@ class Model:
   model_impl: ModelImplementation
   # Parameters to initialize the model, e.g., input batch size, sequence length.
   model_parameters: Dict[str, Any]
-  # URLs to download the derived models of the initialized model.
-  artifacts: Dict[ModelArtifactType, ModelArtifact]
+  # URLs to download exported models and generated test data.
+  artifacts_dir_url: Optional[str] = None
+  # Types of exported models.
+  exported_model_types: List[ModelArtifactType] = dataclasses.field(
+      default_factory=list)
 
   def __str__(self):
     return self.name

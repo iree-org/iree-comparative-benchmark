@@ -126,8 +126,8 @@ OUTPUT_DATA_BERT_LARGE_FP32_TF_384X1024XF32_BATCHES = utils.build_batch_model_te
     batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280])
 
 # ResNet50 inputs.
-INPUT_DATA_RESNET50_FP32_TF_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
-    name=utils.BATCH_NAME("INPUT_DATA_RESNET50_FP32_TF_3X224X224XF32"),
+INPUT_DATA_RESNET50_FP32_TF_224X224X3XF32_BATCH_TEMPLATE = utils.ModelTestDataTemplate(
+    name=utils.BATCH_NAME("INPUT_DATA_RESNET50_FP32_TF_224X224X3XF32"),
     tags=["input-data", "imagenet", utils.BATCH_TAG],
     source_info=
     "Original image: https://storage.googleapis.com/iree-model-artifacts/ILSVRC2012_val_00000023.JPEG",
@@ -146,8 +146,8 @@ INPUT_DATA_RESNET50_FP32_TF_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTestDataTe
                     "RESNET50_FP32_TF_224X224X3XF32_BATCH${batch_size}/inputs_npy.tgz"
                 ))
     })
-INPUT_DATA_RESNET50_FP32_TF_3X224X224XF32_BATCHES = utils.build_batch_model_test_data(
-    template=INPUT_DATA_RESNET50_FP32_TF_3X224X224XF32_BATCH_TEMPLATE,
+INPUT_DATA_RESNET50_FP32_TF_224X224X3XF32_BATCHES = utils.build_batch_model_test_data(
+    template=INPUT_DATA_RESNET50_FP32_TF_224X224X3XF32_BATCH_TEMPLATE,
     batch_sizes=[1, 8, 64, 128, 256, 2048])
 
 # ResNet50 outputs.
