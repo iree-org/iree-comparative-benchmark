@@ -39,22 +39,13 @@ def _run(
     verbose: bool,
 ) -> utils.BenchmarkResult:
   model = benchmark.model
-  input_data = benchmark.input_data.artifacts[
-      def_types.ModelTestDataFormat.NUMPY_TENSORS]
-  expected_output = benchmark.expected_output.artifacts[
-      def_types.ModelTestDataFormat.NUMPY_TENSORS]
-
   data_type = model.model_parameters["data_type"]
   batch_size = model.model_parameters["batch_size"]
-  input_dims = input_data.data_parameters["tensor_dimensions"]
-  output_dims = expected_output.data_parameters["tensor_dimensions"]
   benchmark_definition = {
       "benchmark_name": benchmark.name,
       "framework": str(model.model_impl.framework_type),
       "data_type": data_type,
       "batch_size": batch_size,
-      "inputs": input_dims,
-      "outputs": output_dims,
       "compiler": compiler,
       "device": target_device.name,
       "tags": model.model_impl.tags + model.tags,
@@ -69,7 +60,7 @@ def _run(
         model=model,
         input_npys=list(input_npys),
         expect_npys=list(expect_npys),
-        verify_params=expected_output.verify_parameters,
+        verify_params=benchmark.verify_parameters,
         warmup_iterations=warmup_iterations,
         benchmark_iterations=iterations,
         backend=backend,
@@ -104,15 +95,18 @@ def _download_artifacts(benchmarks: Sequence[def_types.BenchmarkCase],
 
   download_list = []
   for benchmark in benchmarks:
-    input_artifact = benchmark.input_data.artifacts[
-        def_types.ModelTestDataFormat.NUMPY_TENSORS]
-    input_path = root_dir / benchmark.model.name / "inputs_npy.tgz"
-    download_list.append((input_artifact.source_url, input_path))
+    model = benchmark.model
+    artifacts_dir_url = model.artifacts_dir_url
+    if artifacts_dir_url is None:
+      raise ValueError(f"Artifacts dir URL is not found in '{model.name}'.")
 
-    expect_artifact = benchmark.expected_output.artifacts[
-        def_types.ModelTestDataFormat.NUMPY_TENSORS]
-    expect_path = root_dir / benchmark.model.name / "outputs_npy.tgz"
-    download_list.append((expect_artifact.source_url, expect_path))
+    input_path = root_dir / model.name / "inputs_npy.tgz"
+    input_url = artifacts_dir_url + "/inputs_npy.tgz"
+    download_list.append((input_url, input_path))
+
+    expect_path = root_dir / model.name / "outputs_npy.tgz"
+    expect_url = artifacts_dir_url + "/outputs_npy.tgz"
+    download_list.append((expect_url, expect_path))
 
   utils.download_files(download_list, verbose=verbose)
 
@@ -207,27 +201,11 @@ def benchmark(
   for benchmark in benchmarks:
     model_dir = root_dir / benchmark.model.name
 
-    input_artifact = benchmark.input_data.artifacts[
-        def_types.ModelTestDataFormat.NUMPY_TENSORS]
-    num_of_inputs = len(input_artifact.data_parameters["tensor_dimensions"])
-    input_npys = []
-    # Check and gather input npy paths.
-    for idx in range(num_of_inputs):
-      path = model_dir / "inputs_npy" / f"input_{idx}.npy"
-      if not path.exists():
-        raise ValueError(f"Missing input data '{path}'.")
-      input_npys.append(path)
+    inputs_npy_dir = model_dir / "inputs_npy"
+    input_npys = list(inputs_npy_dir.glob("input_*.npy"))
 
-    expect_artifact = benchmark.expected_output.artifacts[
-        def_types.ModelTestDataFormat.NUMPY_TENSORS]
-    num_of_expects = len(expect_artifact.data_parameters["tensor_dimensions"])
-    expect_npys = []
-    # Check and gather expect npy paths.
-    for idx in range(num_of_expects):
-      path = model_dir / "outputs_npy" / f"output_{idx}.npy"
-      if not path.exists():
-        raise ValueError(f"Missing expected data '{path}'.")
-      expect_npys.append(path)
+    outputs_npy_dir = model_dir / "outputs_npy"
+    expect_npys = list(outputs_npy_dir.glob("output_*.npy"))
 
     benchmarks_to_inputs[benchmark.name] = input_npys
     benchmarks_to_expects[benchmark.name] = expect_npys

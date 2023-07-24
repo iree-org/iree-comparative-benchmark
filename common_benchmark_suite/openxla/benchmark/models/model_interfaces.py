@@ -17,7 +17,6 @@ V = typing.TypeVar("V")
 class InferenceModel(abc.ABC, typing.Generic[T, U, V]):
   """Interface to interact with a JAX inference model."""
 
-  # TODO(#12): This will be removed once we store raw data in GCS.
   @abc.abstractmethod
   def generate_default_inputs(self) -> T:
     """Returns default inputs in its raw form."""
