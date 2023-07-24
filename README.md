@@ -20,6 +20,9 @@ The *common_benchmark_suite* is standalone and should not have dependency on the
 
 ## User's Guide
 
+To add new models and benchmarks, see
+[Onboarding New Models and Benchmarks](/common_benchmark_suite#onboarding-new-models-and-benchmarks).
+
 > TODO(pzread): Add instructions to run comparative benchmarks locally.
 
 ## Dashboard
