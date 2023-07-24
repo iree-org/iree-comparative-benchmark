@@ -115,15 +115,25 @@ def _run(
 
 def _generate_artifacts(benchmarks: Sequence[def_types.BenchmarkCase],
                         root_dir: pathlib.Path):
-  for benchmark in benchmarks:
-    model = benchmark.model
-    model_dir = root_dir / model.name
-    model_dir.mkdir(exist_ok=True)
-    model_utils.generate_and_save_inputs(
-        model_obj=model_utils.create_model_obj(model),
-        model_dir=model_dir,
-        archive=False,
-    )
+  """Generate benchmark artifacts locally."""
+
+  def _task():
+    for benchmark in benchmarks:
+      model = benchmark.model
+      model_dir = root_dir / model.name
+      model_dir.mkdir(exist_ok=True)
+      model_utils.generate_and_save_inputs(
+          model_obj=model_utils.create_model_obj(model),
+          model_dir=model_dir,
+          archive=False,
+      )
+
+  # Run in a separate process to avoid cross-interaction between frameworks.
+  p = multiprocessing.Process(target=_task)
+  p.start()
+  p.join()
+  if p.exitcode != 0:
+    raise RuntimeError("Failed to generate artifacts.")
 
 
 def _download_artifacts(benchmarks: Sequence[def_types.BenchmarkCase],
@@ -238,16 +248,9 @@ def benchmark(
 
   root_dir.mkdir(exist_ok=True)
   if generate_artifacts:
-    # Run in a separate process to avoid cross-interaction between frameworks.
-    p = multiprocessing.Process(target=_generate_artifacts,
-                                kwargs=dict(
-                                    benchmarks=benchmarks,
-                                    root_dir=root_dir,
-                                ))
-    p.start()
     if verbose:
       print("Generating artifacts...")
-    p.join()
+    _generate_artifacts(benchmarks=benchmarks, root_dir=root_dir)
   elif not no_download:
     if verbose:
       print("Downloading artifacts...")
