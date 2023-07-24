@@ -11,18 +11,30 @@ from openxla.benchmark.comparative_suite.pt import model_definitions
 
 BERT_LARGE_FP32_PT_384XI32_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.BERT_LARGE_FP32_PT_384XI32_BATCHES,
+    verify_parameters={
+        "absolute_tolerance": 0.5,
+    },
     batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280],
 )
 BERT_LARGE_FP16_PT_384XI32_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.BERT_LARGE_FP16_PT_384XI32_BATCHES,
+    verify_parameters={
+        "absolute_tolerance": 0.5,
+    },
     batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280],
 )
 RESNET50_FP32_PT_3X224X224XF32_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.RESNET50_FP32_PT_3X224X224XF32_BATCHES,
+    verify_parameters={
+        "absolute_tolerance": 0.5,
+    },
     batch_sizes=[1, 8, 64, 128, 256, 2048],
 )
 RESNET50_FP16_PT_3X224X224XF16_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.RESNET50_FP16_PT_3X224X224XF16_BATCHES,
+    verify_parameters={
+        "absolute_tolerance": 0.5,
+    },
     batch_sizes=[1, 8, 64, 128, 256, 2048],
 )
 
