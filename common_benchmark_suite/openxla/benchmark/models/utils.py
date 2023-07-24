@@ -43,10 +43,14 @@ def generate_and_save_inputs(model_obj: model_interfaces.InferenceModel,
   # TODO(#44): Support multiple raw inputs.
   raw_inputs = model_obj.generate_default_inputs()
   inputs = model_obj.preprocess(raw_inputs)
+  if not isinstance(inputs, tuple):
+    inputs = (inputs,)
 
   # Save inputs.
   inputs_dir = model_dir / "inputs_npy"
-  inputs_dir.mkdir(exist_ok=True)
+  if inputs_dir.exists():
+    shutil.rmtree(inputs_dir)
+  inputs_dir.mkdir()
   for idx, input in enumerate(inputs):
     input_path = inputs_dir / f"input_{idx}.npy"
     np.save(input_path, input)
@@ -62,7 +66,9 @@ def generate_and_save_inputs(model_obj: model_interfaces.InferenceModel,
 def save_outputs(outputs: Tuple[Any, ...], model_dir: pathlib.Path) -> None:
   """Saves `outputs` into `model_dir/output_npy.tgz`."""
   outputs_dir = model_dir.joinpath("outputs")
-  outputs_dir.mkdir(exist_ok=True)
+  if outputs_dir.exists():
+    shutil.rmtree(outputs_dir)
+  outputs_dir.mkdir()
 
   for idx, output in enumerate(outputs):
     output_path = outputs_dir.joinpath(f"output_{idx}.npy")
