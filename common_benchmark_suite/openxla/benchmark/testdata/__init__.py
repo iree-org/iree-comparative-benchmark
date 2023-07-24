@@ -7,5 +7,6 @@
 from openxla.benchmark import def_types
 
 # Pseudo input data from model's generate_default_inputs.
+# TODO(#44): This might go away when we support multiple raw input data.
 INPUT_DATA_MODEL_DEFAULT = def_types.ModelTestData(
     name="INPUT_DATA_MODEL_DEFAULT", source_url="")
