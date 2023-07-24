@@ -12,6 +12,11 @@ from openxla.benchmark.comparative_suite.pt import model_definitions
 # Example benchmarks.
 EXAMPLE_FP32_PT_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.EXAMPLE_FP32_PT_BATCHES,
+    # See check_tensor_outputs in comparative_benchmark/utils.py for the
+    # available parameters.
+    verify_parameters={
+        "absolute_tolerance": 0.1,
+    },
     batch_sizes=[1, 16, 32],
 )
 
