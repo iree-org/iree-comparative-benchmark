@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import argparse
-import importlib
 import os
 import pathlib
 import re
@@ -16,7 +15,7 @@ import sys
 import tarfile
 import tensorflow as tf
 
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional, Tuple
 
 # Add openxla dir to the search path.
 sys.path.insert(0, str(pathlib.Path(__file__).parents[5]))
@@ -80,9 +79,7 @@ def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
     os.environ[
         "XLA_FLAGS"] = f"--xla_dump_to={hlo_dir} --xla_dump_hlo_module_re=.*inference_forward.*"
 
-    model_module = importlib.import_module(model.model_impl.module_path)
-    model_obj: model_interfaces.InferenceModel = model_module.create_model(
-        **model.model_parameters)
+    model_obj = utils.create_model_obj(model)
 
     inputs = utils.generate_and_save_inputs(model_obj, model_dir)
     outputs = model_obj.forward(inputs)

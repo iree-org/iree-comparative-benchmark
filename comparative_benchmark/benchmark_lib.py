@@ -265,7 +265,6 @@ def benchmark(
 
     inputs_npy_dir = model_dir / "inputs_npy"
     input_npys = list(inputs_npy_dir.glob("input_*.npy"))
-
     benchmarks_to_inputs[benchmark.name] = input_npys
 
     # If generate_artifacts is enabled, no expected output to compare.
@@ -275,7 +274,6 @@ def benchmark(
 
     outputs_npy_dir = model_dir / "outputs_npy"
     expect_npys = list(outputs_npy_dir.glob("output_*.npy"))
-
     benchmarks_to_expects[benchmark.name] = expect_npys
 
   if verbose:

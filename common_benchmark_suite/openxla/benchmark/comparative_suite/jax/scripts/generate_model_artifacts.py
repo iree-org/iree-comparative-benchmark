@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import argparse
-import importlib
 import jax
 import os
 import pathlib
@@ -14,14 +13,13 @@ import multiprocessing
 import shutil
 import subprocess
 import sys
-
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional
 
 # Add openxla dir to the search path.
 sys.path.insert(0, str(pathlib.Path(__file__).parents[5]))
 from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite.jax import model_definitions
-from openxla.benchmark.models import model_interfaces, utils
+from openxla.benchmark.models import utils
 
 HLO_FILENAME_REGEX = r".*jit_forward.before_optimizations.txt"
 
@@ -57,9 +55,7 @@ def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
     os.environ[
         "XLA_FLAGS"] = f"--xla_dump_to={hlo_dir} --xla_dump_hlo_module_re=.*jit_forward.*"
 
-    model_module = importlib.import_module(model.model_impl.module_path)
-    model_obj: model_interfaces.InferenceModel = model_module.create_model(
-        **model.model_parameters)
+    model_obj = utils.create_model_obj(model)
 
     inputs = utils.generate_and_save_inputs(model_obj, model_dir)
     jit_inputs = jax.device_put(inputs)

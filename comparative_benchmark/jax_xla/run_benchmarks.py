@@ -7,7 +7,6 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import argparse
-import importlib
 import jax
 import numpy as np
 import pathlib
@@ -25,7 +24,7 @@ sys.path.insert(
 
 from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite.jax import benchmark_definitions
-from openxla.benchmark.models import model_interfaces
+import openxla.benchmark.models.utils as model_utils
 import benchmark_lib
 
 
@@ -38,10 +37,7 @@ def _run_framework_benchmark(
     verbose: bool,
 ) -> Tuple[Dict[str, Any], Any]:
 
-  model_module = importlib.import_module(model.model_impl.module_path)
-  model_obj: model_interfaces.InferenceModel = model_module.create_model(
-      **model.model_parameters)
-
+  model_obj = model_utils.create_model_obj(model)
   inputs = [np.load(path) for path in input_npys]
 
   try:
