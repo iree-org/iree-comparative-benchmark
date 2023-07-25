@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import argparse
-import importlib
 import pathlib
 import re
 import multiprocessing
@@ -20,7 +19,7 @@ from import_utils import import_torch_module_with_fx, import_torch_module
 sys.path.insert(0, str(pathlib.Path(__file__).parents[5]))
 from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite.pt import model_definitions
-from openxla.benchmark.models import model_interfaces, utils
+from openxla.benchmark.models import utils
 
 
 def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path):
@@ -31,9 +30,8 @@ def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path):
   try:
     # Remove all gradient info from models and tensors since these models are inference only.
     with torch.no_grad():
-      model_module = importlib.import_module(model.model_impl.module_path)
-      model_obj: model_interfaces.InferenceModel = model_module.create_model(
-          **model.model_parameters)
+      model_obj = utils.create_model_obj(model)
+
       if model_obj.import_on_gpu and not torch.cuda.is_available():
         raise RuntimeError("Model can only be exported on CUDA.")
 

@@ -7,14 +7,13 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import argparse
-import importlib
 import numpy as np
 import pathlib
 import statistics
 import sys
 import time
 import torch
-from typing import Any, Dict, Sequence
+from typing import Any, Dict, Sequence, Tuple
 
 # Add common_benchmark_suite dir to the search path.
 sys.path.insert(
@@ -25,20 +24,18 @@ sys.path.insert(
 
 from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite.pt import benchmark_definitions
-from openxla.benchmark.models import model_interfaces
-import benchmark_lib, utils
+import openxla.benchmark.models.utils as model_utils
+import benchmark_lib
 
 
 def _run_framework_benchmark(
     model: def_types.Model,
     input_npys: Sequence[pathlib.Path],
-    expect_npys: Sequence[pathlib.Path],
-    verify_params: Dict[str, Any],
     warmup_iterations: int,
     benchmark_iterations: int,
     backend: str,
     verbose: bool,
-) -> Dict[str, Any]:
+) -> Tuple[Dict[str, Any], Any]:
   try:
 
     data_type = model.model_parameters["data_type"]
@@ -60,12 +57,9 @@ def _run_framework_benchmark(
     else:
       raise ValueError(f"Backend {backend} not supported.")
 
-    model_module = importlib.import_module(model.model_impl.module_path)
-    model_obj: model_interfaces.InferenceModel = model_module.create_model(
-        **model.model_parameters)
+    model_obj = model_utils.create_model_obj(model)
 
     inputs = [np.load(path) for path in input_npys]
-    expects = [np.load(path) for path in expect_npys]
     pt_inputs = [torch.from_numpy(input_data) for input_data in inputs]
 
     if backend == "gpu":
@@ -114,17 +108,13 @@ def _run_framework_benchmark(
     if output is None:
       raise ValueError("No benchmark runs.")
 
-    outputs = (output,)
-    utils.check_tensor_outputs(outputs=outputs,
-                               expects=expects,
-                               verbose=verbose,
-                               **verify_params)
+    last_outputs = (output,)
 
   except Exception as e:
     print(f"Failed to benchmark model {model.name}.")
-    return {"error": str(e)}
+    raise
 
-  result_dict = {
+  metrics = {
       "min_warmup_latency_ms":
           min(warmup_latencies, default=None),
       "max_warmup_latency_ms":
@@ -155,7 +145,7 @@ def _run_framework_benchmark(
       "autotuning_enabled":
           autotuning_enabled,
   }
-  return result_dict
+  return (metrics, last_outputs)
 
 
 def _parse_arguments() -> argparse.Namespace:
