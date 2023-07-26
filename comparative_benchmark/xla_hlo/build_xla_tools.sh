@@ -14,6 +14,8 @@ pushd "${BUILD_DIR}"
 
 git clone https://github.com/openxla/xla.git
 cd xla
+# Last passing commit.
+#git checkout 5ec8b22
 
 # Log the git version of XLA repo.
 git log --oneline --graph --max-count=1

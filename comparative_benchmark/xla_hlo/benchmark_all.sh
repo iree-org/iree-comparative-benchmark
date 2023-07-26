@@ -35,18 +35,21 @@ declare -a GPU_BENCHMARK_NAMES=(
 )
 
 declare -a CPU_BENCHMARK_NAMES=(
-  "models/RESNET50_FP32_JAX_.+_BATCH1/.+"
-  "models/RESNET50_FP32_JAX_.+_BATCH64/.+"
-  "models/RESNET50_FP32_JAX_.+_BATCH128/.+"
-  "models/BERT_LARGE_FP32_JAX_.+_BATCH1/.+"
-  "models/BERT_LARGE_FP32_JAX_.+_BATCH32/.+"
-  "models/BERT_LARGE_FP32_JAX_.+_BATCH64/.+"
-  "models/T5_LARGE_FP32_JAX_.+_BATCH1/.+"
-  "models/T5_LARGE_FP32_JAX_.+_BATCH16/.+"
-  "models/T5_LARGE_FP32_JAX_.+_BATCH32/.+"
-  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH1/.+"
-  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH16/.+"
-  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH32/.+"
+#  "models/RESNET50_FP32_JAX_.+_BATCH1/.+"
+#  "models/RESNET50_FP32_JAX_.+_BATCH64/.+"
+#  "models/RESNET50_FP32_JAX_.+_BATCH128/.+"
+#  "models/BERT_LARGE_FP32_JAX_.+_BATCH1/.+"
+#  "models/BERT_LARGE_FP32_JAX_.+_BATCH32/.+"
+#  "models/BERT_LARGE_FP32_JAX_.+_BATCH64/.+"
+#  "models/T5_LARGE_FP32_JAX_.+_BATCH1/.+"
+#  "models/T5_LARGE_FP32_JAX_.+_BATCH16/.+"
+#  "models/T5_LARGE_FP32_JAX_.+_BATCH32/.+"
+#  "models/GPT2LMHEAD_FP32_JAX_.+_BATCH1/.+"
+  "models/GPT2LMHEAD_FP32_JAX_.+_BATCH64/.+"
+  "models/GPT2LMHEAD_FP32_JAX_.+_BATCH128/.+"
+#  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH1/.+"
+#  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH16/.+"
+#  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH32/.+"
   "models/RESNET50_FP32_TF_.+_BATCH1/.+"
   "models/RESNET50_FP32_TF_.+_BATCH64/.+"
   "models/RESNET50_FP32_TF_.+_BATCH128/.+"
@@ -56,6 +59,9 @@ declare -a CPU_BENCHMARK_NAMES=(
   "models/T5_LARGE_FP32_TF_.+_BATCH1/.+"
   "models/T5_LARGE_FP32_TF_.+_BATCH16/.+"
   "models/T5_LARGE_FP32_TF_.+_BATCH32/.+"
+  "models/EFFICIENTNETB7_FP32_TF_.+_BATCH1/.+"
+  "models/EFFICIENTNETB7_FP32_TF_.+_BATCH64/.+"
+  "models/EFFICIENTNETB7_FP32_TF_.+_BATCH128/.+"
 )
 
 if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then
@@ -68,7 +74,14 @@ elif [ "${TARGET_DEVICE}" = "c2-standard-16" ]; then
   # Std deviation is <1ms.
   BENCHMARK_NAMES=("${CPU_BENCHMARK_NAMES[@]}")
   HLO_TOOL="run_hlo_module"
-  ITERATIONS=5
+  ITERATIONS=11
+elif [ "${TARGET_DEVICE}" = "c2-standard-60" ]; then
+  # Since each iteration includes both compilation and inference, we keep the
+  # total iterations small because of the amount of time it takes to do both.
+  # Std deviation is <1ms.
+  BENCHMARK_NAMES=("${CPU_BENCHMARK_NAMES[@]}")
+  HLO_TOOL="run_hlo_module"
+  ITERATIONS=11
 else
   echo "Unsupported target device ${TARGET_DEVICE}."
   exit 1

@@ -196,6 +196,8 @@ def _run_compiler_benchmark_cpu(
       f"Expected to find {benchmark_iterations} latencies but found "
       f"{len(matches)} instead:\n{result_text}")
   latencies = [float(match) * 1000 for match in matches]
+  # Remove first latency since this may include compilation time.
+  latencies.pop(0)
 
   results_dict = {
       "compile_time_s": compile_time_latency,
