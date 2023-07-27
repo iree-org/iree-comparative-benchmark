@@ -13,7 +13,7 @@
 # `gs://iree-model-artifacts/pt`, preserving directory name.
 #
 # Usage:
-#     bash generate_saved_models.sh
+#     bash generate_saved_models.sh <(optional) model name regex>
 #
 # Requires python-3.11 and above and python-venv.
 #
@@ -31,7 +31,8 @@ TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR="${VENV_DIR:-pt-models.venv}"
 PYTHON="${PYTHON:-"$(which python)"}"
 WITH_CUDA="${WITH_CUDA:-}"
-FILTER="${1:-".+"}"
+
+FILTER="${1:-".*"}"
 
 VENV_DIR=${VENV_DIR} PYTHON=${PYTHON} WITH_CUDA=${WITH_CUDA} "${TD}/setup_venv.sh"
 source ${VENV_DIR}/bin/activate

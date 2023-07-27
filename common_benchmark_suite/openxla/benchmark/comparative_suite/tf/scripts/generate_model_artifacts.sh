@@ -13,13 +13,14 @@
 # `gs://iree-model-artifacts/tensorflow`, preserving directory name.
 #
 # Usage:
-#     bash generate_saved_models.sh <path_to_iree_opt>
+#     bash generate_saved_models.sh <(optional) model name regex>
 #
 # Requires python-3.10 and above and python-venv.
 #
 # Environment variables:
 #   VENV_DIR=tf-models.venv
 #   PYTHON=/usr/bin/python3.10
+#   IREE_OPT=iree-opt
 #
 # Positional arguments:
 #   FILTER (Optional): Regex to match models, e.g., BERT_LARGE_FP32_.+
@@ -29,11 +30,17 @@ set -xeuo pipefail
 TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR="${VENV_DIR:-tf-models.venv}"
 PYTHON="${PYTHON:-"$(which python3)"}"
-FILTER="${1:-".+"}"
-
 # See https://openxla.github.io/iree/building-from-source/getting-started/ for
 # instructions on how to build `iree-opt`.
-IREE_OPT_PATH=$1
+IREE_OPT="${IREE_OPT:-"iree-opt"}"
+
+FILTER="${1:-".*"}"
+
+if ! command -v "${IREE_OPT}"; then
+  echo "${IREE_OPT} not found"
+  exit 1
+fi
+IREE_OPT_PATH="$(which "${IREE_OPT}")"
 
 VENV_DIR=${VENV_DIR} PYTHON=${PYTHON} "${TD}/setup_venv.sh"
 source ${VENV_DIR}/bin/activate
