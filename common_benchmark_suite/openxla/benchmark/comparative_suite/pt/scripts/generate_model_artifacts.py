@@ -30,17 +30,19 @@ def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path):
   try:
     # Remove all gradient info from models and tensors since these models are inference only.
     with torch.no_grad():
+      import_on_gpu = model.model_parameters.get("import_on_gpu", False)
+      import_with_fx = model.model_parameters.get("import_with_fx", True)
       model_obj = utils.create_model_obj(model)
 
-      if model_obj.import_on_gpu and not torch.cuda.is_available():
+      if import_on_gpu and not torch.cuda.is_available():
         raise RuntimeError("Model can only be exported on CUDA.")
 
       inputs = utils.generate_and_save_inputs(model_obj, model_dir)
-      if model_obj.import_on_gpu:
+      if import_on_gpu:
         model_obj.cuda()
         inputs = [input.cuda() for input in inputs]
 
-      if model_obj.import_with_fx:
+      if import_with_fx:
         mlir_data = import_torch_module_with_fx(
             model_obj, inputs, torch_mlir.OutputType.LINALG_ON_TENSORS)
       else:
