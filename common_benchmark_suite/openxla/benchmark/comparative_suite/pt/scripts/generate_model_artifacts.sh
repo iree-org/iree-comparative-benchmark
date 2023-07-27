@@ -21,6 +21,9 @@
 #   VENV_DIR=pt-models.venv
 #   PYTHON=/usr/bin/python3.11
 #   WITH_CUDA=1
+#
+# Positional arguments:
+#   FILTER (Optional): Regex to match models, e.g., BERT_LARGE_FP32_.+
 
 set -xeuo pipefail
 
@@ -28,6 +31,7 @@ TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR="${VENV_DIR:-pt-models.venv}"
 PYTHON="${PYTHON:-"$(which python)"}"
 WITH_CUDA="${WITH_CUDA:-}"
+FILTER="${1:-".+"}"
 
 VENV_DIR=${VENV_DIR} PYTHON=${PYTHON} WITH_CUDA=${WITH_CUDA} "${TD}/setup_venv.sh"
 source ${VENV_DIR}/bin/activate
@@ -40,4 +44,8 @@ mkdir "${OUTPUT_DIR}"
 
 pip list > "${OUTPUT_DIR}/models_version_info.txt"
 
-python "${TD}/generate_model_artifacts.py" -o "${OUTPUT_DIR}"
+python "${TD}/generate_model_artifacts.py" \
+  -o "${OUTPUT_DIR}" \
+  --filter="${FILTER}"
+
+echo "Output directory: ${OUTPUT_DIR}"

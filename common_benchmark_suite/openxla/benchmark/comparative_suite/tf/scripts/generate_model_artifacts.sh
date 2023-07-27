@@ -20,12 +20,16 @@
 # Environment variables:
 #   VENV_DIR=tf-models.venv
 #   PYTHON=/usr/bin/python3.10
+#
+# Positional arguments:
+#   FILTER (Optional): Regex to match models, e.g., BERT_LARGE_FP32_.+
 
 set -xeuo pipefail
 
 TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR="${VENV_DIR:-tf-models.venv}"
-PYTHON="${PYTHON:-"$(which python)"}"
+PYTHON="${PYTHON:-"$(which python3)"}"
+FILTER="${1:-".+"}"
 
 # See https://openxla.github.io/iree/building-from-source/getting-started/ for
 # instructions on how to build `iree-opt`.
@@ -42,4 +46,9 @@ mkdir ${OUTPUT_DIR}
 
 pip list > "${OUTPUT_DIR}/models_version_info.txt"
 
-python "${TD}/generate_model_artifacts.py" -o "${OUTPUT_DIR}" --iree_opt_path="${IREE_OPT_PATH}"
+python "${TD}/generate_model_artifacts.py" \
+  -o "${OUTPUT_DIR}" \
+  --iree_opt_path="${IREE_OPT_PATH}" \
+  --filter="${FILTER}"
+
+echo "Output directory: ${OUTPUT_DIR}"
