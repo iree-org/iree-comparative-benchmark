@@ -28,13 +28,12 @@ class ResNet(model_interfaces.InferenceModel, tf.Module):
 
   def generate_default_inputs(self) -> Tuple[Any, ...]:
     # TODO(#44): This should go away once we support different raw inputs.
-    image = utils.download_and_read_img(DEFAULT_IMAGE_URL,
-                                        width=224,
-                                        height=224)
+    image = utils.download_and_read_img(DEFAULT_IMAGE_URL)
     return (image,)
 
   def preprocess(self, raw_inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
     image, = raw_inputs
+    image = image.resize((224, 224))
     image_processor = AutoImageProcessor.from_pretrained(self.model_name)
     inputs = image_processor(images=image, return_tensors="tf")
     tensor = inputs["pixel_values"]

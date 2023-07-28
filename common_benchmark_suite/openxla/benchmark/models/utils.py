@@ -20,13 +20,10 @@ from openxla.benchmark import def_types
 from openxla.benchmark.models import model_interfaces
 
 
-def download_and_read_img(url: str,
-                          width: int = 224,
-                          height: int = 224) -> Image.Image:
+def download_and_read_img(url: str) -> Image.Image:
   """Downloads an image and reads it into memory."""
   data = requests.get(url).content
   img = Image.open(io.BytesIO(data))
-  img = img.resize((width, height))
   return img
 
 
