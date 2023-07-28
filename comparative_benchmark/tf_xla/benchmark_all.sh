@@ -37,6 +37,7 @@ declare -a GPU_BENCHMARK_NAMES=(
   "models/RESNET50_FP32_TF_.+"
   "models/BERT_LARGE_FP32_TF_.+"
   "models/T5_LARGE_FP32_TF_.+"
+  "models/EFFICIENTNETB7_FP32_TF_.+"
 )
 
 declare -a CPU_BENCHMARK_NAMES=(
@@ -49,6 +50,9 @@ declare -a CPU_BENCHMARK_NAMES=(
   "models/T5_LARGE_FP32_TF_.+_BATCH1/.+"
   "models/T5_LARGE_FP32_TF_.+_BATCH16/.+"
   "models/T5_LARGE_FP32_TF_.+_BATCH32/.+"
+  "models/EFFICIENTNETB7_FP32_TF_.+_BATCH1/.+"
+  "models/EFFICIENTNETB7_FP32_TF_.+_BATCH64/.+"
+  "models/EFFICIENTNETB7_FP32_TF_.+_BATCH128/.+"
 )
 
 if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then

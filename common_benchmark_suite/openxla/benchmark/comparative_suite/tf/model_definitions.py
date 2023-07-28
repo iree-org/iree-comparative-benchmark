@@ -106,9 +106,45 @@ RESNET50_FP32_TF_224X224X3XF32_BATCHES = utils.build_batch_models(
     template=RESNET50_FP32_TF_224X224X3XF32_BATCH_TEMPLATE,
     batch_sizes=[1, 8, 64, 128, 256, 2048])
 
+# EfficientNet models.
+# Model implementation from https://www.tensorflow.org/api_docs/python/tf/keras/applications/efficientnet.
+EFFICIENTNET_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/tensorflow/tf_models_2.13.0_1689819439/"
+EFFICIENTNET_ARTIFACTS_DIR_URL_TEMPLATE = string.Template(EFFICIENTNET_GCS_DIR +
+                                                          "${name}")
+
+EFFICIENTNET_TF_IMPL = def_types.ModelImplementation(
+    name="EFFICIENTNET_TF",
+    tags=["cnn", "efficientnet"],
+    framework_type=def_types.ModelFrameworkType.TF_V2,
+    module_path=f"{utils.MODELS_MODULE_PATH}.tf.efficientnet.efficientnet_model",
+    source_info=
+    "https://www.tensorflow.org/api_docs/python/tf/keras/applications/efficientnet",
+)
+EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH_TEMPLATE = utils.ModelTemplate(
+    name=utils.BATCH_NAME("EFFICIENTNETB7_FP32_TF_600X600X3XF32"),
+    tags=[utils.BATCH_TAG, "fp32"],
+    model_impl=EFFICIENTNET_TF_IMPL,
+    model_parameters={
+        "batch_size": utils.BATCH_SIZE_PARAM,
+        "data_type": "fp32",
+        "model_name": "efficientnetb7",
+    },
+    artifacts_dir_url=EFFICIENTNET_ARTIFACTS_DIR_URL_TEMPLATE,
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+        def_types.ModelArtifactType.TF_SAVEDMODEL_V2,
+    ],
+)
+
+EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCHES = utils.build_batch_models(
+    template=EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH_TEMPLATE,
+    batch_sizes=[1, 64, 128])
+
 ALL_MODELS = list(
     itertools.chain(
         T5_LARGE_FP32_TF_512XI32_BATCHES.values(),
         BERT_LARGE_FP32_TF_384XI32_BATCHES.values(),
         RESNET50_FP32_TF_224X224X3XF32_BATCHES.values(),
+        EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCHES.values(),
     ))

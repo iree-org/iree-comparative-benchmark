@@ -16,7 +16,7 @@ set -xeuo pipefail
 TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR=${VENV_DIR:-tf-benchmarks.venv}
 PYTHON="${PYTHON:-"$(which python3)"}"
-TENSORFLOW_VERSION="${TENSORFLOW_VERSION:-2.12.0}"
+TENSORFLOW_VERSION="${TENSORFLOW_VERSION:-2.13.0}"
 
 "${PYTHON}" -m venv "${VENV_DIR}" || echo "Could not create venv."
 source "${VENV_DIR}/bin/activate" || echo "Could not activate venv"

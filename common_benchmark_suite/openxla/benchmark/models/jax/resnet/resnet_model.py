@@ -14,7 +14,7 @@ from typing import Any, Tuple
 from openxla.benchmark.models import model_interfaces
 
 
-def _get_image_input(width=224, height=224):
+def _get_image_input():
   """Returns a sample image in the Imagenet2012 Validation Dataset.
   Input size 224x224x3 is used, as stated in the MLPerf Inference Rules:
   https://github.com/mlcommons/inference_policies/blob/master/inference_rules.adoc#41-benchmarks
@@ -23,7 +23,6 @@ def _get_image_input(width=224, height=224):
   img_path = "https://storage.googleapis.com/iree-model-artifacts/ILSVRC2012_val_00000023.JPEG"
   data = requests.get(img_path).content
   img = Image.open(io.BytesIO(data))
-  img = img.resize((width, height))
   return img
 
 
@@ -57,6 +56,7 @@ class ResNet(model_interfaces.InferenceModel):
 
   def preprocess(self, raw_inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
     image, = raw_inputs
+    image = image.resize((224, 224))
     image_processor = AutoImageProcessor.from_pretrained(self.model_name)
     inputs = image_processor(images=image, return_tensors="jax")
     tensor = inputs["pixel_values"]
