@@ -119,15 +119,18 @@ def check_tensor_outputs(outputs: Sequence[np.ndarray],
                              absolute_tolerance=absolute_tolerance,
                              relative_tolerance=relative_tolerance)
   all_equal = True
+  errors = []
   for idx, verdict in enumerate(verdicts):
     is_equal, max_diff = verdict
     if not is_equal:
       all_equal = False
+      error_string = f"Output {idx} exceeds tolerance. Max diff: {max_diff}, atol: {absolute_tolerance}, rtol: {relative_tolerance}"
+      errors.append(error_string)
       if verbose:
-        print(f"Output {idx} exceeds tolerance. Max diff: {max_diff}")
+        print(error_string)
 
   if not all_equal:
-    raise ValueError("Output verification failed.")
+    raise ValueError(str(errors))
 
 
 def append_benchmark_result(result_path: pathlib.Path, result: BenchmarkResult):

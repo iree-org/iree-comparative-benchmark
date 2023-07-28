@@ -15,7 +15,7 @@
 #   second argument.
 #
 # Example usage:
-# ./benchmark_all.sh a2-highgpu-1g /tmp/results.json
+# ./benchmark_xla.sh a2-highgpu-1g /tmp/results.json
 
 set -xeuo pipefail
 

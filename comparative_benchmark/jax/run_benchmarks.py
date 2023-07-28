@@ -30,6 +30,7 @@ import benchmark_lib
 
 COMPILER_XLA = "xla"
 COMPILER_XLA_CPU_NEXT = "xla_cpu_next"
+COMPILER_IREE = "iree"
 
 
 def _run_framework_benchmark(
@@ -43,6 +44,8 @@ def _run_framework_benchmark(
 ) -> Tuple[Dict[str, Any], tuple]:
   if compiler == COMPILER_XLA_CPU_NEXT:
     os.environ['XLA_FLAGS'] = "--xla_cpu_use_xla_runtime"
+  elif compiler == COMPILER_IREE:
+    backend = "iree_cpu" if backend == "cpu" else "iree_cuda"
 
   model_obj = model_utils.create_model_obj(model)
   inputs = [np.load(path) for path in input_npys]
@@ -133,12 +136,13 @@ def _run_framework_benchmark(
 def _parse_arguments() -> argparse.Namespace:
   parser = argparse.ArgumentParser(
       description="Run JAX benchmarks with XLA backend.")
-  parser.add_argument("-c",
-                      "--compiler",
-                      type=str,
-                      default=COMPILER_XLA,
-                      choices=[COMPILER_XLA, COMPILER_XLA_CPU_NEXT],
-                      help="Compiler to use.")
+  parser.add_argument(
+      "-c",
+      "--compiler",
+      type=str,
+      default=COMPILER_XLA,
+      choices=[COMPILER_XLA, COMPILER_XLA_CPU_NEXT, COMPILER_IREE],
+      help="Compiler to use.")
   benchmark_lib.configure_parser(parser)
   return parser.parse_args()
 
