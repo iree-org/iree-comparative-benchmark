@@ -9,6 +9,7 @@
 import argparse
 import dataclasses
 import json
+import os
 import pathlib
 import re
 import statistics
@@ -29,6 +30,9 @@ import openxla.benchmark.comparative_suite.tf.benchmark_definitions as tf_benchm
 import utils
 
 ALL_DEVICE_NAMES = [device.name for device in devices.ALL_DEVICES]
+
+COMPILER_XLA = "xla"
+COMPILER_XLA_CPU_NEXT = "xla_cpu_next"
 
 TIME_UNITS = {"us": 1e-3, "ms": 1, "s": 1e3, "min": 60 * 1e3, "h": 3600 * 1e3}
 TIME_REGEXP = re.compile(r"time: (\d+\.?\d*) (%s)" % "|".join(TIME_UNITS))
@@ -192,10 +196,13 @@ def _run_compiler_benchmark_cpu(
   compile_time_latency = float(matches[0]) if matches else None
 
   matches = CPU_LATENCY_REGEXP.findall(result_text)
-  assert len(matches) == benchmark_iterations, (
-      f"Expected to find {benchmark_iterations} latencies but found "
-      f"{len(matches)} instead:\n{result_text}")
-  latencies = [float(match) * 1000 for match in matches]
+  if len(matches) == benchmark_iterations:
+    latencies = [float(match) * 1000 for match in matches]
+  else:
+    error_string = f"Expected to find {benchmark_iterations} latencies but found {len(matches)} instead:\n{result_text}"
+    if verbose:
+      print(error_string)
+    return {"error": error_string}
 
   results_dict = {
       "compile_time_s": compile_time_latency,
@@ -212,6 +219,7 @@ def _run_compiler_benchmark_cpu(
 def _run(
     benchmark: def_types.BenchmarkCase,
     target_device: def_types.DeviceSpec,
+    compiler: str,
     iterations: int,
     hlo_tool: pathlib.Path,
     hlo_dump: pathlib.Path,
@@ -225,10 +233,13 @@ def _run(
       "framework": str(model.model_impl.framework_type),
       "data_type": data_type,
       "batch_size": batch_size,
-      "compiler": "xla",
+      "compiler": compiler,
       "device": target_device.name,
       "tags": model.model_impl.tags + model.tags,
   }
+
+  if compiler == COMPILER_XLA_CPU_NEXT:
+    os.environ['XLA_FLAGS'] = "--xla_cpu_use_xla_runtime"
 
   # We use different binaries for benchmarking gpu and cpu.
   accelerator = target_device.accelerator_type
@@ -290,6 +301,12 @@ def _parse_arguments() -> argparse.Namespace:
                       required=True,
                       choices=ALL_DEVICE_NAMES,
                       help="The target device to benchmark.")
+  parser.add_argument("-c",
+                      "--compiler",
+                      type=str,
+                      default=COMPILER_XLA,
+                      choices=[COMPILER_XLA, COMPILER_XLA_CPU_NEXT],
+                      help="The compiler to use.")
   parser.add_argument("-iter",
                       "--iterations",
                       type=int,
@@ -319,6 +336,7 @@ def _parse_arguments() -> argparse.Namespace:
 def main(
     benchmark_name: str,
     target_device_name: str,
+    compiler: str,
     output: pathlib.Path,
     root_dir: pathlib.Path,
     hlo_tool: pathlib.Path,
@@ -358,6 +376,7 @@ def main(
 
     result = _run(benchmark=benchmark,
                   target_device=target_device,
+                  compiler=compiler,
                   iterations=iterations,
                   hlo_tool=hlo_tool,
                   hlo_dump=hlo_dump,

@@ -33,6 +33,7 @@ def _run_framework_benchmark(
     input_npys: Sequence[pathlib.Path],
     warmup_iterations: int,
     benchmark_iterations: int,
+    compiler: str,
     backend: str,
     verbose: bool,
 ) -> Tuple[Dict[str, Any], Any]:
