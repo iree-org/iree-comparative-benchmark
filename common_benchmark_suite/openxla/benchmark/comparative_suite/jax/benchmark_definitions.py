@@ -82,6 +82,14 @@ RESNET50_BF16_JAX_3X224X224XBF16_CASES = utils.build_batch_benchmark_cases(
     batch_sizes=[1, 8, 64, 128, 256, 2048],
 )
 
+GPT2LMHEAD_FP32_JAX_512XI32_CASES = utils.build_batch_benchmark_cases(
+    batch_models=model_definitions.GPT2LMHEAD_FP32_JAX_512XI32_BATCHES,
+    verify_parameters={
+        "absolute_tolerance": 0.5,
+    },
+    batch_sizes=[1, 64, 128],
+)
+
 ALL_BENCHMARKS = list(
     itertools.chain(
         T5_LARGE_FP32_JAX_512XI32_CASES.values(),
@@ -94,4 +102,5 @@ ALL_BENCHMARKS = list(
         RESNET50_FP32_JAX_3X224X224XF32_CASES.values(),
         RESNET50_FP16_JAX_3X224X224XF16_CASES.values(),
         RESNET50_BF16_JAX_3X224X224XBF16_CASES.values(),
+        GPT2LMHEAD_FP32_JAX_512XI32_CASES.values(),
     ))
