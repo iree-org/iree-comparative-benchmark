@@ -85,6 +85,7 @@ def _run(
         verify_params=benchmark.verify_parameters,
         warmup_iterations=warmup_iterations,
         benchmark_iterations=iterations,
+        compiler=compiler,
         backend=backend,
         verbose=verbose,
     )

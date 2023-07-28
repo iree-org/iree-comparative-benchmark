@@ -91,5 +91,21 @@ for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
     --hlo-tool="${XLA_TOOLS_DIR}/${HLO_TOOL}" \
     --output="${OUTPUT_PATH}" \
     --iterations="${ITERATIONS}" \
+    --compiler="xla" \
     --verbose
 done
+
+# If running on CPU, also benchmark XLA CPU-Next.
+# Use a lower number of iterations since CPU-Next is slow.
+if [ "${TARGET_DEVICE}" = "c2-standard-16" ]; then
+  for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
+    "${TD}/run_benchmarks.py" \
+      --benchmark_name="${benchmark_name}" \
+      --target_device="${TARGET_DEVICE}" \
+      --hlo-tool="${XLA_TOOLS_DIR}/${HLO_TOOL}" \
+      --output="${OUTPUT_PATH}" \
+      --iterations=3 \
+      --compiler="xla_cpu_next" \
+      --verbose
+  done
+fi

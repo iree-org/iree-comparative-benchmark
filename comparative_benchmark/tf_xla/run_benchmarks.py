@@ -8,6 +8,7 @@
 
 import argparse
 import numpy as np
+import os
 import pathlib
 import statistics
 import sys
@@ -32,6 +33,9 @@ _HLO_DUMP_DIR = "/tmp/hlo_dump"
 _TF_CPU_DEVICE = "/CPU:0"
 _TF_GPU_DEVICE = "/GPU:0"
 
+COMPILER_XLA = "xla"
+COMPILER_XLA_CPU_NEXT = "xla_cpu_next"
+
 
 def bytes_to_mb(bytes: Optional[int]) -> Optional[float]:
   return None if bytes is None else bytes / 1e6
@@ -42,10 +46,14 @@ def _run_framework_benchmark(
     input_npys: Sequence[pathlib.Path],
     warmup_iterations: int,
     benchmark_iterations: int,
+    compiler: str,
     backend: str,
     verbose: bool,
 ) -> Tuple[Dict[str, Any], Any]:
   tf_device = _TF_GPU_DEVICE if backend == "gpu" else _TF_CPU_DEVICE
+
+  if compiler == COMPILER_XLA_CPU_NEXT:
+    os.environ['XLA_FLAGS'] = "--xla_cpu_use_xla_runtime"
 
   try:
     with tf.device(tf_device):
@@ -130,6 +138,12 @@ def _run_framework_benchmark(
 def _parse_arguments() -> argparse.Namespace:
   parser = argparse.ArgumentParser(
       description="Run TF benchmarks with XLA backend.")
+  parser.add_argument("-c",
+                      "--compiler",
+                      type=str,
+                      default=COMPILER_XLA,
+                      choices=[COMPILER_XLA, COMPILER_XLA_CPU_NEXT],
+                      help="Compiler to use.")
   benchmark_lib.configure_parser(parser)
   return parser.parse_args()
 
@@ -137,7 +151,6 @@ def _parse_arguments() -> argparse.Namespace:
 def main(**kwargs):
   benchmark_lib.benchmark(benchmark_function=_run_framework_benchmark,
                           benchmark_cases=benchmark_definitions.ALL_BENCHMARKS,
-                          compiler="xla",
                           **kwargs)
 
 
