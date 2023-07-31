@@ -29,7 +29,7 @@ set -xeuo pipefail
 
 TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR="${VENV_DIR:-tf-models.venv}"
-PYTHON="${PYTHON:-"$(which python3)"}"
+PYTHON="${PYTHON:-"$(which python)"}"
 # See https://openxla.github.io/iree/building-from-source/getting-started/ for
 # instructions on how to build `iree-opt`.
 IREE_OPT="${IREE_OPT:-"iree-opt"}"

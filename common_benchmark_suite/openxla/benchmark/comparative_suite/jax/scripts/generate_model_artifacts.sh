@@ -30,7 +30,7 @@ set -xeuo pipefail
 
 TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR="${VENV_DIR:-jax-models.venv}"
-PYTHON="${PYTHON:-"$(which python3)"}"
+PYTHON="${PYTHON:-"$(which python)"}"
 WITH_CUDA="${WITH_CUDA:-}"
 # See https://openxla.github.io/iree/building-from-source/getting-started/ for
 # instructions on how to build `iree-opt`.
