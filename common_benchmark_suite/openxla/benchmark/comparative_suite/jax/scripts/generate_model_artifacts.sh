@@ -13,7 +13,7 @@
 # `gs://iree-model-artifacts/jax`, preserving directory name.
 #
 # Usage:
-#     bash generate_saved_models.sh <path_to_iree_opt>
+#     bash generate_saved_models.sh <(optional) model name regex>
 #
 # Requires python-3.10 and above and python-venv.
 #
@@ -21,6 +21,10 @@
 #   VENV_DIR=jax-models.venv
 #   PYTHON=/usr/bin/python3.10
 #   WITH_CUDA=1
+#   IREE_OPT=iree-opt
+#
+# Positional arguments:
+#   FILTER (Optional): Regex to match models, e.g., BERT_LARGE_FP32_.+
 
 set -xeuo pipefail
 
@@ -28,10 +32,17 @@ TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR="${VENV_DIR:-jax-models.venv}"
 PYTHON="${PYTHON:-"$(which python)"}"
 WITH_CUDA="${WITH_CUDA:-}"
-
 # See https://openxla.github.io/iree/building-from-source/getting-started/ for
 # instructions on how to build `iree-opt`.
-IREE_OPT_PATH=$1
+IREE_OPT="${IREE_OPT:-"iree-opt"}"
+
+FILTER="${1:-".*"}"
+
+if ! command -v "${IREE_OPT}"; then
+  echo "${IREE_OPT} not found"
+  exit 1
+fi
+IREE_OPT_PATH="$(which "${IREE_OPT}")"
 
 VENV_DIR=${VENV_DIR} PYTHON=${PYTHON} WITH_CUDA=${WITH_CUDA} "${TD}/setup_venv.sh"
 source ${VENV_DIR}/bin/activate
@@ -44,4 +55,9 @@ mkdir "${OUTPUT_DIR}"
 
 pip list > "${OUTPUT_DIR}/models_version_info.txt"
 
-python "${TD}/generate_model_artifacts.py" -o "${OUTPUT_DIR}" --iree_opt_path="${IREE_OPT_PATH}"
+python "${TD}/generate_model_artifacts.py" \
+  -o "${OUTPUT_DIR}" \
+  --iree_opt_path="${IREE_OPT_PATH}" \
+  --filter="${FILTER}"
+
+echo "Output directory: ${OUTPUT_DIR}"
