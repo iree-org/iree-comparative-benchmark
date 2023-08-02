@@ -36,9 +36,9 @@ class Bert(model_interfaces.InferenceModel):
       # The original model is fp32.
       pass
     elif dtype == jnp.float16:
-      model.params = model.to_fp16(self.model.params)
+      model.params = model.to_fp16(model.params)
     elif dtype == jnp.bfloat16:
-      model.params = model.to_bf16(self.model.params)
+      model.params = model.to_bf16(model.params)
     else:
       raise ValueError(f"Unsupported data type '{dtype}'.")
 
