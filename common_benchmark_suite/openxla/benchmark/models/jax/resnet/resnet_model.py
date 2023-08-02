@@ -5,25 +5,13 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 from PIL import Image
-import io
 import jax.numpy as jnp
-import requests
 from transformers import AutoImageProcessor, FlaxResNetModel
 from typing import Any, Tuple
 
-from openxla.benchmark.models import model_interfaces
+from openxla.benchmark.models import model_interfaces, utils
 
-
-def _get_image_input():
-  """Returns a sample image in the Imagenet2012 Validation Dataset.
-  Input size 224x224x3 is used, as stated in the MLPerf Inference Rules:
-  https://github.com/mlcommons/inference_policies/blob/master/inference_rules.adoc#41-benchmarks
-  """
-  # We use an image of 5 applies since this is an easy example.
-  img_path = "https://storage.googleapis.com/iree-model-artifacts/ILSVRC2012_val_00000023.JPEG"
-  data = requests.get(img_path).content
-  img = Image.open(io.BytesIO(data))
-  return img
+DEFAULT_IMAGE_URL = "https://storage.googleapis.com/iree-model-artifacts/ILSVRC2012_val_00000023.JPEG"
 
 
 class ResNet(model_interfaces.InferenceModel):
@@ -35,43 +23,39 @@ class ResNet(model_interfaces.InferenceModel):
       batch_size: int,
       dtype: Any,
   ):
-    self.model = FlaxResNetModel.from_pretrained(model_name, dtype=dtype)
+    model: FlaxResNetModel = FlaxResNetModel.from_pretrained(
+        model_name,
+        dtype=dtype,
+    )
     if dtype == jnp.float32:
       # The original model is fp32.
       pass
     elif dtype == jnp.float16:
-      self.model.params = self.model.to_fp16(self.model.params)
+      model.params = model.to_fp16(model.params)
     elif dtype == jnp.bfloat16:
-      self.model.params = self.model.to_bf16(self.model.params)
+      model.params = model.to_bf16(model.params)
     else:
       raise ValueError(f"Unsupported data type '{dtype}'.")
 
+    self.model = model
     self.model_name = model_name
     self.batch_size = batch_size
 
-  def generate_default_inputs(self) -> Tuple[Any, ...]:
+  def generate_default_inputs(self) -> Image.Image:
     # TODO(#44): This should go away once we support different raw inputs.
-    image = _get_image_input()
-    return (image,)
+    return utils.download_and_read_img(DEFAULT_IMAGE_URL)
 
-  def preprocess(self, raw_inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    image, = raw_inputs
-    image = image.resize((224, 224))
+  def preprocess(self, input_image: Image.Image) -> Any:
+    resized_image = input_image.resize((224, 224))
     image_processor = AutoImageProcessor.from_pretrained(self.model_name)
-    inputs = image_processor(images=image, return_tensors="jax")
+    inputs = image_processor(images=resized_image, return_tensors="jax")
     tensor = inputs["pixel_values"]
     tensor = jnp.asarray(jnp.tile(tensor, [self.batch_size, 1, 1, 1]),
                          dtype=self.model.dtype)
-    return (tensor,)
+    return tensor
 
-  def forward(self, inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    tensor, = inputs
-    output = self.model(tensor).last_hidden_state
-    return (output,)
-
-  def postprocess(self, outputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    # No-op.
-    return outputs
+  def forward(self, input_tensor: Any) -> Any:
+    return self.model(input_tensor).last_hidden_state
 
 
 DTYPE_MAP = {

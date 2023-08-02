@@ -49,7 +49,7 @@ def _run_framework_benchmark(
     compiler: str,
     backend: str,
     verbose: bool,
-) -> Tuple[Dict[str, Any], Any]:
+) -> Tuple[Dict[str, Any], tuple]:
   tf_device = _TF_GPU_DEVICE if backend == "gpu" else _TF_CPU_DEVICE
 
   if compiler == COMPILER_XLA_CPU_NEXT:
@@ -67,7 +67,7 @@ def _run_framework_benchmark(
       warmup_latencies = []
       for i in range(warmup_iterations):
         start = time.perf_counter()
-        outputs = model_obj.forward(inputs)
+        model_obj.forward(*inputs)
         tf.test.experimental.sync_devices()
         end = time.perf_counter()
         warmup_latencies.append(1000 * (end - start))
@@ -77,10 +77,11 @@ def _run_framework_benchmark(
       last_outputs = None
       for i in range(benchmark_iterations):
         start = time.perf_counter()
-        last_outputs = model_obj.forward(inputs)
+        output_obj = model_obj.forward(*inputs)
         tf.test.experimental.sync_devices()
         end = time.perf_counter()
         latencies.append(1000 * (end - start))
+        last_outputs = model_utils.canonicalize_to_tuple(output_obj)
 
       if last_outputs is None:
         raise ValueError("No benchmark runs.")

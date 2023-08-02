@@ -32,10 +32,7 @@ def _generate_saved_model(inputs: Tuple[Any, ...],
   tensor_specs = []
   for input in inputs:
     tensor_specs.append(tf.TensorSpec.from_tensor(input))
-  # We call the `forward_sm()` version instead of `forward()` because the
-  # SavedModel interface errors when we use an inference function that takes
-  # in Tuples or Lists as input.
-  call_signature = model_obj.forward_sm.get_concrete_function(*tensor_specs)
+  call_signature = model_obj.forward.get_concrete_function(*tensor_specs)
 
   saved_model_dir = model_dir.joinpath("saved_model")
   saved_model_dir.mkdir(exist_ok=True)
@@ -82,7 +79,8 @@ def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
     model_obj = utils.create_model_obj(model)
 
     inputs = utils.generate_and_save_inputs(model_obj, model_dir)
-    outputs = model_obj.forward(inputs)
+    output_obj = model_obj.forward(*inputs)
+    outputs = utils.canonicalize_to_tuple(output_obj)
     utils.save_outputs(outputs, model_dir)
 
     utils.cleanup_hlo(hlo_dir, model_dir, HLO_FILENAME_REGEX)

@@ -4,16 +4,17 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+from PIL import Image
 import torch
 import torchvision.models
-from typing import Any, Callable, Tuple
+from typing import Any, Callable
 
 from openxla.benchmark.models import model_interfaces, utils
 
 DEFAULT_IMAGE_URL = "https://storage.googleapis.com/iree-model-artifacts/ILSVRC2012_val_00000023.JPEG"
 
 
-class ResNet(model_interfaces.InferenceModel, torch.nn.Module):
+class ResNet(torch.nn.Module, model_interfaces.InferenceModel):
   """We use the ResNet variant listed in MLPerf here:
   https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection
   Input size 3x224x224 is used, as stated in the MLPerf Inference Rules:
@@ -41,24 +42,17 @@ class ResNet(model_interfaces.InferenceModel, torch.nn.Module):
     self.dtype = dtype
     self.train(False)
 
-  def generate_default_inputs(self) -> Tuple[Any, ...]:
+  def generate_default_inputs(self) -> Image.Image:
     # TODO(#44): This should go away once we support different raw inputs.
-    image = utils.download_and_read_img(DEFAULT_IMAGE_URL)
-    return (image,)
+    return utils.download_and_read_img(DEFAULT_IMAGE_URL)
 
-  def preprocess(self, raw_inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    image, = raw_inputs
-    image = image.resize((224, 224))
-    tensor = self.preprocessor(image).to(dtype=self.dtype).unsqueeze(0)
-    tensor = tensor.repeat(self.batch_size, 1, 1, 1)
-    return (tensor,)
+  def preprocess(self, input_image: Image.Image) -> torch.Tensor:
+    resized_image = input_image.resize((224, 224))
+    tensor = self.preprocessor(resized_image).to(dtype=self.dtype).unsqueeze(0)
+    return tensor.repeat(self.batch_size, 1, 1, 1)
 
-  def forward(self, input):
+  def forward(self, input: torch.Tensor) -> torch.Tensor:
     return self.model(input)
-
-  def postprocess(self, outputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    # No-op.
-    return outputs
 
 
 DTYPE_MAP = {

@@ -11,7 +11,7 @@ from typing import Any, Dict, Tuple
 from openxla.benchmark.models import model_interfaces
 
 
-class Bert(model_interfaces.InferenceModel, torch.nn.Module):
+class Bert(torch.nn.Module, model_interfaces.InferenceModel):
   """See https://huggingface.co/docs/transformers/model_doc/bert for more
   information.
   """
@@ -46,21 +46,16 @@ class Bert(model_interfaces.InferenceModel, torch.nn.Module):
         "return_tensors": "pt",
     }
 
-  def generate_default_inputs(self) -> Tuple[Any, ...]:
-    input_text = ["a photo of a cat"] * self.batch_size
-    return (input_text,)
+  def generate_default_inputs(self) -> str:
+    return "a photo of a cat"
 
-  def preprocess(self, raw_input: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    input_text, = raw_input
-    inputs = self.tokenizer(text=input_text, **self.tokenization_kwargs)
+  def preprocess(self, input_text: str) -> Tuple[Any, Any]:
+    batch_input_text = [input_text] * self.batch_size
+    inputs = self.tokenizer(text=batch_input_text, **self.tokenization_kwargs)
     return (inputs["input_ids"], inputs["attention_mask"])
 
-  def forward(self, input_ids, attention_mask):
+  def forward(self, input_ids: Any, attention_mask: Any) -> Any:
     return self.model(input_ids, attention_mask)[0]
-
-  def postprocess(self, outputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    # No-op.
-    return outputs
 
 
 DTYPE_MAP = {
@@ -80,7 +75,7 @@ def create_model(batch_size: int = 1,
     batch_size: input batch size.
     seq_len: input sequence length. Default to 384.
     data_type: model data type.
-    model_name: The name of the T5 variant to use. Supported variants include:
+    model_name: The name of the Bert variant to use. Supported variants include:
       bert-base-[un]cased, bert-large-[un]cased, bert-base-chinese, etc.
   Returns:
     A PyTorch Bert model.

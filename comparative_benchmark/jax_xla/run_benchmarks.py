@@ -40,7 +40,7 @@ def _run_framework_benchmark(
     compiler: str,
     backend: str,
     verbose: bool,
-) -> Tuple[Dict[str, Any], Any]:
+) -> Tuple[Dict[str, Any], tuple]:
   if compiler == COMPILER_XLA_CPU_NEXT:
     os.environ['XLA_FLAGS'] = "--xla_cpu_use_xla_runtime"
 
@@ -63,7 +63,7 @@ def _run_framework_benchmark(
       compile_time_ms = -1
       for i in range(warmup_iterations):
         start = time.perf_counter()
-        jax.block_until_ready(jit_function(jit_inputs))
+        jax.block_until_ready(jit_function(*jit_inputs))
         end = time.perf_counter()
         latency = 1000 * (end - start)
         if i == 0:
@@ -75,10 +75,11 @@ def _run_framework_benchmark(
       last_outputs = None
       for i in range(benchmark_iterations):
         start = time.perf_counter()
-        last_outputs = jit_function(jit_inputs)
-        jax.block_until_ready(last_outputs)
+        output_obj = jit_function(*jit_inputs)
+        jax.block_until_ready(output_obj)
         end = time.perf_counter()
         latencies.append(1000 * (end - start))
+        last_outputs = model_utils.canonicalize_to_tuple(output_obj)
 
       if last_outputs is None:
         raise ValueError("No benchmark runs.")

@@ -4,9 +4,10 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+from PIL import Image
 import tensorflow as tf
+from typing import Any
 
-from typing import Any, Tuple
 from openxla.benchmark.models import model_interfaces, utils
 
 DEFAULT_IMAGE_URL = "https://storage.googleapis.com/iree-model-artifacts/ILSVRC2012_val_00000023.JPEG"
@@ -36,7 +37,7 @@ MODEL_NAME_TO_CLASS = {
 }
 
 
-class EfficientNet(model_interfaces.InferenceModel, tf.Module):
+class EfficientNet(tf.Module, model_interfaces.InferenceModel):
   """See https://www.tensorflow.org/api_docs/python/tf/keras/applications/efficientnet for more information."""
 
   batch_size: int
@@ -50,38 +51,23 @@ class EfficientNet(model_interfaces.InferenceModel, tf.Module):
     self.input_size = MODEL_NAME_TO_INPUT_SIZE[model_name]
     self.model = MODEL_NAME_TO_CLASS[model_name]()
 
-  def generate_default_inputs(self) -> Tuple[Any, ...]:
+  def generate_default_inputs(self) -> Image.Image:
     # TODO(#44): This should go away once we support different raw inputs.
-    image = utils.download_and_read_img(DEFAULT_IMAGE_URL)
-    return (image,)
+    return utils.download_and_read_img(DEFAULT_IMAGE_URL)
 
-  def preprocess(self, raw_inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    image, = raw_inputs
+  def preprocess(self, input_image: Image.Image) -> Any:
     image_size = MODEL_NAME_TO_INPUT_SIZE[self.model_name]
-    image = image.resize((image_size, image_size))
-    tensor = tf.convert_to_tensor(image)
+    resized_image = input_image.resize((image_size, image_size))
+    tensor = tf.convert_to_tensor(resized_image)
     tensor = tf.image.convert_image_dtype(tensor, dtype=tf.float32)
     tensor = tf.keras.applications.efficientnet.preprocess_input(tensor)
     tensor = tf.expand_dims(tensor, 0)
     tensor = tf.tile(tensor, [self.batch_size, 1, 1, 1])
-    return (tensor,)
+    return tensor
 
   @tf.function(jit_compile=True)
-  def forward(self, inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    tensor, = inputs
-    output = self.model(tensor, training=False)
-    return (output,)
-
-  @tf.function(jit_compile=True)
-  def forward_sm(self, inputs):
-    """ Provides an inference interface amenable to generating a TF SavedModel
-    and lowering to MLIR.
-    """
-    return self.model(inputs, training=False)
-
-  def postprocess(self, outputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    # No-op.
-    return outputs
+  def forward(self, input_tensor: Any) -> Any:
+    return self.model(input_tensor, training=False)
 
 
 def create_model(batch_size: int = 1,

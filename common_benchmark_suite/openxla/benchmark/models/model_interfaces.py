@@ -3,37 +3,60 @@
 # Licensed under the Apache License v2.0 with LLVM Exceptions.
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-"""Interfaces to interact with JAX models."""
+"""Interfaces to interact with models."""
 
-import abc
+from abc import abstractmethod
 import typing
-from typing import Any
+from typing import Any, Protocol, Union
 
 T = typing.TypeVar("T")
 U = typing.TypeVar("U")
-V = typing.TypeVar("V")
 
 
-class InferenceModel(abc.ABC, typing.Generic[T, U, V]):
-  """Interface to interact with a JAX inference model."""
+@typing.runtime_checkable
+class InferenceModel(Protocol[T, U]):
+  """Interface to interact with a inference model."""
 
-  @abc.abstractmethod
+  @abstractmethod
   def generate_default_inputs(self) -> T:
-    """Returns default inputs in its raw form."""
-    pass
+    """Returns default inputs in its raw form.
 
-  @abc.abstractmethod
-  def preprocess(self, raw_input: T) -> U:
-    """Converts raw inputs into a form that is understandable by the model."""
-    pass
+    Returns:
+      A raw input object, can be a tuple for multi-value raw data.
+    """
+    ...
 
-  @abc.abstractmethod
-  def forward(self, inputs: U) -> V:
-    """Model inference function."""
-    # TODO(#60): Refactor to not use a tuple as inputs.
-    pass
+  @abstractmethod
+  def preprocess(self, raw_input_obj: T) -> Union[tuple, Any]:
+    """Converts the raw input object into a form that is understandable by the
+    model.
 
-  @abc.abstractmethod
-  def postprocess(self, outputs: V) -> Any:
-    """Converts raw outputs to a more human-understandable form."""
-    pass
+    Due to the compatibility of many ML frameworks, when returning a tuple, it
+    will be treated as an argument list for the forward method.
+
+    Returns:
+      A single preprocessed input or a tuple for multi-value preprocessed input.
+    """
+    ...
+
+  @abstractmethod
+  def forward(self, *preprocessed_inputs: Any) -> U:
+    """Model inference function.
+
+    It can have multiple parameters for multi-value preprocessed input, e.g.,
+    encoder and decoder input tensors.
+
+    Returns:
+      A output object.
+    """
+    ...
+
+  def postprocess(self, output: U) -> Any:
+    """Converts the output object to a more human-understandable form.
+
+    The default implementation is no-op.
+
+    Returns:
+      A postprocessed output.
+    """
+    return output

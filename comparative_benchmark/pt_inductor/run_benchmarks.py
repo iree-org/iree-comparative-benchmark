@@ -36,7 +36,7 @@ def _run_framework_benchmark(
     compiler: str,
     backend: str,
     verbose: bool,
-) -> Tuple[Dict[str, Any], Any]:
+) -> Tuple[Dict[str, Any], tuple]:
   try:
 
     data_type = model.model_parameters["data_type"]
@@ -79,13 +79,18 @@ def _run_framework_benchmark(
 
     def run_one_iter():
       start = time.perf_counter()
-      output = compiled_model.forward(*pt_inputs)
+      output_obj = compiled_model.forward(*pt_inputs)
       if backend == "gpu":
         torch.cuda.synchronize()
-        output = output.cpu()
+        # Handle the tuple of multi-value output from forward function.
+        if isinstance(output_obj, tuple):
+          output_obj = tuple(output.cpu() for output in output_obj)
+        else:
+          output_obj = output_obj.cpu()
       end = time.perf_counter()
+      outputs = model_utils.canonicalize_to_tuple(output_obj)
       latency = 1000 * (end - start)
-      return (output, latency)
+      return (outputs, latency)
 
     # Run warmup.
     warmup_latencies = []
@@ -100,16 +105,15 @@ def _run_framework_benchmark(
 
     # Run benchmark.
     latencies = []
-    output = None
+    last_outputs = None
     for i in range(benchmark_iterations):
-      output, latency = run_one_iter()
+      last_outputs, latency = run_one_iter()
       latencies.append(latency)
-      output = output.detach().numpy()
 
-    if output is None:
+    if last_outputs is None:
       raise ValueError("No benchmark runs.")
 
-    last_outputs = (output,)
+    last_outputs = tuple(output.detach().numpy() for output in last_outputs)
 
   except Exception as e:
     print(f"Failed to benchmark model {model.name}.")
