@@ -39,11 +39,13 @@ class T5(tf.Module, model_interfaces.InferenceModel):
     decoder_text = "Studies show that"
     return (encoder_text, decoder_text)
 
-  def preprocess(self, encoder_text: str, decoder_text: str) -> Tuple:
-    encoder_input_ids = self.tokenizer([encoder_text] * self.batch_size,
+  def preprocess(self, raw_input_obj: Tuple[str, str]) -> Tuple:
+    encoder_text, decoder_text = raw_input_obj
+    batch_encoder_text = [encoder_text] * self.batch_size
+    batch_decoder_text = [decoder_text] * self.batch_size
+    encoder_input_ids = self.tokenizer(batch_encoder_text,
                                        **self.tokenization_kwargs).input_ids
-
-    decoder_input_ids = self.tokenizer([decoder_text] * self.batch_size,
+    decoder_input_ids = self.tokenizer(batch_decoder_text,
                                        **self.tokenization_kwargs).input_ids
     decoder_input_ids = self.model._shift_right(decoder_input_ids)
 

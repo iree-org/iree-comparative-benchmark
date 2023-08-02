@@ -48,8 +48,7 @@ def generate_and_save_inputs(model_obj: model_interfaces.InferenceModel,
   """Generates and preprocesses inputs, then saves it into `model_dir/input_npy.tz`."""
   # TODO(#44): Support multiple raw inputs.
   raw_input_obj = model_obj.generate_default_inputs()
-  raw_inputs = canonicalize_to_tuple(raw_input_obj)
-  input_obj = model_obj.preprocess(*raw_inputs)
+  input_obj = model_obj.preprocess(raw_input_obj)
   inputs = canonicalize_to_tuple(input_obj)
 
   # Save inputs.

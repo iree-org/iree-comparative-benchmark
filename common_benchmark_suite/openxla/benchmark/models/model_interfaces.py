@@ -9,26 +9,30 @@ from abc import abstractmethod
 import typing
 from typing import Any, Protocol, Union
 
+T = typing.TypeVar("T")
+U = typing.TypeVar("U")
+
 
 @typing.runtime_checkable
-class InferenceModel(Protocol):
+class InferenceModel(Protocol[T, U]):
   """Interface to interact with a inference model."""
 
   @abstractmethod
-  def generate_default_inputs(self) -> Union[tuple, Any]:
+  def generate_default_inputs(self) -> T:
     """Returns default inputs in its raw form.
 
     Returns:
-      A single raw input or a tuple for multi-value raw input.
+      A raw input object, can be a tuple for multi-value raw data.
     """
     ...
 
   @abstractmethod
-  def preprocess(self, *raw_inputs: Any) -> Union[tuple, Any]:
-    """Converts raw inputs into a form that is understandable by the model.
+  def preprocess(self, raw_input_obj: T) -> Union[tuple, Any]:
+    """Converts the raw input object into a form that is understandable by the
+    model.
 
-    It can have multiple parameters for multi-value raw input, e.g., encoder and
-    decoder texts.
+    Due to the compatibility of many ML frameworks, when returning a tuple, it
+    will be treated as an argument list for the forward method.
 
     Returns:
       A single preprocessed input or a tuple for multi-value preprocessed input.
@@ -36,29 +40,23 @@ class InferenceModel(Protocol):
     ...
 
   @abstractmethod
-  def forward(self, *preprocessed_inputs: Any) -> Union[tuple, Any]:
+  def forward(self, *preprocessed_inputs: Any) -> U:
     """Model inference function.
 
     It can have multiple parameters for multi-value preprocessed input, e.g.,
     encoder and decoder input tensors.
 
     Returns:
-      A single output or a tuple for multi-value output.
+      A output object.
     """
     ...
 
-  def postprocess(self, *outputs: Any) -> Union[tuple, Any]:
-    """Converts raw outputs to a more human-understandable form.
-
-    It can have multiple parameters for multi-value output.
+  def postprocess(self, output: U) -> Any:
+    """Converts the output object to a more human-understandable form.
 
     The default implementation is no-op.
 
     Returns:
-      A single postprocessed output or a tuple for multi-value postprocessed
-      output.
+      A postprocessed output.
     """
-    # Returns an object instead of tuple if there is only a single argument.
-    if len(outputs) == 1:
-      return outputs[0]
-    return outputs
+    return output

@@ -48,23 +48,27 @@ class InferenceModelTest(unittest.TestCase):
       def generate_default_inputs(self) -> Tuple[str, str]:
         return ("abc", "123")
 
-      def preprocess(self, raw_first: str,
-                     raw_second: str) -> Tuple[List[int], List[int]]:
+      def preprocess(
+          self,
+          raw_obj: Tuple[str, str],
+      ) -> Tuple[List[int], List[int]]:
+        raw_first, raw_second = raw_obj
         return ([ord(c) for c in raw_first], [ord(c) for c in raw_second])
 
       def forward(self, first: List[int],
                   second: List[int]) -> Tuple[List[int], List[int]]:
         return (second, first)
 
-      def postprocess(self, first_out: List[int], second_out: List[int]) -> str:
+      def postprocess(self, out_obj: Tuple[List[int], List[int]]) -> str:
+        first_out, second_out = out_obj
         return "".join(chr(num) for num in (first_out + second_out))
 
     model: model_interfaces.InferenceModel = TestModel()
 
     raw_inputs = model.generate_default_inputs()
-    processed_inputs = model.preprocess(*raw_inputs)
+    processed_inputs = model.preprocess(raw_inputs)
     outputs = model.forward(*processed_inputs)
-    processed_output = model.postprocess(*outputs)
+    processed_output = model.postprocess(outputs)
 
     self.assertEqual(raw_inputs, ("abc", "123"))
     self.assertEqual(processed_inputs, ([97, 98, 99], [49, 50, 51]))

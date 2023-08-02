@@ -79,9 +79,7 @@ def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
     model_obj = utils.create_model_obj(model)
 
     inputs = utils.generate_and_save_inputs(model_obj, model_dir)
-
     output_obj = model_obj.forward(*inputs)
-
     outputs = utils.canonicalize_to_tuple(output_obj)
     utils.save_outputs(outputs, model_dir)
 

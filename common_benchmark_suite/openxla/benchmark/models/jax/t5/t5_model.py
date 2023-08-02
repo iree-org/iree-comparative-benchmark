@@ -38,7 +38,8 @@ class T5(model_interfaces.InferenceModel):
     decoder_text = "Studies show that"
     return (encoder_text, decoder_text)
 
-  def preprocess(self, encoder_text, decoder_text) -> Tuple[Any, Any]:
+  def preprocess(self, raw_input_obj: Tuple[str, str]) -> Tuple[Any, Any]:
+    encoder_text, decoder_text = raw_input_obj
     batch_encoder_text = [encoder_text] * self.batch_size
     batch_decoder_text = [decoder_text] * self.batch_size
     encoder_input_ids = self.tokenizer(batch_encoder_text,

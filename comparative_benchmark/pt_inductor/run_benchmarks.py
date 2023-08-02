@@ -82,7 +82,7 @@ def _run_framework_benchmark(
       output_obj = compiled_model.forward(*pt_inputs)
       if backend == "gpu":
         torch.cuda.synchronize()
-        # Forward function can return either single value or tuple.
+        # Handle the tuple of multi-value output from forward function.
         if isinstance(output_obj, tuple):
           output_obj = tuple(output.cpu() for output in output_obj)
         else:
