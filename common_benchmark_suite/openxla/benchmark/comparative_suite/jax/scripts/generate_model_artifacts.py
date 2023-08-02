@@ -26,7 +26,7 @@ HLO_FILENAME_REGEX = r".*jit_forward.before_optimizations.txt"
 
 def _generate_mlir(jit_function: Any, jit_inputs: Any, model_dir: pathlib.Path,
                    iree_opt_path: Optional[pathlib.Path]):
-  mlir = jit_function.lower(jit_inputs).compiler_ir(dialect="stablehlo")
+  mlir = jit_function.lower(*jit_inputs).compiler_ir(dialect="stablehlo")
   mlir_path = model_dir.joinpath("stablehlo.mlir")
   print(f"Saving mlir to {mlir_path}")
   with open(mlir_path, "w") as f:
@@ -58,11 +58,14 @@ def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
     model_obj = utils.create_model_obj(model)
 
     inputs = utils.generate_and_save_inputs(model_obj, model_dir)
+
     jit_inputs = jax.device_put(inputs)
     jit_function = jax.jit(model_obj.forward)
-    jit_outputs = jit_function(jit_inputs)
-    jax.block_until_ready(jit_outputs)
-    outputs = jax.device_get(jit_outputs)
+    jit_output_obj = jit_function(*jit_inputs)
+    jax.block_until_ready(jit_output_obj)
+    output_obj = jax.device_get(jit_output_obj)
+
+    outputs = utils.canonicalize_to_tuple(output_obj)
     utils.save_outputs(outputs, model_dir)
 
     utils.cleanup_hlo(hlo_dir, model_dir, HLO_FILENAME_REGEX)

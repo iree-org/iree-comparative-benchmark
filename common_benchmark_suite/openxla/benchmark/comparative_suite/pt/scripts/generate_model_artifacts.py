@@ -40,7 +40,7 @@ def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path):
       inputs = utils.generate_and_save_inputs(model_obj, model_dir)
       if import_on_gpu:
         model_obj.cuda()
-        inputs = [input.cuda() for input in inputs]
+        inputs = tuple(input.cuda() for input in inputs)
 
       if import_with_fx:
         mlir_data = import_torch_module_with_fx(
@@ -55,9 +55,10 @@ def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path):
       print(f"Saving mlir to {mlir_path}")
       mlir_path.write_bytes(mlir_data)
 
-      output = model_obj.forward(*inputs)
-      output = output.cpu()
-      outputs = (output,)
+      output_obj = model_obj.forward(*inputs)
+
+      outputs = utils.canonicalize_to_tuple(output_obj)
+      outputs = tuple(output.cpu() for output in outputs)
       utils.save_outputs(outputs, model_dir)
 
   except Exception as e:
