@@ -5,14 +5,13 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import tensorflow as tf
-
 from transformers import AutoTokenizer, TFT5Model, T5Tokenizer
-from typing import Any, Tuple
+from typing import Any, List, Tuple
 
 from openxla.benchmark.models import model_interfaces
 
 
-class T5(model_interfaces.InferenceModel, tf.Module):
+class T5(tf.Module, model_interfaces.InferenceModel):
   """See https://huggingface.co/docs/transformers/model_doc/t5 for more information."""
 
   batch_size: int
@@ -35,42 +34,27 @@ class T5(model_interfaces.InferenceModel, tf.Module):
         "return_tensors": "tf",
     }
 
-  def generate_default_inputs(self) -> Tuple[Any, ...]:
+  def generate_default_inputs(self) -> Tuple[str, str]:
     encoder_text = "Studies have been shown that owning a dog is good for you"
     decoder_text = "Studies show that"
-    return ([encoder_text] * self.batch_size, [decoder_text] * self.batch_size)
+    return (encoder_text, decoder_text)
 
-  def preprocess(self, raw_input: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    encoder_text, decoder_text = raw_input
-    encoder_input_ids = self.tokenizer(encoder_text,
+  def preprocess(self, encoder_text: str, decoder_text: str) -> Tuple:
+    encoder_input_ids = self.tokenizer([encoder_text] * self.batch_size,
                                        **self.tokenization_kwargs).input_ids
 
-    decoder_input_ids = self.tokenizer(decoder_text,
+    decoder_input_ids = self.tokenizer([decoder_text] * self.batch_size,
                                        **self.tokenization_kwargs).input_ids
     decoder_input_ids = self.model._shift_right(decoder_input_ids)
 
     return (encoder_input_ids, decoder_input_ids)
 
   @tf.function(jit_compile=True)
-  def forward(self, inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    encoder_input_ids, decoder_input_ids = inputs
-    output = self.model(
+  def forward(self, encoder_input_ids, decoder_input_ids) -> Any:
+    return self.model(
         input_ids=encoder_input_ids,
         decoder_input_ids=decoder_input_ids,
     ).last_hidden_state
-    return (output,)
-
-  @tf.function(jit_compile=True)
-  def forward_sm(self, input_ids, decoder_input_ids):
-    """ Provides an inference interface amenable to generating a TF SavedModel
-    and lowering to MLIR.
-    """
-    return self.model(input_ids,
-                      decoder_input_ids=decoder_input_ids).last_hidden_state
-
-  def postprocess(self, outputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    # No-op.
-    return outputs
 
 
 def create_model(batch_size: int = 1,

@@ -28,17 +28,21 @@ class Bert(model_interfaces.InferenceModel):
       dtype: Any,
       model_name: str,
   ):
-    self.model = FlaxBertModel.from_pretrained(model_name, dtype=dtype)
+    model: FlaxBertModel = FlaxBertModel.from_pretrained(
+        model_name,
+        dtype=dtype,
+    )
     if dtype == jnp.float32:
       # The original model is fp32.
       pass
     elif dtype == jnp.float16:
-      self.model.params = self.model.to_fp16(self.model.params)
+      model.params = model.to_fp16(self.model.params)
     elif dtype == jnp.bfloat16:
-      self.model.params = self.model.to_bf16(self.model.params)
+      model.params = model.to_bf16(self.model.params)
     else:
       raise ValueError(f"Unsupported data type '{dtype}'.")
 
+    self.model = model
     self.model_name = model_name
     self.batch_size = batch_size
     self.seq_len = seq_len
@@ -50,23 +54,16 @@ class Bert(model_interfaces.InferenceModel):
         "return_tensors": "jax",
     }
 
-  def generate_default_inputs(self) -> Tuple[Any, ...]:
-    input_text = ["a photo of a cat"] * self.batch_size
-    return (input_text,)
+  def generate_default_inputs(self) -> str:
+    return "a photo of a cat"
 
-  def preprocess(self, raw_input: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    input_text, = raw_input
-    inputs = self.tokenizer(text=input_text, **self.tokenization_kwargs)
+  def preprocess(self, input_text: str) -> Tuple[Any, Any]:
+    batch_input_text = [input_text] * self.batch_size
+    inputs = self.tokenizer(text=batch_input_text, **self.tokenization_kwargs)
     return (inputs["input_ids"], inputs["attention_mask"])
 
-  def forward(self, inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    input_ids, attention_mask = inputs
-    output = self.model(input_ids, attention_mask).last_hidden_state
-    return (output,)
-
-  def postprocess(self, outputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    # No-op.
-    return outputs
+  def forward(self, input_ids: Any, attention_mask: Any) -> Any:
+    return self.model(input_ids, attention_mask).last_hidden_state
 
 
 DTYPE_MAP = {

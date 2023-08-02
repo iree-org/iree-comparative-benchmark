@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 from transformers import AutoTokenizer, FlaxT5ForConditionalGeneration, T5Tokenizer
-from typing import Any, Tuple
+from typing import Any, List, Tuple
 
 from openxla.benchmark.models import model_interfaces
 
@@ -33,29 +33,27 @@ class T5ForConditionalGeneration(model_interfaces.InferenceModel):
         "return_tensors": "jax",
     }
 
-  def generate_default_inputs(self) -> Tuple[Any, ...]:
-    text = "summarize: My friends are cool but they eat too many carbs."
-    return ([text] * self.batch_size,)
+  def generate_default_inputs(self) -> str:
+    return "summarize: My friends are cool but they eat too many carbs."
 
-  def preprocess(self, raw_input: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    inputs = self.tokenizer(*raw_input, **self.tokenization_kwargs)
+  def preprocess(self, input_text: str) -> Tuple[Any, Any]:
+    batch_input = [input_text] * self.batch_size
+    inputs = self.tokenizer(batch_input, **self.tokenization_kwargs)
     return (inputs["input_ids"], inputs["attention_mask"])
 
   def forward(
       self,
-      inputs: Tuple[Any, ...],
+      input_ids: Any,
+      attention_mask: Any,
       max_new_tokens: int = 50,
-  ) -> Tuple[Any, ...]:
-    input_ids, attention_mask = inputs
+  ) -> Any:
     # Calls `generate()` which takes care of running the encoder and decoder
     # auto-regressively.
-    output = self.model.generate(input_ids=input_ids,
-                                 attention_mask=attention_mask,
-                                 max_new_tokens=max_new_tokens).sequences
-    return (output,)
+    return self.model.generate(input_ids=input_ids,
+                               attention_mask=attention_mask,
+                               max_new_tokens=max_new_tokens).sequences
 
-  def postprocess(self, outputs: Any) -> Any:
-    output, = outputs
+  def postprocess(self, output: Any) -> List[str]:
     return self.tokenizer.batch_decode(output, skip_special_tokens=True)
 
 

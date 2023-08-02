@@ -6,13 +6,13 @@
 
 import tensorflow as tf
 
-from transformers import AutoTokenizer, BertTokenizer, TFBertModel
+from transformers import BertTokenizer, TFBertModel
 from typing import Any, Tuple
 
 from openxla.benchmark.models import model_interfaces
 
 
-class Bert(model_interfaces.InferenceModel, tf.Module):
+class Bert(tf.Module, model_interfaces.InferenceModel):
   """See https://huggingface.co/docs/transformers/model_doc/bert for more information."""
 
   batch_size: int
@@ -35,33 +35,18 @@ class Bert(model_interfaces.InferenceModel, tf.Module):
         "return_tensors": "tf",
     }
 
-  def generate_default_inputs(self) -> Tuple[Any, ...]:
-    input_text = ["a photo of a cat"] * self.batch_size
-    return (input_text,)
+  def generate_default_inputs(self) -> str:
+    return "a photo of a cat"
 
-  def preprocess(self, raw_input: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    input_text, = raw_input
-    inputs = self.tokenizer(text=input_text, **self.tokenization_kwargs)
+  def preprocess(self, input_text: str) -> Tuple[Any, Any]:
+    batch_input_text = [input_text] * self.batch_size
+    inputs = self.tokenizer(text=batch_input_text, **self.tokenization_kwargs)
     return (inputs["input_ids"], inputs["attention_mask"])
 
   @tf.function(jit_compile=True)
-  def forward(self, inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    input_ids, attention_mask = inputs
-    output = self.model(input_ids, attention_mask,
-                        training=False).last_hidden_state
-    return (output,)
-
-  @tf.function(jit_compile=True)
-  def forward_sm(self, input_ids, attention_mask):
-    """ Provides an inference interface amenable to generating a TF SavedModel
-    and lowering to MLIR.
-    """
+  def forward(self, input_ids: Any, attention_mask: Any) -> Any:
     return self.model(input_ids, attention_mask,
                       training=False).last_hidden_state
-
-  def postprocess(self, outputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    # No-op.
-    return outputs
 
 
 def create_model(batch_size: int = 1,
@@ -73,7 +58,7 @@ def create_model(batch_size: int = 1,
   Args:
     batch_size: input batch size.
     seq_len: input sequence length. Default to 384.
-    model_name: The name of the T5 variant to use. Supported variants include:
+    model_name: The name of the Bert variant to use. Supported variants include:
       bert-base-[un]cased, bert-large-[un]cased, bert-base-chinese, etc.
   Returns:
     A TF Bert model.

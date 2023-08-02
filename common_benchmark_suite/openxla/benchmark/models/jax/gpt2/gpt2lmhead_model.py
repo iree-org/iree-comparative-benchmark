@@ -4,9 +4,8 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import jax.numpy as jnp
 from transformers import AutoTokenizer, GPT2Tokenizer, FlaxGPT2LMHeadModel
-from typing import Any, Tuple
+from typing import Any, List, Tuple
 
 from openxla.benchmark.models import model_interfaces
 
@@ -40,22 +39,18 @@ class GPT2LMHead(model_interfaces.InferenceModel):
         "return_tensors": "jax",
     }
 
-  def generate_default_inputs(self) -> Tuple[Any, ...]:
-    input_text = ["a photo of a cat"] * self.batch_size
-    return (input_text,)
+  def generate_default_inputs(self) -> str:
+    return "a photo of a cat"
 
-  def preprocess(self, raw_input: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    input_text, = raw_input
-    inputs = self.tokenizer(text=input_text, **self.tokenization_kwargs)
+  def preprocess(self, input_text: str) -> Tuple[Any, Any]:
+    batch_input_text = [input_text] * self.batch_size
+    inputs = self.tokenizer(text=batch_input_text, **self.tokenization_kwargs)
     return (inputs["input_ids"], inputs["attention_mask"])
 
-  def forward(self, inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    input_ids, attention_mask = inputs
-    output = self.model(input_ids, attention_mask).logits
-    return (output,)
+  def forward(self, input_ids: Any, attention_mask: Any) -> Any:
+    return self.model(input_ids, attention_mask).logits
 
-  def postprocess(self, outputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    output, = outputs
+  def postprocess(self, output: Any) -> List[str]:
     return self.tokenizer.batch_decode(output, skip_special_tokens=True)
 
 

@@ -33,17 +33,17 @@ class T5(model_interfaces.InferenceModel):
         "return_tensors": "jax",
     }
 
-  def generate_default_inputs(self) -> Tuple[Any, ...]:
+  def generate_default_inputs(self) -> Tuple[str, str]:
     encoder_text = "Studies have been shown that owning a dog is good for you"
     decoder_text = "Studies show that"
-    return ([encoder_text] * self.batch_size, [decoder_text] * self.batch_size)
+    return (encoder_text, decoder_text)
 
-  def preprocess(self, raw_input: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    encoder_text, decoder_text = raw_input
-    encoder_input_ids = self.tokenizer(encoder_text,
+  def preprocess(self, encoder_text, decoder_text) -> Tuple[Any, Any]:
+    batch_encoder_text = [encoder_text] * self.batch_size
+    batch_decoder_text = [decoder_text] * self.batch_size
+    encoder_input_ids = self.tokenizer(batch_encoder_text,
                                        **self.tokenization_kwargs).input_ids
-
-    decoder_input_ids = self.tokenizer(decoder_text,
+    decoder_input_ids = self.tokenizer(batch_decoder_text,
                                        **self.tokenization_kwargs).input_ids
     # The HuggingFace documentation reports that _shift_right() exists for
     # `FlaxT5Model` but we get an attribute does not exist error. Disabling for
@@ -51,17 +51,11 @@ class T5(model_interfaces.InferenceModel):
     # decoder_input_ids = self.model._shift_right(decoder_input_ids)
     return (encoder_input_ids, decoder_input_ids)
 
-  def forward(self, inputs: Tuple[Any, ...]) -> Tuple[Any, ...]:
-    encoder_input_ids, decoder_input_ids = inputs
-    output = self.model(
+  def forward(self, encoder_input_ids: Any, decoder_input_ids: Any) -> Any:
+    return self.model(
         input_ids=encoder_input_ids,
         decoder_input_ids=decoder_input_ids,
     ).last_hidden_state
-    return (output,)
-
-  def postprocess(self, outputs: Any) -> Any:
-    # No-op.
-    return outputs
 
 
 def create_model(batch_size: int = 1,
