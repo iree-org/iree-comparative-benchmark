@@ -23,25 +23,37 @@ from openxla.benchmark.models import utils
 
 
 def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path):
-  model_dir = save_dir / model.name
-  model_dir.mkdir(exist_ok=True)
-  print(f"Created {model_dir}")
+  # Remove all gradient info from models and tensors since these models are
+  # inference only.
+  with torch.no_grad():
+    import_on_gpu = model.model_parameters.get("import_on_gpu", False)
+    import_with_fx = model.model_parameters.get("import_with_fx", True)
+    if import_on_gpu and not torch.cuda.is_available():
+      raise RuntimeError("Model can only be exported on CUDA.")
 
-  try:
-    # Remove all gradient info from models and tensors since these models are inference only.
-    with torch.no_grad():
-      import_on_gpu = model.model_parameters.get("import_on_gpu", False)
-      import_with_fx = model.model_parameters.get("import_with_fx", True)
-      model_obj = utils.create_model_obj(model)
+    model_obj = utils.create_model_obj(model)
 
-      if import_on_gpu and not torch.cuda.is_available():
-        raise RuntimeError("Model can only be exported on CUDA.")
-
+    model_dir = save_dir / model.name
+    model_dir.mkdir(exist_ok=True)
+    print(f"Created {model_dir}")
+    try:
       inputs = utils.generate_and_save_inputs(model_obj, model_dir)
       if import_on_gpu:
         model_obj.cuda()
         inputs = tuple(input.cuda() for input in inputs)
 
+      output_obj = model_obj.forward(*inputs)
+
+      outputs = utils.canonicalize_to_tuple(output_obj)
+      outputs = tuple(output.cpu() for output in outputs)
+      utils.save_outputs(outputs, model_dir)
+    except Exception as e:
+      # Remove all generated files.
+      shutil.rmtree(model_dir)
+      raise
+
+    # Try to export the mlir with torch mlir. Skip if failed.
+    try:
       if import_with_fx:
         mlir_data = import_torch_module_with_fx(
             model_obj, inputs, torch_mlir.OutputType.LINALG_ON_TENSORS)
@@ -50,27 +62,18 @@ def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path):
         mlir_data = import_torch_module(graph, inputs,
                                         torch_mlir.OutputType.LINALG_ON_TENSORS)
 
-      # Save mlir.
       mlir_path = model_dir / "linalg.mlirbc"
       print(f"Saving mlir to {mlir_path}")
       mlir_path.write_bytes(mlir_data)
 
-      output_obj = model_obj.forward(*inputs)
-
-      outputs = utils.canonicalize_to_tuple(output_obj)
-      outputs = tuple(output.cpu() for output in outputs)
-      utils.save_outputs(outputs, model_dir)
-
-  except Exception as e:
-    print(f"Failed to import model {model.name}. Exception: {e}")
-    # Remove all generated files.
-    shutil.rmtree(model_dir)
-    raise
+    except Exception as e:
+      print(f"WARNING: Failed to import model {model.name} into MLIR."
+            f" Exception: {e}")
 
 
 def _parse_arguments() -> argparse.Namespace:
   parser = argparse.ArgumentParser(
-      description="Generates JAX model artifacts for benchmarking.")
+      description="Generates PyTorch model artifacts for benchmarking.")
   parser.add_argument("-o",
                       "--output_dir",
                       type=pathlib.Path,
