@@ -60,7 +60,7 @@ if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then
   ITERATIONS=50
 elif [ "${TARGET_DEVICE}" = "c2-standard-16" ]; then
   BENCHMARK_NAMES=("${CPU_BENCHMARK_NAMES[@]}")
-  ITERATIONS=5
+  ITERATIONS=20
 else
   echo "Unsupported target device ${TARGET_DEVICE}."
   exit 1
@@ -78,16 +78,17 @@ for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
     --verbose
 done
 
+# Disable for now as it takes too long to run.
 # If running on CPU, also benchmark XLA CPU-Next.
 # Use a lower number of iterations since CPU-Next is slow.
-if [ "${TARGET_DEVICE}" = "c2-standard-16" ]; then
-  for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
-    "${TD}/run_benchmarks.py" \
-      --benchmark_name="${benchmark_name}" \
-      --target_device="${TARGET_DEVICE}" \
-      --output="${OUTPUT_PATH}" \
-      --iterations=3 \
-      --compiler="xla_cpu_next" \
-      --verbose
-  done
-fi
+# if [ "${TARGET_DEVICE}" = "c2-standard-16" ]; then
+#   for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
+#     "${TD}/run_benchmarks.py" \
+#       --benchmark_name="${benchmark_name}" \
+#       --target_device="${TARGET_DEVICE}" \
+#       --output="${OUTPUT_PATH}" \
+#       --iterations=3 \
+#       --compiler="xla_cpu_next" \
+#       --verbose
+#   done
+# fi
