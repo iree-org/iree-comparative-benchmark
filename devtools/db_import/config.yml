@@ -3,6 +3,46 @@
 # Licensed under the Apache License v2.0 with LLVM Exceptions.
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+snippets:
+  loadJson: |
+    function(filename) std.parseJson(std.native('readFile')(filename))
+  wrapInResultRowForDbImport: |
+    function(rows) [{ results: std.toString(row) } for row in rows]
+  getAllFilepathCaptures: |
+    function() std.parseJson(std.extVar('filepath_captures'))
+  timestampToIso8601: |
+    function(timestamp) std.native('timestampToIso8601')(timestamp)
+
+# Some common YAML nodes that we can references in the pipeline configs below.
+# Note that the `common` node has no meaning for the config parser and is ignored.
+common:
+  # We use this query to determine whether a particular results file has already been imported into the DB
+  common_sql_condition: &common_sql_condition |
+    SELECT 1
+    FROM `{dataset}.{table}`
+    WHERE JSON_VALUE(results.trigger.bucket_name) = @bucket_name
+    AND   JSON_VALUE(results.trigger.config)      = @config
+    AND   JSON_VALUE(results.trigger.prefix)      = @prefix
+    LIMIT 1;
+
+  # We use this query to delete all the data from a given source bucket
+  common_sql_delete: &common_sql_delete |
+    DELETE FROM `{dataset}.{table}`
+    WHERE JSON_VALUE(results.trigger.bucket_name) = @bucket_name
+
+  # We use this query to determine if there is already any data from a given bucket in the DB
+  common_sql_data_present: &common_sql_data_present |
+    SELECT 1
+    FROM `{dataset}.{table}`
+    WHERE JSON_VALUE(results.trigger.bucket_name) = @bucket_name
+    LIMIT 1
+
+  # Create a simple BigQuery table with a single JSON column
+  common_sql_single_json_column_table: &common_sql_single_json_column_table |
+    CREATE TABLE `{dataset}.{table}` (
+      results JSON
+    );
+
 pipelines:
   comparative:
     bucket_name: comparative-benchmark-artifacts
@@ -10,31 +50,178 @@ pipelines:
     table_name: benchmarking_experiments.oobi_v6
     service_account: oobi-db-import
 
-    sql_create_table: CREATE TABLE `{dataset}.{table}` (results JSON)
-    sql_delete: DELETE FROM `{dataset}.{table}` WHERE JSON_VALUE(results.trigger.bucket_name) = "comparative-benchmark-artifacts"
-    sql_data_present: SELECT 1 FROM `{dataset}.{table}` WHERE JSON_VALUE(results.trigger.bucket_name) = "comparative-benchmark-artifacts" LIMIT 1
+    sql_delete: *common_sql_delete
+    sql_data_present: *common_sql_data_present
+    sql_create_table: *common_sql_single_json_column_table
 
     rules:
       # Matches this file for example: gs://comparative-benchmark-artifacts/2023-07-12.1689195682/a2-highgpu-1g-results/jax-xla.json
-      - filepath_regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}\.[0-9]+/[a-zA-Z0-9-]+-results/[a-z]+-[a-z]+\.json$
-        # TODO(beckerhe): Replace dummy config
+      - filepath_regex: ^(?P<fullpath>(?P<prefix>[0-9]{4}-[0-9]{2}-[0-9]{2}\.(?P<timestamp>[0-9]+)/[^/]+-results)/(?P<config>[^.]+)\.json)$
+        sql_condition: *common_sql_condition
         result: |
-          [
-            {
-              "results": std.toString({
-                "trigger": {
-                  bucket_name: "comparative-benchmark-artifacts"
-                }
-              })
-            }
-          ]
+          # This imports some functions from the snippets section above
+          local loadJson = import "loadJson";
+          local getAllFilepathCaptures = import "getAllFilepathCaptures";
+          local wrapInResultRowForDbImport = import "wrapInResultRowForDbImport";
+          local timestampToIso8601 = import "timestampToIso8601";
 
+          # `filepath_captures` are the named capture groups from the `filepath_regex`
+          local filepath_captures = getAllFilepathCaptures();
+          local results = loadJson(filepath_captures.fullpath);
+          local benchmarks = [
+            {
+              trigger: {
+                bucket_name: std.extVar('config.bucket_name'),
+                date: timestampToIso8601(filepath_captures.timestamp),
+                prefix: filepath_captures.prefix,
+                config: filepath_captures.config,
+              },
+              definition: benchmark.definition,
+              metrics: benchmark.metrics,
+            }
+          for benchmark in results.benchmarks];
+
+          wrapInResultRowForDbImport(benchmarks)
     tests:
-      - id: dummy
-        # TODO(beckerhe): Replace dummy test
-        name: Dummy test - will be replaced later
+      - &comparative_all_required_fields_test id: all_required_fields
+        name: All required fields are present/filled
         triggers:
-          - 2023-07-12.1689195682/a2-highgpu-1g-results/jax-xla.json
+          - 2023-07-26.1690405293/a2-highgpu-1g-results/jax-xla.json
+          - 2023-07-26.1690405293/a2-highgpu-1g-results/pt-inductor.json
+          - 2023-07-26.1690405293/a2-highgpu-1g-results/tf-xla.json
+          - 2023-07-26.1690405293/a2-highgpu-1g-results/xla-hlo.json
+          - 2023-07-26.1690405293/c2-standard-16-results/jax-xla.json
+          - 2023-07-26.1690405293/c2-standard-16-results/pt-inductor.json
+          - 2023-07-26.1690405293/c2-standard-16-results/tf-xla.json
+          - 2023-07-26.1690405293/c2-standard-16-results/xla-hlo.json
+        setup:
+          - |
+            # Extracts the data type from a benchmark definition. Uses the dedicated data type field if it exists.
+            # Falls back to extracting the data type from the benchmark name.
+            # Returns NULL if even that failed.
+            CREATE OR REPLACE FUNCTION `benchmarking_experiments.EXTRACT_DATA_TYPE`(definition JSON) RETURNS STRING AS (
+              COALESCE(
+                REPLACE(JSON_VALUE(definition.data_type), "DataType.", ""),
+                UPPER(COALESCE(
+                  REGEXP_EXTRACT(JSON_VALUE(definition.benchmark_name), '^(?:BertLarge|Resnet50|T5Large)(fp16)?(?:TF|PT|JAX)Batch(?:[0-9]+)$'),
+                  REGEXP_EXTRACT(JSON_VALUE(definition.benchmark_name), '^(?:BERT_LARGE|T5_LARGE|RESNET50)_(?:(FP16|FP32)_)?(?:TF|PT|JAX)_(?:[0-9XIF]+)_BATCH(?:[0-9]+)$'),
+                  'FP32')
+                )
+              )
+              );
+          - |
+            # Extracts the model framework from a benchmark definition. Uses the dedicated framework field if it exists.
+            # Falls back to extracting the framework from the benchmark name.
+            # Returns NULL if even that failed.
+            # The result is a string with the following possible values: 'TF', 'PT', 'JAX'
+            CREATE OR REPLACE FUNCTION `benchmarking_experiments.EXTRACT_FRAMEWORK`(definition JSON) RETURNS STRING AS (
+              COALESCE(
+                  CASE UPPER(REPLACE(JSON_VALUE(definition.framework), "ModelFrameworkType.", ""))
+                    WHEN "TENSORFLOW_V2" THEN "TF"
+                    WHEN "TENSORFLOW" THEN "TF"
+                    WHEN "PYTORCH" THEN "PT"
+                    WHEN "JAX" THEN "JAX"
+                  END,
+                  REGEXP_EXTRACT(JSON_VALUE(definition.benchmark_name), '^(?:BertLarge|Resnet50|T5Large)(?:fp16)?(TF|PT|JAX)Batch(?:[0-9]+)$'),
+                  REGEXP_EXTRACT(JSON_VALUE(definition.benchmark_name), '^(?:BERT_LARGE|T5_LARGE|RESNET50)_(?:(?:FP16|FP32)_)?(TF|PT|JAX)_(?:[0-9XIF]+)_BATCH(?:[0-9]+)$')
+                )
+              );
+          - |
+            # Extract the model base name from the benchmark name. Returns either `BERT_LARGE`, `T5_LARGE`, `RESNET50`,
+            # or null (in case of failure).
+            CREATE OR REPLACE FUNCTION `benchmarking_experiments.EXTRACT_UNIFIED_BENCHMARK_NAME`(name STRING) RETURNS STRING AS (
+              CASE
+                  WHEN REGEXP_CONTAINS(name, '(BertLarge|BERT_LARGE)') THEN "BERT_LARGE"
+                  WHEN REGEXP_CONTAINS(name, '(T5Large|T5_LARGE)') THEN "T5_LARGE"
+                  WHEN REGEXP_CONTAINS(name, '(Resnet50|RESNET50)') THEN "RESNET50"
+                  ELSE NULL
+                  END
+              );
+          - |
+            CREATE OR REPLACE FUNCTION `benchmarking_experiments.INFER_TARGET`(device STRING) RETURNS STRING AS (
+              CASE
+                WHEN device = "cpu" THEN "c2-standard-16"
+                WHEN device = "gpu" THEN "a2-highgpu-1g"
+                ELSE device
+                END
+              );
+          - |
+            CREATE OR REPLACE FUNCTION `benchmarking_experiments.INFER_DEVICE`(device STRING) RETURNS STRING AS (
+              CASE
+                WHEN device = "c2-standard-16" THEN "cpu"
+                WHEN device = "a2-highgpu-1g" THEN "gpu"
+                ELSE device
+                END
+              );
+          - |
+            CREATE OR REPLACE FUNCTION `benchmarking_experiments.IS_KNOWN_BENCHMARK_CONFIG`(definition JSON) RETURNS BOOL AS (
+              benchmarking_experiments.EXTRACT_FRAMEWORK(definition) IS NOT NULL AND
+              benchmarking_experiments.EXTRACT_UNIFIED_BENCHMARK_NAME(JSON_VALUE(definition.benchmark_name)) IS NOT NULL AND
+              benchmarking_experiments.EXTRACT_DATA_TYPE(definition) IS NOT NULL
+              );
+          - |
+            CREATE OR REPLACE FUNCTION `benchmarking_experiments.HAS_VALID_RESULTS`(metrics JSON) RETURNS BOOL AS (
+              JSON_VALUE(metrics.framework_level.error) IS NULL AND
+              JSON_VALUE(metrics.compiler_level.error) IS NULL
+              );
+          - |
+            CREATE OR REPLACE VIEW `benchmarking_experiments.metrics` AS
+              SELECT TIMESTAMP(JSON_VALUE(results.trigger.date)) as date,
+                CAST(JSON_VALUE(results.definition.batch_size) as INT64) as batch_size,
+                JSON_VALUE(results.definition.benchmark_name) as benchmark_name,
+                benchmarking_experiments.EXTRACT_UNIFIED_BENCHMARK_NAME(JSON_VALUE(results.definition.benchmark_name)) as unified_benchmark_name,
+                benchmarking_experiments.INFER_DEVICE(JSON_VALUE(results.definition.device)) as device,
+                benchmarking_experiments.INFER_TARGET(JSON_VALUE(results.definition.device)) as target,
+                JSON_VALUE(results.definition.compiler) as compiler,
+                benchmarking_experiments.EXTRACT_DATA_TYPE(results.definition) as data_type,
+                benchmarking_experiments.EXTRACT_FRAMEWORK(results.definition) as framework,
+                CAST(COALESCE(JSON_VALUE(results.metrics, "$.compiler_level.min_latency_ms"),
+                              JSON_VALUE(results.metrics, "$.compiler-level.min_latency_ms")) as float64) as compiler_min_latency_ms,
+                CAST(COALESCE(JSON_VALUE(results.metrics, "$.compiler_level.max_latency_ms"),
+                              JSON_VALUE(results.metrics, "$.compiler-level.max_latency_ms")) as float64) as compiler_max_latency_ms,
+                CAST(COALESCE(JSON_VALUE(results.metrics, "$.compiler_level.median_latency_ms"),
+                              JSON_VALUE(results.metrics, "$.compiler-level.median_latency_ms")) as float64) as compiler_median_latency_ms,
+                CAST(COALESCE(JSON_VALUE(results.metrics, "$.compiler_level.mean_latency_ms"),
+                              JSON_VALUE(results.metrics, "$.compiler-level.mean_latency_ms")) as float64) as compiler_mean_latency_ms,
+                CAST(COALESCE(JSON_VALUE(results.metrics, "$.framework_level.min_latency_ms"),
+                              JSON_VALUE(results.metrics, "$.framework-level.min_latency_ms")) as float64) as framework_min_latency_ms,
+                CAST(COALESCE(JSON_VALUE(results.metrics, "$.framework_level.max_latency_ms"),
+                              JSON_VALUE(results.metrics, "$.framework-level.max_latency_ms")) as float64) as framework_max_latency_ms,
+                CAST(COALESCE(JSON_VALUE(results.metrics, "$.framework_level.median_latency_ms"),
+                              JSON_VALUE(results.metrics, "$.framework-level.median_latency_ms")) as float64) as framework_median_latency_ms,
+                CAST(COALESCE(JSON_VALUE(results.metrics, "$.framework_level.mean_latency_ms"),
+                              JSON_VALUE(results.metrics, "$.framework-level.mean_latency_ms")) as float64) as framework_mean_latency_ms,
+                CAST(COALESCE(JSON_VALUE(results.metrics, "$.compiler_level.max_compile_time_s"),
+                              JSON_VALUE(results.metrics, "$.compiler-level.max_compile_time_s")) as float64) * 1e3 as compilation_time_ms,
+                SAFE_CAST(COALESCE(JSON_VALUE(results.metrics, "$.framework_level.device_memory_peak_mb"),
+                                   JSON_VALUE(results.metrics, "$.framework-level.device_memory_peak_mb")) as float64) * 1e6 as device_peak_memory_bytes,
+                CAST(COALESCE(JSON_VALUE(results.metrics, "$.compiler_level.median_latency_ms"),
+                              JSON_VALUE(results.metrics, "$.compiler-level.median_latency_ms"),
+                              JSON_VALUE(results.metrics, "$.framework_level.median_latency_ms"),
+                              JSON_VALUE(results.metrics, "$.framework-level.median_latency_ms")) as float64) as best_effort_median_latency_ms,
+                CAST(COALESCE(JSON_VALUE(results.metrics, "$.compiler_level.mean_latency_ms"),
+                              JSON_VALUE(results.metrics, "$.compiler-level.mean_latency_ms"),
+                              JSON_VALUE(results.metrics, "$.framework_level.mean_latency_ms"),
+                              JSON_VALUE(results.metrics, "$.framework-level.mean_latency_ms")) as float64) as best_effort_mean_latency_ms,
+                JSON_VALUE(results.trigger.prefix) as prefix,
+                results as raw_json
+              FROM `{dataset}.{table}`
+              WHERE JSON_VALUE(results.trigger.bucket_name) = "comparative-benchmark-artifacts"
+                AND benchmarking_experiments.IS_KNOWN_BENCHMARK_CONFIG(results.definition)
+                AND benchmarking_experiments.HAS_VALID_RESULTS(results.metrics)
         checks:
-          - SELECT CASE WHEN COUNT(*) = 1 THEN true ELSE ERROR(FORMAT('Expected ` row in the table, but got %t', COUNT(*))) END FROM {dataset}.{table}
-          - SELECT ERROR('Found DB entry from wrong bucket') FROM {dataset}.{table} WHERE JSON_VALUE(results.trigger.bucket_name) != "comparative-benchmark-artifacts"
+          - SELECT CASE WHEN COUNT(*) != 126 THEN ERROR(FORMAT('Expected 126 rows in view, but found %t', COUNT(*))) ELSE 1 END FROM {dataset}.metrics
+          - SELECT ERROR('framework field is empty') FROM {dataset}.metrics WHERE framework IS NULL
+          - SELECT ERROR('compiler field is empty') FROM {dataset}.metrics WHERE compiler IS NULL
+          - SELECT ERROR('batch_size field is empty') FROM {dataset}.metrics WHERE batch_size IS NULL
+          - SELECT ERROR('data_type field is empty') FROM {dataset}.metrics WHERE data_type IS NULL
+          - SELECT ERROR('date field is empty') FROM {dataset}.metrics WHERE date IS NULL
+          - SELECT ERROR(FORMAT('target field contains an unknown value %s', target)) FROM {dataset}.metrics WHERE target NOT IN ('c2-standard-16', 'a2-highgpu-1g')
+          - SELECT ERROR(FORMAT('device field contains an unknown value %s', device)) FROM {dataset}.metrics WHERE device NOT IN ('cpu', 'gpu')
+          - SELECT ERROR('benchmark_name field is empty') FROM {dataset}.metrics WHERE benchmark_name IS NULL
+          - SELECT ERROR(FORMAT('unified_benchmark_name contains an unknown value %s', unified_benchmark_name)) FROM {dataset}.metrics WHERE unified_benchmark_name NOT IN ('RESNET50', 'BERT_LARGE', 'T5_LARGE')
+          # TODO(beckerhe): There is some parsing issue and some latency fields are empty for the compiler level benchmarks. Once that's fixed these tests should be tightened and no NULL values should be allowed.
+          - SELECT CASE WHEN COUNT(*) > 12 THEN ERROR(FORMAT('best_effort_median_latency_ms field is empty in %t rows.', COUNT(*))) END FROM {dataset}.metrics WHERE best_effort_median_latency_ms IS NULL
+          - SELECT CASE WHEN COUNT(*) > 12 THEN ERROR(FORMAT('best_effort_mean_latency_ms field is empty in %t rows.', COUNT(*))) END FROM {dataset}.metrics WHERE best_effort_mean_latency_ms IS NULL
+          - SELECT ERROR(FORMAT('framework field contains an unknown value %s', framework)) FROM {dataset}.metrics WHERE framework NOT IN ('TF', 'JAX', 'PT')
+          - SELECT ERROR(FORMAT('compiler field contains an unknown value %s', compiler)) FROM {dataset}.metrics WHERE compiler NOT IN ('iree', 'xla', 'inductor')
