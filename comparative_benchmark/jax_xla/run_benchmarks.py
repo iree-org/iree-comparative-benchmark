@@ -72,6 +72,7 @@ def _run_framework_benchmark(
 
       # Run benchmark.
       latencies = []
+      output_data_transfer_latencies = []
       last_outputs = None
       for i in range(benchmark_iterations):
         start = time.perf_counter()
@@ -79,7 +80,12 @@ def _run_framework_benchmark(
         jax.block_until_ready(output_obj)
         end = time.perf_counter()
         latencies.append(1000 * (end - start))
-        last_outputs = model_utils.canonicalize_to_tuple(output_obj)
+
+        start = time.perf_counter()
+        output = jax.device_get(output_obj)
+        end = time.perf_counter()
+        output_data_transfer_latencies.append(1000 * (end - start))
+        last_outputs = model_utils.canonicalize_to_tuple(output)
 
       if last_outputs is None:
         raise ValueError("No benchmark runs.")
@@ -117,6 +123,9 @@ def _run_framework_benchmark(
           compile_time_ms,
       "input_data_transfer_ms":
           input_data_transfer_ms,
+      "output_data_transfer_ms":
+          None if not output_data_transfer_latencies else
+          statistics.median(output_data_transfer_latencies),
   }
   return (metrics, last_outputs)
 
