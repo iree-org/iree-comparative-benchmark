@@ -72,6 +72,19 @@ fi
 
 "${TD}/../scripts/create_results_json.sh" "${OUTPUT_PATH}"
 
+VENV_DIR_PATH="$(realpath ${VENV_DIR})"
+PYTHON_VERSION="$(python --version | sed -e "s/^Python \(.*\)\.\(.*\)\..*$/\1\.\2/g")"
+
+# `transformers` is not yet up to date with JAX so we need to hack the source to make it compatible.
+BERT_SOURCE_PATH="${VENV_DIR_PATH}/lib/python${PYTHON_VERSION}/site-packages/transformers/models/bert/modeling_flax_bert.py"
+sed -i -e "s/: Optional\[jnp.DeviceArray\] = None/=None/g" "${BERT_SOURCE_PATH}"
+
+T5_SOURCE_PATH="${VENV_DIR_PATH}/lib/python${PYTHON_VERSION}/site-packages/transformers/models/t5/modeling_flax_t5.py"
+sed -i -e "s/: Optional\[jnp.DeviceArray\] = None/=None/g" "${T5_SOURCE_PATH}"
+
+GPT2_SOURCE_PATH="${VENV_DIR_PATH}/lib/python${PYTHON_VERSION}/site-packages/transformers/models/gpt2/modeling_flax_gpt2.py"
+sed -i -e "s/: Optional\[jnp.DeviceArray\] = None/=None/g" "${GPT2_SOURCE_PATH}"
+
 for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
   "${TD}/run_benchmarks.py" \
     --benchmark_name="${benchmark_name}" \

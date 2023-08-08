@@ -102,6 +102,7 @@ jobs:
 
   benchmark_on_a2-highgpu-1g:
     needs: [setup, build_xla_tools]
+    timeout-minutes: 1440
     runs-on:
       - self-hosted  # must come first
       - runner-group=${{ needs.setup.outputs.runner-group }}
@@ -178,7 +179,6 @@ jobs:
 
   benchmark_on_c2-standard-16:
     needs: [setup, build_xla_tools]
-    # Use a 24-hour timeout because CPU-Next takes a long time.
     timeout-minutes: 1440
     runs-on:
       - self-hosted  # must come first

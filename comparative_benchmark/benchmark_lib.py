@@ -102,7 +102,12 @@ def _run(
 
       p = multiprocessing.Process(target=wrapped_benchmark_function)
       p.start()
-      p.join()
+      # Timeout after an hour.
+      p.join(3600)
+
+      if p.is_alive():
+        p.terminate()
+        shared_dict.update({"error": "timeout"})
 
       framework_metrics = dict(shared_dict)
 
