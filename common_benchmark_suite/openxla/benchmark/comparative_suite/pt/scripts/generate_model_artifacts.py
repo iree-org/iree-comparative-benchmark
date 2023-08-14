@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import argparse
+import os
 import pathlib
 import re
 import multiprocessing
@@ -21,8 +22,12 @@ from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite.pt import model_definitions
 from openxla.benchmark.models import utils
 
+GCS_UPLOAD_DIR = os.getenv("GCS_UPLOAD_DIR",
+                           "gs://iree-model-artifacts/pytorch")
 
-def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path):
+
+def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
+                        auto_upload: bool):
   # Remove all gradient info from models and tensors since these models are
   # inference only.
   with torch.no_grad():
@@ -70,6 +75,11 @@ def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path):
       print(f"WARNING: Failed to import model {model.name} into MLIR."
             f" Exception: {e}")
 
+    if auto_upload:
+      utils.gcs_upload(str(model_dir),
+                       f"{GCS_UPLOAD_DIR}/{save_dir.name}/{model_dir.name}")
+      shutil.rmtree(model_dir)
+
 
 def _parse_arguments() -> argparse.Namespace:
   parser = argparse.ArgumentParser(
@@ -84,10 +94,17 @@ def _parse_arguments() -> argparse.Namespace:
                       type=str,
                       default=".*",
                       help="The regex pattern to filter model names.")
+  parser.add_argument(
+      "--auto-upload",
+      "--auto_upload",
+      action="store_true",
+      help=
+      f"If set, uploads artifacts automatically to {GCS_UPLOAD_DIR} and removes them locally once uploaded."
+  )
   return parser.parse_args()
 
 
-def main(output_dir: pathlib.Path, filter: str):
+def main(output_dir: pathlib.Path, filter: str, auto_upload: bool):
   name_pattern = re.compile(f"^{filter}$")
   models = [
       model for model in model_definitions.ALL_MODELS
@@ -103,9 +120,12 @@ def main(output_dir: pathlib.Path, filter: str):
   output_dir.mkdir(parents=True, exist_ok=True)
   for model in models:
     p = multiprocessing.Process(target=_generate_artifacts,
-                                args=(model, output_dir))
+                                args=(model, output_dir, auto_upload))
     p.start()
     p.join()
+
+  if auto_upload:
+    utils.gcs_upload(f"{output_dir}/**", f"{GCS_UPLOAD_DIR}/{output_dir.name}/")
 
 
 if __name__ == "__main__":
