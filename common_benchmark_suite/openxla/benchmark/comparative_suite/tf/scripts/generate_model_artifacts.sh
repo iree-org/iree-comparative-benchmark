@@ -20,7 +20,6 @@
 # Environment variables:
 #   VENV_DIR=tf-models.venv
 #   PYTHON=/usr/bin/python3.10
-#   IREE_OPT=iree-opt
 #   GCS_UPLOAD_DIR=gs://iree-model-artifacts/tensorflow
 #   AUTO_UPLOAD=1
 #
@@ -33,23 +32,14 @@ TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR="${VENV_DIR:-tf-models.venv}"
 PYTHON="${PYTHON:-"$(which python)"}"
 AUTO_UPLOAD="${AUTO_UPLOAD:-0}"
-# See https://openxla.github.io/iree/building-from-source/getting-started/ for
-# instructions on how to build `iree-opt`.
-IREE_OPT="${IREE_OPT:-"iree-opt"}"
 
 FILTER="${1:-".*"}"
-
-if ! command -v "${IREE_OPT}"; then
-  echo "${IREE_OPT} not found"
-  exit 1
-fi
-IREE_OPT_PATH="$(which "${IREE_OPT}")"
 
 VENV_DIR=${VENV_DIR} PYTHON=${PYTHON} "${TD}/setup_venv.sh"
 source ${VENV_DIR}/bin/activate
 
 # Generate unique output directory.
-TF_VERSION=$(pip show tensorflow | grep Version | sed -e "s/^Version: \(.*\)$/\1/g")
+TF_VERSION=$(pip show tf-nightly | grep Version | sed -e "s/^Version: \(.*\)$/\1/g")
 DIR_NAME="tf_models_${TF_VERSION}_$(date +'%s')"
 OUTPUT_DIR="/tmp/${DIR_NAME}"
 mkdir ${OUTPUT_DIR}
@@ -58,7 +48,6 @@ pip list > "${OUTPUT_DIR}/models_version_info.txt"
 
 declare -a args=(
   -o "${OUTPUT_DIR}"
-  --iree_opt_path="${IREE_OPT_PATH}"
   --filter="${FILTER}"
 )
 

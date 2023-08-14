@@ -10,11 +10,11 @@ import pathlib
 import re
 import multiprocessing
 import shutil
-import subprocess
 import sys
 import tarfile
 import tensorflow as tf
 
+from tensorflow.mlir.experimental import convert_saved_model, run_pass_pipeline, write_bytecode
 from typing import Any, Optional, Tuple
 
 # Add openxla dir to the search path.
@@ -45,27 +45,24 @@ def _generate_saved_model(inputs: Tuple[Any, ...],
   return saved_model_dir
 
 
-def _generate_mlir(model_dir: pathlib.Path, saved_model_dir: pathlib.Path,
-                   iree_import_tf_path: pathlib.Path,
-                   iree_opt_path: Optional[pathlib.Path]):
-  mlir_path = model_dir.joinpath("stablehlo.mlir")
-  subprocess.run(
-      f"{iree_import_tf_path} --output-format=mlir-bytecode --tf-import-type=savedmodel_v2 --tf-savedmodel-exported-names=forward {saved_model_dir} -o {mlir_path}",
-      shell=True,
-      check=True)
+def _generate_mlir(model_dir: pathlib.Path, saved_model_dir: pathlib.Path):
+  result = convert_saved_model(saved_model_dir,
+                               exported_names="forward",
+                               show_debug_info=False)
 
-  if iree_opt_path:
-    binary_mlir_path = model_dir.joinpath("stablehlo.mlirbc")
-    subprocess.run(
-        f"{iree_opt_path} --emit-bytecode {mlir_path} -o {binary_mlir_path}",
-        shell=True,
-        check=True)
-    mlir_path.unlink()
+  # The import to MLIR produces public functions like __inference__{name}_2222
+  # but the conversion pipeline requires a single public @main function.
+  # Not sure how this was allowed to happen, but regex to the rescue.
+  # This is fine and normal, and totally to be expected. :(
+  result = re.sub(r"func @__inference_(.+)_[0-9]+\(", r"func @\1(", result)
+  pipeline = ["tf-lower-to-mlprogram-and-hlo"]
+  result = run_pass_pipeline(result, ",".join(pipeline), show_debug_info=False)
+  mlir_path = model_dir.joinpath("stablehlo.mlirbc")
+  write_bytecode(str(mlir_path), result)
 
 
 def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
-                        iree_import_tf_path: pathlib.Path,
-                        iree_opt_path: pathlib.Path, auto_upload: bool):
+                        auto_upload: bool):
   model_dir = save_dir.joinpath(model.name)
   model_dir.mkdir(exist_ok=True)
   print(f"Created {model_dir}")
@@ -89,10 +86,7 @@ def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
     os.unsetenv("XLA_FLAGS")
 
     saved_model_dir = _generate_saved_model(inputs, model_obj, model_dir)
-    _generate_mlir(model_dir,
-                   saved_model_dir,
-                   iree_import_tf_path=iree_import_tf_path,
-                   iree_opt_path=iree_opt_path)
+    _generate_mlir(model_dir, saved_model_dir)
 
     with tarfile.open(model_dir.joinpath("tf-model.tgz"), "w:gz") as tar:
       tar.add(f"{saved_model_dir}/", arcname="")
@@ -125,14 +119,6 @@ def _parse_arguments() -> argparse.Namespace:
                       type=str,
                       default=".*",
                       help="The regex pattern to filter model names.")
-  parser.add_argument("--iree_import_tf_path",
-                      type=pathlib.Path,
-                      default="iree-import-tf",
-                      help="Path to `iree-import-tf`. Used to binarize mlir.")
-  parser.add_argument("--iree_opt_path",
-                      type=pathlib.Path,
-                      default=None,
-                      help="Path to `iree-opt`. Used to binarize mlir.")
   parser.add_argument(
       "--auto-upload",
       "--auto_upload",
@@ -143,9 +129,7 @@ def _parse_arguments() -> argparse.Namespace:
   return parser.parse_args()
 
 
-def main(output_dir: pathlib.Path, filter: str,
-         iree_import_tf_path: pathlib.Path, iree_opt_path: pathlib.Path,
-         auto_upload: bool):
+def main(output_dir: pathlib.Path, filter: str, auto_upload: bool):
   name_pattern = re.compile(f"^{filter}$")
   models = [
       model for model in model_definitions.ALL_MODELS
@@ -163,8 +147,7 @@ def main(output_dir: pathlib.Path, filter: str,
     # We need to generate artifacts in a separate proces each time in order for
     # XLA to update the HLO dump directory.
     p = multiprocessing.Process(target=_generate_artifacts,
-                                args=(model, output_dir, iree_import_tf_path,
-                                      iree_opt_path, auto_upload))
+                                args=(model, output_dir, auto_upload))
     p.start()
     p.join()
 

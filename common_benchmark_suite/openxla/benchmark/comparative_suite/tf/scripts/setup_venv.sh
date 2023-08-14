@@ -24,14 +24,18 @@ source "${VENV_DIR}/bin/activate" || echo "Could not activate venv"
 # Upgrade pip and install requirements. 'python' is used here in order to
 # reference to the python executable from the venv.
 python -m pip install --upgrade pip || echo "Could not upgrade pip"
-python -m pip install iree-tools-tf -f https://openxla.github.io/iree/pip-release-links.html
+
+# We need tf-nightly instead of tensorflow.
+python -m pip install tf-nightly
 
 # Run through all model directories and install requirements.
 TF_MODELS_DIR="$(dirname $(dirname $(dirname "${TD}")))/models/tf"
 find "${TF_MODELS_DIR}" -type d | while read dir; do
   if [[ -f "${dir}/requirements.txt" ]]; then
     echo "Installing ${dir}/requirements.txt"
-    python -m pip install --upgrade -r "${dir}/requirements.txt"
+    # Since we want to use tf-nightly, we remove tensorflow from requirements.txt.
+    REQUIREMENTS=$(cat ${dir}/requirements.txt | grep -v "tensorflow" | tr '\n' ' ')
+    python -m pip install --upgrade ${REQUIREMENTS}
   fi
 done
 
