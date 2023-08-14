@@ -13,6 +13,7 @@ import pathlib
 import re
 import requests
 import shutil
+import subprocess
 import tarfile
 from typing import Any, Tuple, Union
 
@@ -96,3 +97,9 @@ def cleanup_hlo(hlo_dir: pathlib.Path, model_dir: pathlib.Path,
   shutil.move(str(hlo_dir.joinpath(hlo_files[0])),
               str(model_dir.joinpath(HLO_STATIC_FILENAME)))
   shutil.rmtree(hlo_dir)
+
+
+def gcs_upload(local_path: str, gcs_path: str):
+  subprocess.run(["gcloud", "storage", "cp", "-r", local_path, gcs_path],
+                 check=True)
+  print(f"Uploaded {local_path} to {gcs_path}")

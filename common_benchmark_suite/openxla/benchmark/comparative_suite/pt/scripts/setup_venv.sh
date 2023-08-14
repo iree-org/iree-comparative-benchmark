@@ -20,6 +20,9 @@ PYTHON="${PYTHON:-"$(which python)"}"
 
 echo "Setting up venv dir: ${VENV_DIR}"
 
+# Start with a fresh ${VENV_DIR} to ensure torch-mlir is updated.
+rm -rf ${VENV_DIR}
+
 ${PYTHON} -m venv "${VENV_DIR}" || echo "Could not create venv."
 source "${VENV_DIR}/bin/activate" || echo "Could not activate venv"
 

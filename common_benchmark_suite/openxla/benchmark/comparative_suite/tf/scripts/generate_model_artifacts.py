@@ -24,6 +24,8 @@ from openxla.benchmark.comparative_suite.tf import model_definitions
 from openxla.benchmark.models import model_interfaces, utils
 
 HLO_FILENAME_REGEX = r".*inference_forward.*before_optimizations.txt"
+GCS_UPLOAD_DIR = os.getenv("GCS_UPLOAD_DIR",
+                           "gs://iree-model-artifacts/tensorflow")
 
 
 def _generate_saved_model(inputs: Tuple[Any, ...],
@@ -63,7 +65,7 @@ def _generate_mlir(model_dir: pathlib.Path, saved_model_dir: pathlib.Path,
 
 def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
                         iree_import_tf_path: pathlib.Path,
-                        iree_opt_path: pathlib.Path):
+                        iree_opt_path: pathlib.Path, auto_upload: bool):
   model_dir = save_dir.joinpath(model.name)
   model_dir.mkdir(exist_ok=True)
   print(f"Created {model_dir}")
@@ -98,6 +100,11 @@ def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
 
     print(f"Completed generating artifacts {model.name}\n")
 
+    if auto_upload:
+      utils.gcs_upload(str(model_dir),
+                       f"{GCS_UPLOAD_DIR}/{save_dir.name}/{model_dir.name}")
+      shutil.rmtree(model_dir)
+
   except Exception as e:
     print(f"Failed to import model {model.name}. Exception: {e}")
     # Remove all generated files.
@@ -126,11 +133,19 @@ def _parse_arguments() -> argparse.Namespace:
                       type=pathlib.Path,
                       default=None,
                       help="Path to `iree-opt`. Used to binarize mlir.")
+  parser.add_argument(
+      "--auto-upload",
+      "--auto_upload",
+      action="store_true",
+      help=
+      f"If set, uploads artifacts automatically to {GCS_UPLOAD_DIR} and removes them locally once uploaded."
+  )
   return parser.parse_args()
 
 
 def main(output_dir: pathlib.Path, filter: str,
-         iree_import_tf_path: pathlib.Path, iree_opt_path: pathlib.Path):
+         iree_import_tf_path: pathlib.Path, iree_opt_path: pathlib.Path,
+         auto_upload: bool):
   name_pattern = re.compile(f"^{filter}$")
   models = [
       model for model in model_definitions.ALL_MODELS
@@ -149,9 +164,12 @@ def main(output_dir: pathlib.Path, filter: str,
     # XLA to update the HLO dump directory.
     p = multiprocessing.Process(target=_generate_artifacts,
                                 args=(model, output_dir, iree_import_tf_path,
-                                      iree_opt_path))
+                                      iree_opt_path, auto_upload))
     p.start()
     p.join()
+
+  if auto_upload:
+    utils.gcs_upload(f"{output_dir}/**", f"{GCS_UPLOAD_DIR}/{output_dir.name}/")
 
 
 if __name__ == "__main__":

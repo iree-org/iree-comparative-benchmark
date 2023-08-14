@@ -21,6 +21,8 @@
 #   VENV_DIR=pt-models.venv
 #   PYTHON=/usr/bin/python3.11
 #   WITH_CUDA=1
+#   GCS_UPLOAD_DIR=gs://iree-model-artifacts/pytorch
+#   AUTO_UPLOAD=1
 #
 # Positional arguments:
 #   FILTER (Optional): Regex to match models, e.g., BERT_LARGE_FP32_.+
@@ -31,6 +33,7 @@ TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR="${VENV_DIR:-pt-models.venv}"
 PYTHON="${PYTHON:-"$(which python)"}"
 WITH_CUDA="${WITH_CUDA:-}"
+AUTO_UPLOAD="${AUTO_UPLOAD:-0}"
 
 FILTER="${1:-".*"}"
 
@@ -45,8 +48,17 @@ mkdir "${OUTPUT_DIR}"
 
 pip list > "${OUTPUT_DIR}/models_version_info.txt"
 
-python "${TD}/generate_model_artifacts.py" \
-  -o "${OUTPUT_DIR}" \
+declare -a args=(
+  -o "${OUTPUT_DIR}"
   --filter="${FILTER}"
+)
+
+if (( AUTO_UPLOAD == 1 )); then
+  args+=(
+    --auto_upload
+  )
+fi
+
+python "${TD}/generate_model_artifacts.py" "${args[@]}"
 
 echo "Output directory: ${OUTPUT_DIR}"
