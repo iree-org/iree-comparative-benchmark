@@ -32,7 +32,9 @@ BERT_LARGE_FP16_PT_384XI32_CASES = utils.build_batch_benchmark_cases(
     verify_parameters={
         "absolute_tolerance": 0.5,
     },
-    batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280],
+    # Large batch sizes disabled due to OOM: https://github.com/openxla/openxla-benchmark/issues/122.
+    # batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280],
+    batch_sizes=[1, 16, 24, 32, 48, 64],
 )
 RESNET50_FP32_PT_3X224X224XF32_CASES = utils.build_batch_benchmark_cases(
     batch_models=model_definitions.RESNET50_FP32_PT_3X224X224XF32_BATCHES,
@@ -46,7 +48,9 @@ RESNET50_FP16_PT_3X224X224XF16_CASES = utils.build_batch_benchmark_cases(
     verify_parameters={
         "absolute_tolerance": 0.5,
     },
-    batch_sizes=[1, 8, 64, 128, 256, 2048],
+    # Large batch sizes disabled due to OOM: https://github.com/openxla/openxla-benchmark/issues/122.
+    #batch_sizes=[1, 8, 64, 128, 256, 2048],
+    batch_sizes=[1, 8, 64, 128, 256],
 )
 
 ALL_BENCHMARKS = list(
