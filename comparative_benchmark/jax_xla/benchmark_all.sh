@@ -35,28 +35,20 @@ unset WITH_CUDA
 
 declare -a GPU_BENCHMARK_NAMES=(
   "models/RESNET50_FP32_JAX_.+"
-  "models/BERT_LARGE_FP32_JAX_.+"
-  "models/T5_LARGE_FP32_JAX_.+"
+  # Batches 1024 and 1280 disabled: https://github.com/openxla/openxla-benchmark/issues/125.
+  "models/BERT_LARGE_FP32_JAX_.+_BATCH(1|16|24|32|48|64|512)/.+"
+  # Batch 512 disabled: https://github.com/openxla/openxla-benchmark/issues/125.
+  "models/T5_LARGE_FP32_JAX_.+_BATCH(1|16|24|32|48|64)/.+"
   "models/T5_4CG_LARGE_FP32_JAX_.+"
   "models/GPT2LMHEAD_FP32_JAX_.+"
 )
 
 declare -a CPU_BENCHMARK_NAMES=(
-  "models/RESNET50_FP32_JAX_.+_BATCH1/.+"
-  "models/RESNET50_FP32_JAX_.+_BATCH64/.+"
-  "models/RESNET50_FP32_JAX_.+_BATCH128/.+"
-  "models/BERT_LARGE_FP32_JAX_.+_BATCH1/.+"
-  "models/BERT_LARGE_FP32_JAX_.+_BATCH32/.+"
-  "models/BERT_LARGE_FP32_JAX_.+_BATCH64/.+"
-  "models/T5_LARGE_FP32_JAX_.+_BATCH1/.+"
-  "models/T5_LARGE_FP32_JAX_.+_BATCH16/.+"
-  "models/T5_LARGE_FP32_JAX_.+_BATCH32/.+"
-  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH1/.+"
-  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH16/.+"
-  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH32/.+"
-  "models/GPT2LMHEAD_FP32_JAX_.+_BATCH1/.+"
-  "models/GPT2LMHEAD_FP32_JAX_.+_BATCH64/.+"
-  "models/GPT2LMHEAD_FP32_JAX_.+_BATCH128/.+"
+  "models/RESNET50_FP32_JAX_.+_BATCH(1|64|128)/.+"
+  "models/BERT_LARGE_FP32_JAX_.+_BATCH(1|32|64)/.+"
+  "models/T5_LARGE_FP32_JAX_.+_BATCH(1|16|32)/.+"
+  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH(1|16|32)/.+"
+  "models/GPT2LMHEAD_FP32_JAX_.+_BATCH(1|64|128)/.+"
 )
 
 if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then
@@ -74,16 +66,6 @@ fi
 
 VENV_DIR_PATH="$(realpath ${VENV_DIR})"
 PYTHON_VERSION="$(python --version | sed -e "s/^Python \(.*\)\.\(.*\)\..*$/\1\.\2/g")"
-
-# `transformers` is not yet up to date with JAX so we need to hack the source to make it compatible.
-BERT_SOURCE_PATH="${VENV_DIR_PATH}/lib/python${PYTHON_VERSION}/site-packages/transformers/models/bert/modeling_flax_bert.py"
-sed -i -e "s/: Optional\[jnp.DeviceArray\] = None/=None/g" "${BERT_SOURCE_PATH}"
-
-T5_SOURCE_PATH="${VENV_DIR_PATH}/lib/python${PYTHON_VERSION}/site-packages/transformers/models/t5/modeling_flax_t5.py"
-sed -i -e "s/: Optional\[jnp.DeviceArray\] = None/=None/g" "${T5_SOURCE_PATH}"
-
-GPT2_SOURCE_PATH="${VENV_DIR_PATH}/lib/python${PYTHON_VERSION}/site-packages/transformers/models/gpt2/modeling_flax_gpt2.py"
-sed -i -e "s/: Optional\[jnp.DeviceArray\] = None/=None/g" "${GPT2_SOURCE_PATH}"
 
 for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
   "${TD}/run_benchmarks.py" \

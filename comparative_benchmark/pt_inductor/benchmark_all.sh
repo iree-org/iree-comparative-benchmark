@@ -29,19 +29,19 @@ TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR="${VENV_DIR}" PYTHON="${PYTHON}" source "${TD}/setup_venv.sh"
 
 declare -a GPU_BENCHMARK_NAMES=(
-  "models/RESNET50_FP32_PT_.+"
-  "models/RESNET50_FP16_PT_.+"
+  # Batch 2048 disabled: https://github.com/openxla/openxla-benchmark/issues/125.
+  "models/RESNET50_FP32_PT_.+_BATCH(1|8|64|128|256)/.+"
+  # Batch 64, 512, 1024, 1280 disabled: https://github.com/openxla/openxla-benchmark/issues/125.
+  "models/RESNET50_FP16_PT_.+_BATCH(1|16|24|32|48)/.+"
   "models/BERT_LARGE_FP32_PT_.+"
-  "models/BERT_LARGE_FP16_PT_.+"
+  # FP16 modles disabled: https://github.com/openxla/openxla-benchmark/issues/62.
+  # "models/BERT_LARGE_FP16_PT_.+"
 )
 
 declare -a CPU_BENCHMARK_NAMES=(
-  "models/RESNET50_FP32_PT_.+_BATCH1/.+"
-  "models/RESNET50_FP32_PT_.+_BATCH64/.+"
-  "models/RESNET50_FP32_PT_.+_BATCH128/.+"
+  "models/RESNET50_FP32_PT_.+_BATCH(1|64|128)/.+"
+  # Batches 32 and 64 disabled: https://github.com/openxla/openxla-benchmark/issues/125.
   "models/BERT_LARGE_FP32_PT_.+_BATCH1/.+"
-  "models/BERT_LARGE_FP32_PT_.+_BATCH32/.+"
-  "models/BERT_LARGE_FP32_PT_.+_BATCH64/.+"
 )
 
 if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then

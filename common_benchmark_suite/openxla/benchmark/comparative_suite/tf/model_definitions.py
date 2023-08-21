@@ -10,7 +10,7 @@ import string
 from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite import utils
 
-PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/tensorflow/tf_models_2.13.0rc2_1688540251/"
+PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/tensorflow/tf_models_2.15.0.dev20230817_1692333975/"
 ARTIFACTS_DIR_URL_TEMPLATE = string.Template(PARENT_GCS_DIR + "${name}")
 
 # T5-Large models.
@@ -108,10 +108,6 @@ RESNET50_FP32_TF_224X224X3XF32_BATCHES = utils.build_batch_models(
 
 # EfficientNet models.
 # Model implementation from https://www.tensorflow.org/api_docs/python/tf/keras/applications/efficientnet.
-EFFICIENTNET_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/tensorflow/tf_models_2.13.0_1689819439/"
-EFFICIENTNET_ARTIFACTS_DIR_URL_TEMPLATE = string.Template(EFFICIENTNET_GCS_DIR +
-                                                          "${name}")
-
 EFFICIENTNET_TF_IMPL = def_types.ModelImplementation(
     name="EFFICIENTNET_TF",
     tags=["cnn", "efficientnet"],
@@ -129,7 +125,7 @@ EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH_TEMPLATE = utils.ModelTemplate(
         "data_type": "fp32",
         "model_name": "efficientnetb7",
     },
-    artifacts_dir_url=EFFICIENTNET_ARTIFACTS_DIR_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
