@@ -6,6 +6,7 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+from absl import flags
 import argparse
 import jax
 import numpy as np
@@ -150,4 +151,6 @@ def main(**kwargs):
 
 
 if __name__ == "__main__":
+  # PAX requires absl's flags to be initialized.
+  flags.FLAGS(sys.argv[:1])
   main(**vars(_parse_arguments()))
