@@ -13,7 +13,7 @@
 # mmperf repo. Later versions of Clang, LLVM, Python and Ubuntu are needed
 # to satisfy the dependency requirements of the backends.
 
-FROM gcr.io/iree-oss/openxla-benchmark/base@sha256:8f47e2a0970dfb883d21e68637a57bed4fa96d814f84826f2ac133d4b7924bbf
+FROM gcr.io/iree-oss/openxla-benchmark/base@sha256:1bf3e319465ec8fb465baae3f6ba9a5b09cb84a5349a675c671a552fc77f2251
 
 ######## CUDA ########
 RUN apt-get update \

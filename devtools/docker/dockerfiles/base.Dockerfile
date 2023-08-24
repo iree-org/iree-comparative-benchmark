@@ -21,7 +21,8 @@ RUN apt-get update \
     cmake \
     ninja-build \
     clang \
-    lld
+    lld \
+    numactl
 
 ######## Python ########
 WORKDIR /install-python
