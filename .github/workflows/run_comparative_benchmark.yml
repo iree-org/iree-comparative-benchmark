@@ -80,7 +80,7 @@ jobs:
         run: |
           mkdir -p "${XLA_TOOLS_DIR}"
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:3ddddec96e0c58b72b168d2e6d8c289cad6e47fa2e8d5869ffa107e1b65f7064" \
+            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:b86b9274e2a7e3d57580132b5b42d1de184af83b84c1ae03f8e2d5e851ca47b9" \
             ./comparative_benchmark/xla_hlo/build_xla_tools.sh \
               "${XLA_TOOLS_DIR}" \
               "${CUDA_VERSION}"
@@ -135,7 +135,7 @@ jobs:
           RESULTS_PATH="${RESULTS_DIR}/${XLA_HLO_RESULTS_JSON}"
           docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
             --env "OOBI_XLA_TOOLS_DIR=${XLA_TOOLS_DIR}" \
-            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:3ddddec96e0c58b72b168d2e6d8c289cad6e47fa2e8d5869ffa107e1b65f7064" \
+            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:b86b9274e2a7e3d57580132b5b42d1de184af83b84c1ae03f8e2d5e851ca47b9" \
             ./comparative_benchmark/xla_hlo/benchmark_all.sh \
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
@@ -147,8 +147,8 @@ jobs:
         run: |
           RESULTS_PATH="${RESULTS_DIR}/${JAX_XLA_RESULTS_JSON}"
           docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:3ddddec96e0c58b72b168d2e6d8c289cad6e47fa2e8d5869ffa107e1b65f7064" \
-            ./comparative_benchmark/jax/benchmark_xla.sh \
+            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:b86b9274e2a7e3d57580132b5b42d1de184af83b84c1ae03f8e2d5e851ca47b9" \
+            ./comparative_benchmark/jax_xla/benchmark_all.sh \
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
           gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
@@ -172,7 +172,7 @@ jobs:
         run: |
           RESULTS_PATH="${RESULTS_DIR}/${TF_XLA_RESULTS_JSON}"
           docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:3ddddec96e0c58b72b168d2e6d8c289cad6e47fa2e8d5869ffa107e1b65f7064" \
+            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:b86b9274e2a7e3d57580132b5b42d1de184af83b84c1ae03f8e2d5e851ca47b9" \
             ./comparative_benchmark/tf_xla/benchmark_all.sh \
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
@@ -184,7 +184,7 @@ jobs:
         run: |
           RESULTS_PATH="${RESULTS_DIR}/${PT_INDUCTOR_RESULTS_JSON}"
           docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:3ddddec96e0c58b72b168d2e6d8c289cad6e47fa2e8d5869ffa107e1b65f7064" \
+            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:b86b9274e2a7e3d57580132b5b42d1de184af83b84c1ae03f8e2d5e851ca47b9" \
             ./comparative_benchmark/pt_inductor/benchmark_all.sh \
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
@@ -225,7 +225,7 @@ jobs:
           RESULTS_PATH="${RESULTS_DIR}/${XLA_HLO_RESULTS_JSON}"
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
             --env "OOBI_XLA_TOOLS_DIR=${XLA_TOOLS_DIR}" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:fc0a5aebc55b1b3ddb9211c7553500bb785430d6ad1f1998de4807fd682d8ddb" \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:8f47e2a0970dfb883d21e68637a57bed4fa96d814f84826f2ac133d4b7924bbf" \
             ./comparative_benchmark/xla_hlo/benchmark_all.sh \
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
@@ -237,7 +237,7 @@ jobs:
         run: |
           RESULTS_PATH="${RESULTS_DIR}/${JAX_XLA_RESULTS_JSON}"
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:fc0a5aebc55b1b3ddb9211c7553500bb785430d6ad1f1998de4807fd682d8ddb" \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:8f47e2a0970dfb883d21e68637a57bed4fa96d814f84826f2ac133d4b7924bbf" \
             ./comparative_benchmark/jax/benchmark_xla.sh \
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
@@ -249,7 +249,7 @@ jobs:
         run: |
           RESULTS_PATH="${RESULTS_DIR}/${JAX_IREE_RESULTS_JSON}"
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:fc0a5aebc55b1b3ddb9211c7553500bb785430d6ad1f1998de4807fd682d8ddb" \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:8f47e2a0970dfb883d21e68637a57bed4fa96d814f84826f2ac133d4b7924bbf" \
             ./comparative_benchmark/jax/benchmark_iree.sh \
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
@@ -261,7 +261,7 @@ jobs:
         run: |
           RESULTS_PATH="${RESULTS_DIR}/${TF_XLA_RESULTS_JSON}"
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:fc0a5aebc55b1b3ddb9211c7553500bb785430d6ad1f1998de4807fd682d8ddb" \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:8f47e2a0970dfb883d21e68637a57bed4fa96d814f84826f2ac133d4b7924bbf" \
             ./comparative_benchmark/tf_xla/benchmark_all.sh \
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
@@ -273,7 +273,7 @@ jobs:
         run: |
           RESULTS_PATH="${RESULTS_DIR}/${PT_INDUCTOR_RESULTS_JSON}"
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:fc0a5aebc55b1b3ddb9211c7553500bb785430d6ad1f1998de4807fd682d8ddb" \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:8f47e2a0970dfb883d21e68637a57bed4fa96d814f84826f2ac133d4b7924bbf" \
             ./comparative_benchmark/pt_inductor/benchmark_all.sh \
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
