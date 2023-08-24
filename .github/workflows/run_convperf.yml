@@ -1,0 +1,79 @@
+# Copyright 2023 The OpenXLA Authors
+#
+# Licensed under the Apache License v2.0 with LLVM Exceptions.
+# See https://llvm.org/LICENSE.txt for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# Runs convperf.
+
+name: convperf
+
+on:
+  # Will only run when manually triggered.
+  workflow_dispatch:
+
+concurrency:
+  # A PR number if a pull request and otherwise the commit hash. This cancels
+  # queued and in-progress runs for the same PR (presubmit) or commit
+  # (postsubmit).
+  group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
+  cancel-in-progress: true
+
+env:
+  GCS_DIR: gs://openxla-github-actions-${{ github.event_name == 'pull_request' && 'presubmit' || 'postsubmit' }}-artifacts/${{ github.run_id }}/${{ github.run_attempt }}
+
+jobs:
+  setup:
+    runs-on: ubuntu-22.04
+    env:
+      REPO_SHA: ${{ github.sha }}
+    outputs:
+      runner-group: ${{ steps.configure.outputs.runner-group }}
+      artifact-upload-dir: ${{ steps.configure.outputs.artifact-upload-dir }}
+    steps:
+      - name: "Checking out PR repository"
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
+      - name: "Configuring CI options"
+        id: configure
+        env:
+          RUNNER_GROUP: ${{ github.event_name == 'pull_request' && 'presubmit' || 'postsubmit' }}
+        run: |
+          # Just informative logging. There should only be two commits in the
+          # history here, but limiting the depth helps when copying from a local
+          # repo instead of using checkout, e.g. with
+          # https://github.com/nektos/act where there will be more.
+          git log --oneline --graph --max-count=3
+          # Workflow jobs can't access `env` in `runs-on`, so we need to make
+          # `runner-group` a job output variable.
+          echo "runner-group=${RUNNER_GROUP}" > "${GITHUB_OUTPUT}"
+
+          export GCS_ARTIFACT_DIR="$(date +'%Y-%m-%d').sha_${REPO_SHA}.timestamp_$(date +'%s')"
+          echo "artifact-upload-dir=${GCS_ARTIFACT_DIR}" >> $GITHUB_OUTPUT
+
+  build_and_benchmark_cpu:
+    needs: setup
+    runs-on:
+      - self-hosted  # must come first
+      - runner-group=${{ needs.setup.outputs.runner-group }}
+      - environment=prod
+      - cpu
+      - os-family=Linux
+    env:
+      BUILD_DIR: convperf-build-cpu
+      RESULTS_DIR: convperf-results-cpu
+      GCS_UPLOAD_PARENT_DIR: "gs://convperf-benchmark-artifacts/cpu"
+      GCS_UPLOAD_DIR_NAME: ${{ needs.setup.outputs.artifact-upload-dir }}
+    steps:
+      - name: "Checking out repository"
+        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
+      - name: "Building and running convperf for CPU"
+        run: |
+          mkdir ${RESULTS_DIR}
+          # Run under privileged mode because system-level scheduling is used.
+          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" --privileged \
+            gcr.io/iree-oss/openxla-benchmark/convperf@sha256:0807d5e8144900752cfae72f3aa4d12530b408f73fc6f010a6cbad11cc09832c \
+          ./experimental/microbenchmarks/convperf/build_and_run_convperf.sh "${BUILD_DIR}" "${RESULTS_DIR}"
+      - name: "Uploading results"
+        run: |
+          gcloud storage cp "${RESULTS_DIR}/**" "${GCS_UPLOAD_PARENT_DIR}/${GCS_UPLOAD_DIR_NAME}/"
+          gcloud storage cp "${RESULTS_DIR}/**" "${GCS_UPLOAD_PARENT_DIR}/latest/"
