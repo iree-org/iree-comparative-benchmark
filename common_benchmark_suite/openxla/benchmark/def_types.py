@@ -17,6 +17,7 @@ class ModelFrameworkType(Enum):
   TF_V2 = "tensorflow_v2"
   PYTORCH = "pytorch"
   JAX = "jax"
+  GGML = "ggml"
 
 
 @dataclass(frozen=True)
