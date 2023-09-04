@@ -1,0 +1,88 @@
+# Copyright 2023 The OpenXLA Authors
+#
+# Licensed under the Apache License v2.0 with LLVM Exceptions.
+# See https://llvm.org/LICENSE.txt for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# GGML Benchmarks Workflow.
+
+name: GGML Benchmarks
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+concurrency:
+  # A PR number if a pull request and otherwise the commit hash. This cancels
+  # queued and in-progress runs for the same PR (presubmit) or commit
+  # (postsubmit).
+  group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
+  cancel-in-progress: true
+
+env:
+  GCS_DIR: gs://openxla-github-actions-${{ github.event_name == 'pull_request' && 'presubmit' || 'postsubmit' }}-artifacts/${{ github.run_id }}/${{ github.run_attempt }}
+
+jobs:
+  setup:
+    runs-on: ubuntu-22.04
+    outputs:
+      runner-group: ${{ steps.configure.outputs.runner-group }}
+      benchmark-gcs-dir: ${{ steps.configure.outputs.benchmark-gcs-dir }}
+    steps:
+      - name: "Checking out PR repository"
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
+      - name: "Configuring CI options"
+        id: configure
+        env:
+          RUNNER_GROUP: ${{ github.event_name == 'pull_request' && 'presubmit' || 'postsubmit' }}
+        run: |
+          # Just informative logging. There should only be two commits in the
+          # history here, but limiting the depth helps when copying from a local
+          # repo instead of using checkout, e.g. with
+          # https://github.com/nektos/act where there will be more.
+          git log --oneline --graph --max-count=3
+          # Workflow jobs can't access `env` in `runs-on`, so we need to make
+          # `runner-group` a job output variable.
+          echo "runner-group=${RUNNER_GROUP}" > "${GITHUB_OUTPUT}"
+
+          # For presubmit testing, the result artifacts are uploaded to the
+          # temporary workflow GCS dir. In postsubmit, the result artifacts are
+          # uploaded to the comparative benchmark GCS dir.
+          if [[ "${RUNNER_GROUP}" == "presubmit" ]]; then
+            BENCHMARK_GCS_DIR="${GCS_DIR}/comparative-benchmark-artifacts"
+          else
+            BENCHMARK_GCS_DIR="gs://comparative-benchmark-artifacts/$(date +'%Y-%m-%d').$(date +'%s')"
+          fi
+          echo "benchmark-gcs-dir=${BENCHMARK_GCS_DIR}" >> "${GITHUB_OUTPUT}"
+
+  benchmark_on_c2-standard-16:
+    needs: [setup]
+    runs-on:
+      - self-hosted  # must come first
+      - runner-group=${{ needs.setup.outputs.runner-group }}
+      - environment=prod
+      - machine-type=c2-standard-16
+    env:
+      BENCHMARK_GCS_DIR: ${{ needs.setup.outputs.benchmark-gcs-dir }}
+      RESULTS_DIR: results-dir
+      TARGET_DEVICE: c2-standard-16
+    steps:
+      - name: "Checking out PR repository"
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
+      - name: "Setup"
+        id: setup
+        run: |
+          echo "results-gcs-dir=${BENCHMARK_GCS_DIR}/${TARGET_DEVICE}-results" >> "${GITHUB_OUTPUT}"
+          mkdir "${RESULTS_DIR}"
+      - name: "Benchmarking GGML CPU"
+        env:
+          GGML_RESULTS_JSON: ggml.json
+          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+        run: |
+          RESULTS_PATH="${RESULTS_DIR}/${GGML_RESULTS_JSON}"
+          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:1bf3e319465ec8fb465baae3f6ba9a5b09cb84a5349a675c671a552fc77f2251" \
+            ./experimental/ggml/benchmark_ggml.sh \
+              "${TARGET_DEVICE}"\
+              "${RESULTS_PATH}"
+          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"

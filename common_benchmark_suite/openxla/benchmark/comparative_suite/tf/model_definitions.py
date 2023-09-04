@@ -137,6 +137,17 @@ EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCHES = utils.build_batch_models(
     template=EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH_TEMPLATE,
     batch_sizes=[1, 64, 128])
 
+# GPT2LMHead models.
+# Model implementation from https://huggingface.co/docs/transformers/model_doc/gpt2#transformers.TFGPT2Model.
+GPT2LMHEAD_TF_IMPL = def_types.ModelImplementation(
+    name="GPT2_TF",
+    tags=["transformer-decoder", "gpt2", "ggml"],
+    framework_type=def_types.ModelFrameworkType.TF_V2,
+    module_path=f"{utils.MODELS_MODULE_PATH}.tf.gpt2.gpt2lmhead_model",
+    source_info=
+    "https://huggingface.co/docs/transformers/model_doc/gpt2#transformers.TFGPT2Model",
+)
+
 ALL_MODELS = list(
     itertools.chain(
         T5_LARGE_FP32_TF_512XI32_BATCHES.values(),
