@@ -26,24 +26,23 @@ GCS_UPLOAD_DIR = os.getenv("GCS_UPLOAD_DIR", "gs://iree-model-artifacts/jax")
 
 
 def _generate_mlir(jit_function: Any, jit_inputs: Any, model_dir: pathlib.Path,
-                   iree_opt_path: Optional[pathlib.Path]):
+                   iree_ir_tool: Optional[pathlib.Path]):
   mlir = jit_function.lower(*jit_inputs).compiler_ir(dialect="stablehlo")
   mlir_path = model_dir.joinpath("stablehlo.mlir")
   print(f"Saving mlir to {mlir_path}")
   with open(mlir_path, "w") as f:
     f.write(str(mlir))
 
-  if iree_opt_path:
-    binary_mlir_path = model_dir.joinpath("stablehlo.mlirbc")
+  if iree_ir_tool:
+    binary_mlir_path = model_dir / "stablehlo.mlirbc"
     subprocess.run(
-        f"{iree_opt_path} --emit-bytecode {mlir_path} -o {binary_mlir_path}",
-        shell=True,
+        [iree_ir_tool, "--emit-bytecode", mlir_path, "-o", binary_mlir_path],
         check=True)
     mlir_path.unlink()
 
 
 def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
-                        iree_opt_path: pathlib.Path, auto_upload: bool):
+                        iree_ir_tool: Optional[pathlib.Path], auto_upload: bool):
   model_dir = save_dir.joinpath(model.name)
   model_dir.mkdir(exist_ok=True)
   print(f"Created {model_dir}")
@@ -72,10 +71,10 @@ def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
     utils.cleanup_hlo(hlo_dir, model_dir, HLO_FILENAME_REGEX)
     os.unsetenv("XLA_FLAGS")
 
-    _generate_mlir(jit_function,
-                   jit_inputs,
-                   model_dir,
-                   iree_opt_path=iree_opt_path)
+    _generate_mlir(jit_function=jit_function,
+                   jit_inputs=jit_inputs,
+                   model_dir=model_dir,
+                   iree_ir_tool=iree_ir_tool)
 
     print(f"Completed generating artifacts {model.name}\n")
 
@@ -104,10 +103,11 @@ def _parse_arguments() -> argparse.Namespace:
                       type=str,
                       default=".*",
                       help="The regex pattern to filter model names.")
-  parser.add_argument("--iree_opt_path",
+  parser.add_argument("--iree-ir-tool",
+                      "--iree_ir_tool",
                       type=pathlib.Path,
                       default=None,
-                      help="Path to `iree-opt`. Used to binarize mlir.")
+                      help="Path to `iree-ir-tool`. Used to binarize mlir.")
   parser.add_argument(
       "--auto-upload",
       "--auto_upload",
@@ -118,7 +118,7 @@ def _parse_arguments() -> argparse.Namespace:
   return parser.parse_args()
 
 
-def main(output_dir: pathlib.Path, filter: str, iree_opt_path: pathlib.Path,
+def main(output_dir: pathlib.Path, filter: str, iree_ir_tool: pathlib.Path,
          auto_upload: bool):
   name_pattern = re.compile(f"^{filter}$")
   models = [
@@ -138,7 +138,7 @@ def main(output_dir: pathlib.Path, filter: str, iree_opt_path: pathlib.Path,
     # We need to generate artifacts in a separate proces each time in order for
     # XLA to update the HLO dump directory.
     p = multiprocessing.Process(target=_generate_artifacts,
-                                args=(model, output_dir, iree_opt_path,
+                                args=(model, output_dir, iree_ir_tool,
                                       auto_upload))
     p.start()
     p.join()

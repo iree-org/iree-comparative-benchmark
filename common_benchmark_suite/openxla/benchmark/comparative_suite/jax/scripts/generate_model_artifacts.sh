@@ -21,7 +21,6 @@
 #   VENV_DIR=jax-models.venv
 #   PYTHON=/usr/bin/python3.10
 #   WITH_CUDA=1
-#   IREE_OPT=iree-opt
 #   GCS_UPLOAD_DIR=gs://iree-model-artifacts/jax
 #   AUTO_UPLOAD=1
 #
@@ -35,17 +34,8 @@ VENV_DIR="${VENV_DIR:-jax-models.venv}"
 PYTHON="${PYTHON:-"$(which python)"}"
 WITH_CUDA="${WITH_CUDA:-}"
 AUTO_UPLOAD="${AUTO_UPLOAD:-0}"
-# See https://openxla.github.io/iree/building-from-source/getting-started/ for
-# instructions on how to build `iree-opt`.
-IREE_OPT="${IREE_OPT:-"iree-opt"}"
 
 FILTER="${1:-".*"}"
-
-if ! command -v "${IREE_OPT}"; then
-  echo "${IREE_OPT} not found"
-  exit 1
-fi
-IREE_OPT_PATH="$(which "${IREE_OPT}")"
 
 VENV_DIR=${VENV_DIR} PYTHON=${PYTHON} WITH_CUDA=${WITH_CUDA} "${TD}/setup_venv.sh"
 source ${VENV_DIR}/bin/activate
@@ -63,7 +53,7 @@ pip list > "${OUTPUT_DIR}/models_version_info.txt"
 
 declare -a args=(
   -o "${OUTPUT_DIR}"
-  --iree_opt_path="${IREE_OPT_PATH}"
+  --iree_ir_tool="$(which iree-ir-tool)"
   --filter="${FILTER}"
 )
 
