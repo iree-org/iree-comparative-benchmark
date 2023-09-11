@@ -27,6 +27,11 @@ source "${VENV_DIR}/bin/activate" || echo "Could not activate venv"
 # reference to the python executable from the venv.
 python -m pip install --upgrade pip || echo "Could not upgrade pip"
 
+# Get iree-ir-tool for IR postprocessing.
+python -m pip install \
+  --find-links https://openxla.github.io/iree/pip-release-links.html \
+  iree-compiler
+
 if [ -z "$WITH_CUDA" ]; then
   echo "Installing jax and dependencies without cuda support; set WITH_CUDA to enable cuda support."
   python -m pip install --upgrade "jax[cpu]" "flax"
