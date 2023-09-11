@@ -36,8 +36,12 @@ def _generate_mlir(jit_function: Any, jit_inputs: Any, model_dir: pathlib.Path,
   if iree_ir_tool:
     binary_mlir_path = model_dir / "stablehlo.mlirbc"
     subprocess.run(
-        [iree_ir_tool, "--emit-bytecode", mlir_path, "-o", binary_mlir_path],
-        check=True)
+        [
+            iree_ir_tool, "cp", "--emit-bytecode", mlir_path, "-o",
+            binary_mlir_path
+        ],
+        check=True,
+    )
     mlir_path.unlink()
 
 
