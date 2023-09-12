@@ -13,7 +13,7 @@ import multiprocessing
 import shutil
 import subprocess
 import sys
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 # Add openxla dir to the search path.
 sys.path.insert(0, str(pathlib.Path(__file__).parents[5]))
@@ -103,11 +103,6 @@ def _parse_arguments() -> argparse.Namespace:
                       type=pathlib.Path,
                       required=True,
                       help="Directory to save model artifacts.")
-  parser.add_argument("-f",
-                      "--filter",
-                      type=str,
-                      default=".*",
-                      help="The regex pattern to filter model names.")
   parser.add_argument("--iree-ir-tool",
                       "--iree_ir_tool",
                       type=pathlib.Path,
@@ -120,12 +115,19 @@ def _parse_arguments() -> argparse.Namespace:
       help=
       f"If set, uploads artifacts automatically to {GCS_UPLOAD_DIR} and removes them locally once uploaded."
   )
+  parser.add_argument("-f",
+                      "--filter",
+                      dest="filters",
+                      nargs="+",
+                      default=[".*"],
+                      help="The regex patterns to filter model names.")
   return parser.parse_args()
 
 
-def main(output_dir: pathlib.Path, filter: str, iree_ir_tool: pathlib.Path,
-         auto_upload: bool):
-  name_pattern = re.compile(f"^{filter}$")
+def main(output_dir: pathlib.Path, filters: List[str],
+         iree_ir_tool: pathlib.Path, auto_upload: bool):
+  combined_filters = "|".join(f"({name_filter})" for name_filter in filters)
+  name_pattern = re.compile(f"^{combined_filters}$")
   models = [
       model for model in model_definitions.ALL_MODELS
       if name_pattern.match(model.name)
@@ -134,7 +136,7 @@ def main(output_dir: pathlib.Path, filter: str, iree_ir_tool: pathlib.Path,
   if not models:
     all_models_list = "\n".join(
         model.name for model in model_definitions.ALL_MODELS)
-    raise ValueError(f'No model matches "{filter}".'
+    raise ValueError(f'No model matches "{filters}".'
                      f' Available models:\n{all_models_list}')
 
   output_dir.mkdir(parents=True, exist_ok=True)
