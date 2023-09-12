@@ -34,6 +34,7 @@ VENV_DIR="${VENV_DIR:-jax-models.venv}"
 PYTHON="${PYTHON:-"$(which python)"}"
 WITH_CUDA="${WITH_CUDA:-}"
 AUTO_UPLOAD="${AUTO_UPLOAD:-0}"
+OUTPUT_DIR="${OUTPUT_DIR}:-/tmp"
 
 FILTER="${1:-".*"}"
 
@@ -46,13 +47,13 @@ PYTHON_VERSION="$(python --version | sed -e "s/^Python \(.*\)\.\(.*\)\..*$/\1\.\
 # Generate unique output directory.
 JAX_VERSION=$(pip show jax | grep Version | sed -e "s/^Version: \(.*\)$/\1/g")
 DIR_NAME="jax_models_${JAX_VERSION}_$(date +'%s')"
-OUTPUT_DIR="/tmp/${DIR_NAME}"
-mkdir "${OUTPUT_DIR}"
+VERSION_DIR="/tmp/${DIR_NAME}"
+mkdir "${VERSION_DIR}"
 
-pip list > "${OUTPUT_DIR}/models_version_info.txt"
+pip list > "${VERSION_DIR}/models_version_info.txt"
 
 declare -a args=(
-  -o "${OUTPUT_DIR}"
+  -o "${VERSION_DIR}"
   --iree_ir_tool="$(which iree-ir-tool)"
   --filter="${FILTER}"
 )
@@ -65,4 +66,4 @@ fi
 
 python "${TD}/generate_model_artifacts.py" "${args[@]}"
 
-echo "Output directory: ${OUTPUT_DIR}"
+echo "Output directory: ${VERSION_DIR}"
