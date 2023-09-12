@@ -7,7 +7,8 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #
 # Runs `generate_model_artifacts.py` on all registered JAX models and saves
-# artifacts into the directory `/tmp/jax_models_<jax-version>_<timestamp>`.
+# artifacts into the directory
+# `${OUTPUT_DIR}/jax_models_<jax-version>_<timestamp>`.
 #
 # Once complete. please upload the output directory to
 # `gs://iree-model-artifacts/jax`, preserving directory name.
@@ -34,9 +35,8 @@ VENV_DIR="${VENV_DIR:-jax-models.venv}"
 PYTHON="${PYTHON:-"$(which python)"}"
 WITH_CUDA="${WITH_CUDA:-}"
 AUTO_UPLOAD="${AUTO_UPLOAD:-0}"
-OUTPUT_DIR="${OUTPUT_DIR}:-/tmp"
-
-FILTER="${1:-".*"}"
+OUTPUT_DIR="${OUTPUT_DIR:-/tmp}"
+FILTER=( "$@" )
 
 VENV_DIR=${VENV_DIR} PYTHON=${PYTHON} WITH_CUDA=${WITH_CUDA} "${TD}/setup_venv.sh"
 source ${VENV_DIR}/bin/activate
@@ -47,7 +47,7 @@ PYTHON_VERSION="$(python --version | sed -e "s/^Python \(.*\)\.\(.*\)\..*$/\1\.\
 # Generate unique output directory.
 JAX_VERSION=$(pip show jax | grep Version | sed -e "s/^Version: \(.*\)$/\1/g")
 DIR_NAME="jax_models_${JAX_VERSION}_$(date +'%s')"
-VERSION_DIR="/tmp/${DIR_NAME}"
+VERSION_DIR="${OUTPUT_DIR}/${DIR_NAME}"
 mkdir "${VERSION_DIR}"
 
 pip list > "${VERSION_DIR}/models_version_info.txt"
@@ -55,13 +55,14 @@ pip list > "${VERSION_DIR}/models_version_info.txt"
 declare -a args=(
   -o "${VERSION_DIR}"
   --iree_ir_tool="$(which iree-ir-tool)"
-  --filter="${FILTER}"
 )
 
+if (( "${#FILTER[@]}" > 0 )); then
+  args+=( --filter "${FILTER[@]}" )
+fi
+
 if (( AUTO_UPLOAD == 1 )); then
-  args+=(
-    --auto_upload
-  )
+  args+=( --auto_upload )
 fi
 
 python "${TD}/generate_model_artifacts.py" "${args[@]}"
