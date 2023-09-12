@@ -63,12 +63,7 @@ jobs:
             --env "AUTO_UPLOAD=0" \
             --env "OUTPUT_DIR=jax" \
             "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:f43984cd6c16ad1faad4dfb6aac3f53e552dd728c9330c90752e78ae51e4276f" \
-            "common_benchmark_suite/openxla/benchmark/comparative_suite/jax/scripts/generate_model_artifacts.sh" \
-              "T5_LARGE_FP32_JAX_512XI32_BATCH1" \
-              "T5_LARGE_FP32_JAX_512XI32_BATCH16" \
-              "T5_LARGE_FP32_JAX_512XI32_BATCH24" \
-              "T5_LARGE_FP32_JAX_512XI32_BATCH32" \
-              "T5_LARGE_FP32_JAX_512XI32_BATCH48"
+            "common_benchmark_suite/openxla/benchmark/comparative_suite/jax/scripts/generate_model_artifacts.sh"
       - name: "Upload JAX model artifacts"
         run: |
-          gcloud storage cp -r "jax/*"  "gs://iree-model-artifacts/jax/"
+          gcloud storage cp -r "jax/*"  "gs://iree-model-artifacts/jax"
