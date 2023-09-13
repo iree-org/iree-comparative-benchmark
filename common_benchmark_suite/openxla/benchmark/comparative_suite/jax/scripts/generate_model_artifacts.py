@@ -28,7 +28,7 @@ GCS_UPLOAD_DIR = os.getenv("GCS_UPLOAD_DIR", "gs://iree-model-artifacts/jax")
 def _generate_mlir(jit_function: Any, jit_inputs: Any, model_dir: pathlib.Path,
                    iree_ir_tool: Optional[pathlib.Path]):
   mlir = jit_function.lower(*jit_inputs).compiler_ir(dialect="stablehlo")
-  mlir_path = model_dir.joinpath("stablehlo.mlir")
+  mlir_path = model_dir / "stablehlo.mlir"
   print(f"Saving mlir to {mlir_path}")
   with open(mlir_path, "w") as f:
     f.write(str(mlir))
@@ -48,13 +48,13 @@ def _generate_mlir(jit_function: Any, jit_inputs: Any, model_dir: pathlib.Path,
 def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
                         iree_ir_tool: Optional[pathlib.Path],
                         auto_upload: bool):
-  model_dir = save_dir.joinpath(model.name)
+  model_dir = save_dir / model.name
   model_dir.mkdir(exist_ok=True)
   print(f"Created {model_dir}")
 
   try:
     # Configure to dump hlo.
-    hlo_dir = model_dir.joinpath("hlo")
+    hlo_dir = model_dir / "hlo"
     hlo_dir.mkdir(exist_ok=True)
     # Only dump hlo for the inference function `jit_model_jitted`.
     os.environ[
