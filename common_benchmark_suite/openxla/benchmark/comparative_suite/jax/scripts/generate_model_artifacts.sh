@@ -64,9 +64,9 @@ else
   args+=(
     --filter
     "RESNET50_FP32_JAX_.+"
-    # "BERT_LARGE_FP32_JAX_.+_BATCH(1|16|24|32|48|64|512)"
-    # "T5_LARGE_FP32_JAX_.+_BATCH(1|16|24|32|48)"
-    # "T5_4CG_LARGE_FP32_JAX_.+"
+    "BERT_LARGE_FP32_JAX_.+_BATCH(1|16|24|32|48|64|512)"
+    "T5_LARGE_FP32_JAX_.+_BATCH(1|16|24|32|48)"
+    "T5_4CG_LARGE_FP32_JAX_.+"
     "GPT2LMHEAD_FP32_JAX_.+"
   )
 fi
