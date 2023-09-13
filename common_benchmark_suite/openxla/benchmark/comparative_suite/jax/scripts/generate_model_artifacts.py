@@ -46,7 +46,8 @@ def _generate_mlir(jit_function: Any, jit_inputs: Any, model_dir: pathlib.Path,
 
 
 def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
-                        iree_ir_tool: Optional[pathlib.Path], auto_upload: bool):
+                        iree_ir_tool: Optional[pathlib.Path],
+                        auto_upload: bool):
   model_dir = save_dir.joinpath(model.name)
   model_dir.mkdir(exist_ok=True)
   print(f"Created {model_dir}")
