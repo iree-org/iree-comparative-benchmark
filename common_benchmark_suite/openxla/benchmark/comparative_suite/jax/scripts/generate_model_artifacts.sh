@@ -24,6 +24,7 @@
 #   WITH_CUDA=1
 #   GCS_UPLOAD_DIR=gs://iree-model-artifacts/jax
 #   AUTO_UPLOAD=1
+#   JOBS=1
 #
 # Positional arguments:
 #   FILTER (Optional): Regex to match models, e.g., BERT_LARGE_FP32_.+
@@ -36,6 +37,7 @@ PYTHON="${PYTHON:-"$(which python)"}"
 WITH_CUDA="${WITH_CUDA:-}"
 AUTO_UPLOAD="${AUTO_UPLOAD:-0}"
 OUTPUT_DIR="${OUTPUT_DIR:-/tmp}"
+JOBS="${JOBS:-1}"
 FILTER=( "$@" )
 
 VENV_DIR=${VENV_DIR} PYTHON=${PYTHON} WITH_CUDA=${WITH_CUDA} "${TD}/setup_venv.sh"
@@ -55,6 +57,7 @@ pip list > "${VERSION_DIR}/models_version_info.txt"
 declare -a args=(
   -o "${VERSION_DIR}"
   --iree_ir_tool="$(which iree-ir-tool)"
+  --jobs="${JOBS}"
 )
 
 if (( "${#FILTER[@]}" > 0 )); then
