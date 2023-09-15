@@ -9,9 +9,7 @@
 name: Comparative Benchmarks
 
 on:
-  schedule:
-    # Scheduled to run at 09:00 UTC.
-    - cron: '0 09 * * *'
+  # Will only run when manually triggered.
   workflow_dispatch:
 
 concurrency:
