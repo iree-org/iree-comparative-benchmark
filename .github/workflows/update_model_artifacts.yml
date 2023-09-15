@@ -59,7 +59,7 @@ jobs:
             --env "PYTHON=python3" \
             --env "WITH_CUDA=0" \
             --env "AUTO_UPLOAD=0" \
-            --env "JOBS=8" \
+            --env "JOBS=2" \
             --env "OUTPUT_DIR=jax" \
             "gcr.io/iree-oss/openxla-benchmark/base@sha256:1bf3e319465ec8fb465baae3f6ba9a5b09cb84a5349a675c671a552fc77f2251" \
             "common_benchmark_suite/openxla/benchmark/comparative_suite/jax/scripts/generate_model_artifacts.sh" \
