@@ -81,15 +81,9 @@ declare -a GPU_BENCHMARK_NAMES=(
 )
 
 declare -a CPU_BENCHMARK_NAMES=(
-  # Batch 64 and 128 disabled due to accuracy error: https://github.com/openxla/iree/issues/14601.
-  "models/RESNET50_FP32_JAX_.+_BATCH1/.+"
-  # Batch 32 and 64 disabled due to accuracy error: https://github.com/openxla/iree/issues/14601.
-  "models/BERT_LARGE_FP32_JAX_.+_BATCH1/.+"
-  # T5 models disabled: https://github.com/openxla/openxla-pjrt-plugin/issues/286.
-  # "models/T5_LARGE_FP32_JAX_.+_BATCH(1|16|32)/.+"
-  # "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH(1|16|32)/.+"
-  # Batch 64 and 128 disabled due to accuracy error: https://github.com/openxla/iree/issues/14601.
-  "models/GPT2LMHEAD_FP32_JAX_.+_BATCH1/.+"
+  "models/RESNET50_FP32_JAX_.+_BATCH(1|8|64|128)/.+"
+  "models/BERT_LARGE_FP32_JAX_.+_BATCH(1|16|24|32)/.+"
+  "models/T5_LARGE_FP32_JAX_.+_BATCH(1|16|24|32)/.+"
 )
 
 if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then
