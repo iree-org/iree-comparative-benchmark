@@ -54,6 +54,10 @@ elif [ "${TARGET_DEVICE}" = "c2-standard-16" ]; then
   BENCHMARK_NAMES=("${CPU_BENCHMARK_NAMES[@]}")
   HLO_TOOL="run_hlo_module"
   ITERATIONS=5
+elif [ "${TARGET_DEVICE}" = "c2-standard-60" ]; then
+  BENCHMARK_NAMES=("${CPU_BENCHMARK_NAMES[@]}")
+  HLO_TOOL="run_hlo_module"
+  ITERATIONS=5
 else
   echo "Unsupported target device ${TARGET_DEVICE}."
   exit 1
