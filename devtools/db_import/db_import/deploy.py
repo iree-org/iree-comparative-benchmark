@@ -58,14 +58,15 @@ def _deploy(config_file, args: argparse.Namespace):
          f"serviceAccount:{gcs_service_account}", "--role",
          "roles/pubsub.publisher")
 
-  # This is the SA we run the cloud function as.
-  my_service_account = config_file["service_account"]
-  if "@" not in my_service_account:
-    my_service_account += f"@{project_id}.iam.gserviceaccount.com"
-
   for config_name in args.config_names:
     print(f"Processing config {config_name}...")
     current_config = config_file[config.PIPELINES_KEY][config_name]
+
+    # This is the SA we run the cloud function as.
+    my_service_account = current_config["service_account"]
+    if "@" not in my_service_account:
+      my_service_account += f"@{project_id}.iam.gserviceaccount.com"
+
     bucket_name = current_config["bucket_name"]
     cloud_function_name = current_config["cloud_function_name"]
     table_name = current_config["table_name"]
