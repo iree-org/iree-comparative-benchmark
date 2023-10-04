@@ -25,7 +25,7 @@ jobs:
       - cpu
       - os-family=Linux
     env:
-      DOCKER_IMAGE: gcr.io/iree-oss/openxla-benchmark/db_import@sha256:3de8a702b51ca1906fc2ef5bab2415a79e46bc132f2ceba994215539dd0ecdd4
+      DOCKER_IMAGE: gcr.io/iree-oss/openxla-benchmark/db_import@sha256:edc74977be1d73b802ae13ee699b747d3c5cac06f11ab2d901d273cf31664128
     steps:
       - name: "Checking out PR repository"
         uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
