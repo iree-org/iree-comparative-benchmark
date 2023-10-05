@@ -37,6 +37,7 @@ T5_LARGE_FP32_TF_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
         def_types.ModelArtifactType.TF_SAVEDMODEL_V2,
+        def_types.ModelArtifactType.TFLITE_FP32,
     ],
 )
 T5_LARGE_FP32_TF_512XI32_BATCHES = utils.build_batch_models(
@@ -69,6 +70,7 @@ BERT_LARGE_FP32_TF_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
         def_types.ModelArtifactType.TF_SAVEDMODEL_V2,
+        def_types.ModelArtifactType.TFLITE_FP32,
     ],
 )
 BERT_LARGE_FP32_TF_384XI32_BATCHES = utils.build_batch_models(
@@ -100,6 +102,8 @@ RESNET50_FP32_TF_224X224X3XF32_BATCH_TEMPLATE = utils.ModelTemplate(
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
         def_types.ModelArtifactType.TF_SAVEDMODEL_V2,
+        def_types.ModelArtifactType.TFLITE_FP32,
+        def_types.ModelArtifactType.TFLITE_INT8,
     ],
 )
 RESNET50_FP32_TF_224X224X3XF32_BATCHES = utils.build_batch_models(
@@ -130,6 +134,7 @@ EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH_TEMPLATE = utils.ModelTemplate(
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
         def_types.ModelArtifactType.TF_SAVEDMODEL_V2,
+        def_types.ModelArtifactType.TFLITE_FP32,
     ],
 )
 

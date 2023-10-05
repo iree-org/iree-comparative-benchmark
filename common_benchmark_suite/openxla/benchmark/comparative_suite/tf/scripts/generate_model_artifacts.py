@@ -9,6 +9,7 @@ import os
 import pathlib
 import re
 import multiprocessing
+import numpy as np
 import shutil
 import sys
 import tarfile
@@ -61,6 +62,45 @@ def _generate_mlir(model_dir: pathlib.Path, saved_model_dir: pathlib.Path):
   write_bytecode(str(mlir_path), result)
 
 
+def _generate_tflite(inputs: Tuple[Any, ...], model_dir: pathlib.Path,
+                     saved_model_dir: pathlib.Path):
+  converter = tf.lite.TFLiteConverter.from_saved_model(str(saved_model_dir))
+
+  # Generate fp32 model.
+  try:
+    tflite_model = converter.convert()
+    tflite_model_path = model_dir / "model_fp32.tflite"
+    tflite_model_path.write_bytes(tflite_model)
+  except Exception as e:
+    print(f"Failed to generate fp32 TFLite model. Exception: {e}")
+
+  # Generate int8 model.
+  try:
+
+    def representative_examples():
+      for _ in range(2):
+        random_inputs = []
+        for input in inputs:
+          random_inputs.append(
+              np.random.uniform(low=input.dtype.min,
+                                high=input.dtype.max,
+                                size=input.shape).astype(
+                                    input.dtype.as_numpy_dtype))
+        yield random_inputs
+
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    converter.target_spec.supported_ops = [
+        tf.lite.OpsSet.TFLITE_BUILTINS, tf.lite.OpsSet.TFLITE_BUILTINS_INT8
+    ]
+    converter.representative_dataset = representative_examples
+    converter.inference_type = tf.int8
+    tflite_model_int8 = converter.convert()
+    tflite_model_int8_path = model_dir / "model_int8.tflite"
+    tflite_model_int8_path.write_bytes(tflite_model_int8)
+  except Exception as e:
+    print(f"Failed to generate int8 TFLite model. Exception: {e}")
+
+
 def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
                         auto_upload: bool):
   model_dir = save_dir.joinpath(model.name)
@@ -87,6 +127,7 @@ def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
 
     saved_model_dir = _generate_saved_model(inputs, model_obj, model_dir)
     _generate_mlir(model_dir, saved_model_dir)
+    _generate_tflite(inputs, model_dir, saved_model_dir)
 
     with tarfile.open(model_dir.joinpath("tf-model.tgz"), "w:gz") as tar:
       tar.add(f"{saved_model_dir}/", arcname="")
