@@ -10,7 +10,7 @@ import string
 from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite import utils
 
-PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/tensorflow/tf_models_2.15.0.dev20230817_1692333975/"
+PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/tensorflow/tf_models_2.15.0.dev20230829_1696537918/"
 ARTIFACTS_DIR_URL_TEMPLATE = string.Template(PARENT_GCS_DIR + "${name}")
 
 # T5-Large models.

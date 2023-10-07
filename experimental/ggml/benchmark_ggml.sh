@@ -88,8 +88,8 @@ if [[ "${TARGET_DEVICE_NAME}" =~ ^(pixel-4|pixel-6-pro|moto-edge-x30)$ ]]; then
   adb shell "su root sh /data/local/tmp/set_android_scaling_governor.sh performance"
 else
   BENCHMARK_SCRIPT="run_benchmarks.py"
-  # c2-standard-16 has 16 cores.
-  THREADS="1,8,16"
+  # c2-standard-16 has 8 cores.
+  THREADS="1,8"
 
   args+=(
      --threads "${THREADS}"
