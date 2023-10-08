@@ -92,6 +92,11 @@ def configure_parser(parser: argparse.ArgumentParser):
       required=True,
       help="Path to benchmark binary e.g. /tmp/ggml/build/bin/gpt2")
   parser.add_argument(
+      "--benchmark_library",
+      type=pathlib.Path,
+      required=True,
+      help="Path to benchmark library e.g. /tmp/ggml/build/src/libggml.so")
+  parser.add_argument(
       "-m",
       "--model",
       type=pathlib.Path,

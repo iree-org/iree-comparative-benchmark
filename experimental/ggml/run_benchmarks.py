@@ -25,9 +25,10 @@ def _parse_arguments() -> argparse.Namespace:
 
 
 def main(benchmark_name: str, benchmark_binary: pathlib.Path,
-         warmup_iterations: int, iterations: int, model: pathlib.Path,
-         data_type: str, prompt: str, seed: int, threads: str,
-         output: pathlib.Path, target_device_name: str, verbose: bool):
+         benchmark_library: pathlib.Path, warmup_iterations: int,
+         iterations: int, model: pathlib.Path, data_type: str, prompt: str,
+         seed: int, threads: str, output: pathlib.Path, target_device_name: str,
+         verbose: bool):
 
   try:
     target_device = next(device for device in devices.ALL_DEVICES
@@ -52,10 +53,9 @@ def main(benchmark_name: str, benchmark_binary: pathlib.Path,
     }
 
     cmd = [
-        benchmark_binary, "--model", model, "--prompt", f"\"{prompt}\"",
-        "--seed",
+        benchmark_binary, "--model", model, "--prompt", prompt, "--seed",
         str(seed), "--threads",
-        str(thread)
+        str(thread), "--n_predict", "2"
     ]
 
     benchmark_lib.benchmark(cmd, benchmark_definition, warmup_iterations,

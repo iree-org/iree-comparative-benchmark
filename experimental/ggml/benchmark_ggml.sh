@@ -39,6 +39,7 @@ pushd "${BUILD_DIR}"
 
 PROMPT="Once upon a time"
 BENCHMARK_BINARY="$(realpath bin/gpt-2)"
+BENCHMARK_LIBRARY="$(realpath src/libggml.so)"
 WARMUP_ITERAIONS=2
 NUM_ITERATIONS=10
 
@@ -64,6 +65,7 @@ declare -a args=(
   --warmup_iterations "${WARMUP_ITERAIONS}"
   --iterations "${NUM_ITERATIONS}"
   --benchmark_binary "${BENCHMARK_BINARY}"
+  --benchmark_library "${BENCHMARK_LIBRARY}"
   --prompt "${PROMPT}"
   --seed 0
   --output "${OUTPUT_PATH}"
