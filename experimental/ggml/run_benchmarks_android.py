@@ -33,9 +33,10 @@ def _parse_arguments() -> argparse.Namespace:
 
 
 def main(benchmark_name: str, benchmark_binary: pathlib.Path,
-         warmup_iterations: int, iterations: int, model: pathlib.Path,
-         data_type: str, prompt: str, seed: int, threads: str, tasksets: str,
-         output: pathlib.Path, target_device_name: str, verbose: bool):
+         benchmark_library: pathlib.Path, warmup_iterations: int,
+         iterations: int, model: pathlib.Path, data_type: str, prompt: str,
+         seed: int, threads: str, tasksets: str, output: pathlib.Path,
+         target_device_name: str, verbose: bool):
   try:
     target_device = next(device for device in devices.ALL_DEVICES
                          if device.name == target_device_name)
@@ -52,9 +53,11 @@ def main(benchmark_name: str, benchmark_binary: pathlib.Path,
 
   # Push artifacts to the Android device.
   subprocess.run(["adb", "push", benchmark_binary, "/data/local/tmp"])
+  subprocess.run(["adb", "push", benchmark_library, "/data/local/tmp"])
   subprocess.run([
       "adb", "shell", "chmod", "+x", f"/data/local/tmp/{benchmark_binary.name}"
   ])
+  # Push model to Android device.
   subprocess.run(["adb", "push", model, "/data/local/tmp"])
 
   for taskset, thread in zip(tasksets, threads):
@@ -73,11 +76,11 @@ def main(benchmark_name: str, benchmark_binary: pathlib.Path,
     }
 
     cmd = [
-        "adb", "shell", "taskset", taskset,
+        "adb", "shell", "LD_LIBRARY_PATH=/data/local/tmp", "taskset", taskset,
         f"/data/local/tmp/{benchmark_binary.name}", "--model",
         f"/data/local/tmp/{model.name}", "--prompt", f"\"{prompt}\"", "--seed",
         str(seed), "--threads",
-        str(thread)
+        str(thread), "--n_predict", "2"
     ]
 
     benchmark_lib.benchmark(cmd, benchmark_definition, warmup_iterations,
