@@ -10,7 +10,7 @@ import string
 from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite import utils
 
-PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/tensorflow/tf_models_2.15.0.dev20230817_1692333975/"
+PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/tensorflow/tf_models_2.15.0.dev20230829_1696537918/"
 ARTIFACTS_DIR_URL_TEMPLATE = string.Template(PARENT_GCS_DIR + "${name}")
 
 # T5-Large models.
@@ -37,6 +37,7 @@ T5_LARGE_FP32_TF_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
         def_types.ModelArtifactType.TF_SAVEDMODEL_V2,
+        def_types.ModelArtifactType.TFLITE_FP32,
     ],
 )
 T5_LARGE_FP32_TF_512XI32_BATCHES = utils.build_batch_models(
@@ -69,6 +70,7 @@ BERT_LARGE_FP32_TF_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
         def_types.ModelArtifactType.TF_SAVEDMODEL_V2,
+        def_types.ModelArtifactType.TFLITE_FP32,
     ],
 )
 BERT_LARGE_FP32_TF_384XI32_BATCHES = utils.build_batch_models(
@@ -100,6 +102,8 @@ RESNET50_FP32_TF_224X224X3XF32_BATCH_TEMPLATE = utils.ModelTemplate(
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
         def_types.ModelArtifactType.TF_SAVEDMODEL_V2,
+        def_types.ModelArtifactType.TFLITE_FP32,
+        def_types.ModelArtifactType.TFLITE_INT8,
     ],
 )
 RESNET50_FP32_TF_224X224X3XF32_BATCHES = utils.build_batch_models(
@@ -130,6 +134,7 @@ EFFICIENTNETB7_FP32_TF_600X600X3XF32_BATCH_TEMPLATE = utils.ModelTemplate(
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
         def_types.ModelArtifactType.TF_SAVEDMODEL_V2,
+        def_types.ModelArtifactType.TFLITE_FP32,
     ],
 )
 
