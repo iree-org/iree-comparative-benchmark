@@ -295,6 +295,27 @@ GPT2LMHEAD_FP32_JAX_512XI32_BATCHES = utils.build_batch_models(
     template=GPT2LMHEAD_FP32_JAX_512XI32_BATCH_TEMPLATE,
     batch_sizes=[1, 64, 128])
 
+GPT2LMHEAD_PIPELINE_JAX_IMPL = def_types.ModelImplementation(
+    name="GPT2_PIPELINE_JAX",
+    tags=["transformer-decoder", "gpt2", "ggml", "pipeline"],
+    framework_type=def_types.ModelFrameworkType.TF_V2,
+    module_path=f"{utils.MODELS_MODULE_PATH}.jax.gpt2.gpt2_pipeline",
+    source_info=
+    "https://huggingface.co/docs/transformers/model_doc/gpt2#transformers.FlaxGPT2LMHeadModel",
+)
+
+GPT2LMHEAD_PIPELINE_JAX_1X4XI32 = def_types.Model(
+    name="GPT2LMHEAD_PIPELINE_JAX_1X4XI32",
+    tags=["fp32", "batch-1"],
+    model_impl=GPT2LMHEAD_PIPELINE_JAX_IMPL,
+    model_parameters=dict(batch_size=1, data_type="fp32", model_name="gpt2"),
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+    artifacts_dir_url=f"{PARENT_GCS_DIR}/GPT2LMHEAD_PIPELINE_JAX_1X4XI32",
+)
+
 ALL_MODELS = list(
     itertools.chain(
         T5_LARGE_FP32_JAX_512XI32_BATCHES.values(),
@@ -308,4 +329,6 @@ ALL_MODELS = list(
         RESNET50_FP16_JAX_3X224X224XF16_BATCHES.values(),
         RESNET50_BF16_JAX_3X224X224XBF16_BATCHES.values(),
         GPT2LMHEAD_FP32_JAX_512XI32_BATCHES.values(),
-    ))
+    )) + [
+        GPT2LMHEAD_PIPELINE_JAX_1X4XI32,
+    ]
