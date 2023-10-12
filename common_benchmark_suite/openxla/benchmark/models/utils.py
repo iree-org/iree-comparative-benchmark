@@ -91,11 +91,9 @@ def cleanup_hlo(hlo_dir: pathlib.Path, model_dir: pathlib.Path,
   hlo_files = [
       f for f in os.listdir(hlo_dir) if re.search(hlo_filename_regex, f)
   ]
-  if len(hlo_files) != 1:
-    raise RuntimeError("Could not find HLO file")
-
-  shutil.move(str(hlo_dir.joinpath(hlo_files[0])),
-              str(model_dir.joinpath(HLO_STATIC_FILENAME)))
+  if len(hlo_files) == 1:
+    shutil.move(str(hlo_dir / hlo_files[0]),
+                str(model_dir / HLO_STATIC_FILENAME))
   shutil.rmtree(hlo_dir)
 
 

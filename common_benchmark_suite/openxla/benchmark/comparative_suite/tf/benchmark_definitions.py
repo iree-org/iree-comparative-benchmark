@@ -6,6 +6,7 @@
 
 import itertools
 
+from openxla.benchmark import def_types, testdata
 from openxla.benchmark.comparative_suite import utils
 from openxla.benchmark.comparative_suite.tf import model_definitions
 
@@ -41,10 +42,18 @@ EFFICIENTNETB7_FP32_TF_600X600X3XF32_CASES = utils.build_batch_benchmark_cases(
     batch_sizes=[1, 64, 128],
 )
 
+GPT2LMHEAD_PIPELINE_TF_1X4XI32_CASE = def_types.BenchmarkCase.build(
+    model=model_definitions.GPT2LMHEAD_PIPELINE_TF_1X4XI32,
+    input_data=testdata.INPUT_DATA_MODEL_DEFAULT,
+    verify_parameters={"absolute_tolerance": 0.5},
+)
+
 ALL_BENCHMARKS = list(
     itertools.chain(
         T5_LARGE_FP32_TF_512XI32_CASES.values(),
         BERT_LARGE_FP32_TF_384XI32_CASES.values(),
         RESNET50_FP32_TF_224X224X3XF32_CASES.values(),
         EFFICIENTNETB7_FP32_TF_600X600X3XF32_CASES.values(),
-    ))
+    )) + [
+        GPT2LMHEAD_PIPELINE_TF_1X4XI32_CASE,
+    ]
