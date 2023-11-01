@@ -39,15 +39,18 @@ declare -a GPU_BENCHMARK_NAMES=(
 )
 
 declare -a CPU_BENCHMARK_NAMES=(
-  "models/RESNET50_FP32_PT_.+_BATCH(1|64|128)/.+"
+  "models/RESNET50_FP32_PT_.+_BATCH(1|8|64|128)/.+"
   # Batches 32 and 64 disabled: https://github.com/openxla/openxla-benchmark/issues/125.
-  "models/BERT_LARGE_FP32_PT_.+_BATCH1/.+"
+  "models/BERT_LARGE_FP32_PT_.+_BATCH(1|16|24|32)/.+"
 )
 
 if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then
   BENCHMARK_NAMES=("${GPU_BENCHMARK_NAMES[@]}")
   ITERATIONS=50
 elif [ "${TARGET_DEVICE}" = "c2-standard-16" ]; then
+  BENCHMARK_NAMES=("${CPU_BENCHMARK_NAMES[@]}")
+  ITERATIONS=20
+elif [ "${TARGET_DEVICE}" = "c2-standard-60" ]; then
   BENCHMARK_NAMES=("${CPU_BENCHMARK_NAMES[@]}")
   ITERATIONS=20
 else

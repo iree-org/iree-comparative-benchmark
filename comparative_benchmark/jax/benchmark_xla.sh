@@ -44,17 +44,18 @@ declare -a GPU_BENCHMARK_NAMES=(
 )
 
 declare -a CPU_BENCHMARK_NAMES=(
-  "models/RESNET50_FP32_JAX_.+_BATCH(1|64|128)/.+"
-  "models/BERT_LARGE_FP32_JAX_.+_BATCH(1|32|64)/.+"
-  "models/T5_LARGE_FP32_JAX_.+_BATCH(1|16|32)/.+"
-  "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH(1|16|32)/.+"
-  "models/GPT2LMHEAD_FP32_JAX_.+_BATCH(1|64|128)/.+"
+  "models/RESNET50_FP32_JAX_.+_BATCH(1|8|64|128)/.+"
+  "models/BERT_LARGE_FP32_JAX_.+_BATCH(1|16|24|32)/.+"
+  "models/T5_LARGE_FP32_JAX_.+_BATCH(1|16|24|32)/.+"
 )
 
 if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then
   BENCHMARK_NAMES=("${GPU_BENCHMARK_NAMES[@]}")
   ITERATIONS=50
 elif [ "${TARGET_DEVICE}" = "c2-standard-16" ]; then
+  BENCHMARK_NAMES=("${CPU_BENCHMARK_NAMES[@]}")
+  ITERATIONS=5
+elif [ "${TARGET_DEVICE}" = "c2-standard-60" ]; then
   BENCHMARK_NAMES=("${CPU_BENCHMARK_NAMES[@]}")
   ITERATIONS=5
 else
