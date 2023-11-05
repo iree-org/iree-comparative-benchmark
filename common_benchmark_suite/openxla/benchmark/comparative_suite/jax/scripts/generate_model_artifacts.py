@@ -5,8 +5,8 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import argparse
-import concurrent.futures
 import jax
+import multiprocessing
 import os
 import pathlib
 import re
@@ -121,13 +121,6 @@ def _parse_arguments() -> argparse.Namespace:
       help=
       f"If set, uploads artifacts automatically to {GCS_UPLOAD_DIR} and removes them locally once uploaded."
   )
-  parser.add_argument(
-      "-j",
-      "--jobs",
-      type=int,
-      default=1,
-      help="Max number of concurrent jobs to generate artifacts. Be cautious"
-      " when generating with GPU.")
   return parser.parse_args()
 
 
@@ -148,15 +141,16 @@ def main(output_dir: pathlib.Path, filters: List[str],
 
   output_dir.mkdir(parents=True, exist_ok=True)
 
-  with concurrent.futures.ProcessPoolExecutor(max_workers=jobs) as executor:
-    for model in models:
-      # We need to generate artifacts in a separate proces each time in order for
-      # XLA to update the HLO dump directory.
-      executor.submit(_generate_artifacts,
-                      model=model,
-                      save_dir=output_dir,
-                      iree_ir_tool=iree_ir_tool,
-                      auto_upload=auto_upload)
+  for model in models:
+    # We need to generate artifacts in a separate process each time in order for
+    # XLA to update the HLO dump directory. We cannot parallelize generation
+    # of HLO dumps here - otherwise multiple processes will dump to the same HLO
+    # directory.
+    p = multiprocessing.Process(target=_generate_artifacts,
+                                args=(model, output_dir, iree_ir_tool,
+                                      auto_upload))
+    p.start()
+    p.join()
 
   if auto_upload:
     utils.gcs_upload(f"{output_dir}/**", f"{GCS_UPLOAD_DIR}/{output_dir.name}/")
