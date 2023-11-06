@@ -512,6 +512,37 @@ SD_PIPELINE_BF16_JAX_64XI32_BATCH_TEMPLATE = utils.ModelTemplate(
 SD_PIPELINE_BF16_JAX_64XI32_BATCHES = utils.build_batch_models(
     template=SD_PIPELINE_BF16_JAX_64XI32_BATCH_TEMPLATE, batch_sizes=[1, 8])
 
+# ViT models.
+# Model implementation from https://huggingface.co/docs/transformers/model_doc/vit#transformers.TFViTForImageClassification.
+VIT_CLASSIFICATION_JAX_IMPL = def_types.ModelImplementation(
+    name="VIT_CLASSIFICATION_JAX",
+    tags=["vision-transformer"],
+    framework_type=def_types.ModelFrameworkType.JAX,
+    module_path=f"{utils.MODELS_MODULE_PATH}.jax.vit.vit_for_classification",
+    source_info=
+    "https://huggingface.co/docs/transformers/model_doc/vit#transformers.FlaxViTForImageClassification",
+)
+
+VIT_CLASSIFICATION_JAX_3X224X224XF32 = def_types.Model(
+    name="VIT_CLASSIFICATION_JAX_3X224X224XF32",
+    tags=["fp32", "batch-1"],
+    model_impl=VIT_CLASSIFICATION_JAX_IMPL,
+    model_parameters={
+        "batch_size": 1,
+        "model_name": "google/vit-base-patch16-224",
+    },
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+        def_types.ModelArtifactType.TFLITE_FP32,
+        def_types.ModelArtifactType.TFLITE_FP32_STABLEHLO,
+        def_types.ModelArtifactType.TFLITE_FP16,
+        def_types.ModelArtifactType.TFLITE_DYNAMIC_RANGE_QUANT,
+        def_types.ModelArtifactType.TFLITE_INT8,
+    ],
+    artifacts_dir_url=f"{PARENT_GCS_DIR}/VIT_CLASSIFICATION_JAX_3X224X224XF32",
+)
+
 ALL_MODELS = list(
     itertools.chain(
         # Models with different batch sizes.
@@ -539,4 +570,5 @@ ALL_MODELS = list(
     )) + [
         GPT2LMHEAD_PIPELINE_JAX_1X4XI32,
         T5_SMALL_FP32_JAX_1X128XI32,
+        VIT_CLASSIFICATION_JAX_3X224X224XF32,
     ]
