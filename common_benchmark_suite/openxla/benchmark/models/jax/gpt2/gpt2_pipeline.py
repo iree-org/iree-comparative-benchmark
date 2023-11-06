@@ -4,12 +4,13 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-from openxla.benchmark.models import model_interfaces, utils
 from transformers import AutoTokenizer, GPT2Tokenizer, FlaxGPT2LMHeadModel, GenerationConfig
 from typing import Any, List, Tuple
 
+from openxla.benchmark.models.jax import jax_model_interface
 
-class GPT2Pipeline(model_interfaces.InferenceModel):
+
+class GPT2Pipeline(jax_model_interface.JaxInferenceModel):
   """See https://huggingface.co/docs/transformers/model_doc/gpt2 for more information.
   This version of GPT2 is configured to match the GGML implementation in https://github.com/ggerganov/ggml/blob/7b5fcf5f2a676e6d7c018c6a15dcb6338d9b2a38/examples/gpt-2/main.cpp.
   """
@@ -64,6 +65,9 @@ class GPT2Pipeline(model_interfaces.InferenceModel):
 
   def postprocess(self, output: Any) -> List[str]:
     return self.tokenizer.batch_decode(output, skip_special_tokens=True)
+
+  def apply(self, input_text: Any) -> Any:
+    raise Exception("Not implemented.")
 
 
 def create_model(batch_size: int = 1,

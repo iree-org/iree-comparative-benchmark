@@ -1,5 +1,6 @@
 flax
 jax
 requests
+torch
 transformers
 pillow

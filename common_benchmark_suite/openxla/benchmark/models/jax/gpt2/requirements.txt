@@ -1,3 +1,4 @@
 flax
 jax
+torch
 transformers

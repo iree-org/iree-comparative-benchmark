@@ -4,13 +4,15 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+import flax
+
 from transformers import AutoTokenizer, FlaxT5Model, T5Tokenizer
 from typing import Any, Tuple
 
-from openxla.benchmark.models import model_interfaces
+from openxla.benchmark.models.jax import jax_model_interface
 
 
-class T5(model_interfaces.InferenceModel):
+class T5(jax_model_interface.JaxInferenceModel):
   """See https://huggingface.co/docs/transformers/model_doc/t5 for more information."""
 
   batch_size: int
@@ -38,25 +40,39 @@ class T5(model_interfaces.InferenceModel):
     decoder_text = "Studies show that"
     return (encoder_text, decoder_text)
 
-  def preprocess(self, raw_input_obj: Tuple[str, str]) -> Tuple[Any, Any]:
+  def preprocess(self, raw_input_obj: Tuple[str,
+                                            str]) -> Tuple[Any, Any, Any, Any]:
     encoder_text, decoder_text = raw_input_obj
     batch_encoder_text = [encoder_text] * self.batch_size
     batch_decoder_text = [decoder_text] * self.batch_size
-    encoder_input_ids = self.tokenizer(batch_encoder_text,
-                                       **self.tokenization_kwargs).input_ids
-    decoder_input_ids = self.tokenizer(batch_decoder_text,
-                                       **self.tokenization_kwargs).input_ids
+    encoder_inputs = self.tokenizer(batch_encoder_text,
+                                    **self.tokenization_kwargs)
+    decoder_inputs = self.tokenizer(batch_decoder_text,
+                                    **self.tokenization_kwargs)
     # The HuggingFace documentation reports that _shift_right() exists for
     # `FlaxT5Model` but we get an attribute does not exist error. Disabling for
     # now.
     # decoder_input_ids = self.model._shift_right(decoder_input_ids)
-    return (encoder_input_ids, decoder_input_ids)
+    return (encoder_inputs["input_ids"], encoder_inputs["attention_mask"],
+            decoder_inputs["input_ids"], decoder_inputs["attention_mask"])
 
-  def forward(self, encoder_input_ids: Any, decoder_input_ids: Any) -> Any:
+  def forward(self, encoder_input_ids: Any, encoder_attention_mask: Any,
+              decoder_input_ids: Any, decoder_attention_mask: Any) -> Any:
     return self.model(
-        input_ids=encoder_input_ids,
+        encoder_input_ids,
+        attention_mask=encoder_attention_mask,
         decoder_input_ids=decoder_input_ids,
-    ).last_hidden_state
+        decoder_attention_mask=decoder_attention_mask).last_hidden_state
+
+  def apply(self, encoder_input_ids: Any, encoder_attention_mask: Any,
+            decoder_input_ids: Any, decoder_attention_mask: Any) -> Any:
+    outputs = self.model.module.apply(
+        {'params': flax.core.freeze(self.model.params)},
+        encoder_input_ids,
+        attention_mask=encoder_attention_mask,
+        decoder_input_ids=decoder_input_ids,
+        decoder_attention_mask=decoder_attention_mask)
+    return outputs.last_hidden_state
 
 
 def create_model(batch_size: int = 1,

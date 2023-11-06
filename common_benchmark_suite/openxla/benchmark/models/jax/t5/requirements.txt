@@ -1,4 +1,5 @@
 flax
 jax
+torch
 transformers
 pillow
