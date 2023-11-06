@@ -231,6 +231,72 @@ BERT_LARGE_BF16_JAX_384XI32_BATCHES = utils.build_batch_models(
     template=BERT_LARGE_BF16_JAX_384XI32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512, 1024, 1280])
 
+BERT_BASE_FP32_JAX_I32_INPUT_SEQUENCE_TEMPLATE = utils.ModelTemplate(
+    name=utils.SEQ_LEN_NAME("BERT_BASE_FP32_JAX_I32"),
+    tags=[utils.SEQ_LEN_TAG],
+    model_impl=BERT_JAX_IMPL,
+    model_parameters={
+        "batch_size": 1,
+        "data_type": "fp32",
+        "seq_len": utils.SEQ_LEN_PARAM,
+        "model_name": "bert-base-uncased",
+    },
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+        def_types.ModelArtifactType.TFLITE_FP32,
+        def_types.ModelArtifactType.TFLITE_FP32_STABLEHLO,
+        def_types.ModelArtifactType.TFLITE_FP16,
+        def_types.ModelArtifactType.TFLITE_DYNAMIC_RANGE_QUANT,
+        def_types.ModelArtifactType.TFLITE_INT8,
+    ],
+)
+BERT_BASE_FP32_JAX_I32_INPUT_SEQUENCES = utils.build_input_sequence_models(
+    template=BERT_BASE_FP32_JAX_I32_INPUT_SEQUENCE_TEMPLATE,
+    input_sequence_lengths=[8, 32, 64, 128, 256, 512])
+
+BERT_BASE_FP16_JAX_I32_INPUT_SEQUENCE_TEMPLATE = utils.ModelTemplate(
+    name=utils.SEQ_LEN_NAME("BERT_BASE_FP16_JAX_I32"),
+    tags=[utils.SEQ_LEN_TAG],
+    model_impl=BERT_JAX_IMPL,
+    model_parameters={
+        "batch_size": 1,
+        "data_type": "fp16",
+        "seq_len": utils.SEQ_LEN_PARAM,
+        "model_name": "bert-base-uncased",
+    },
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+)
+BERT_BASE_FP16_JAX_I32_INPUT_SEQUENCES = utils.build_input_sequence_models(
+    template=BERT_BASE_FP16_JAX_I32_INPUT_SEQUENCE_TEMPLATE,
+    input_sequence_lengths=[8, 32, 64, 128, 256, 512])
+
+BERT_BASE_BF16_JAX_I32_INPUT_SEQUENCE_TEMPLATE = utils.ModelTemplate(
+    name=utils.SEQ_LEN_NAME("BERT_BASE_BF16_JAX_I32"),
+    tags=[utils.SEQ_LEN_TAG],
+    model_impl=BERT_JAX_IMPL,
+    model_parameters={
+        "batch_size": 1,
+        "data_type": "bf16",
+        "seq_len": utils.SEQ_LEN_PARAM,
+        "model_name": "bert-base-uncased",
+    },
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+)
+BERT_BASE_BF16_JAX_I32_INPUT_SEQUENCES = utils.build_input_sequence_models(
+    template=BERT_BASE_BF16_JAX_I32_INPUT_SEQUENCE_TEMPLATE,
+    input_sequence_lengths=[8, 32, 64, 128, 256, 512])
+
+
 # ResNet models.
 # Model implementation from https://huggingface.co/docs/transformers/model_doc/resnet#transformers.FlaxResNetModel.
 # Batch sizes from MLPerf A100 Configs: https://github.com/mlcommons/inference_results_v2.1/tree/master/closed/NVIDIA/configs/resnet50
@@ -386,6 +452,10 @@ ALL_MODELS = list(
         GPT2LMHEAD_FP32_JAX_512XI32_BATCHES.values(),
         # Models with different gen sizes.
         T5_4CG_SMALL_FP32_JAX_1X128XI32_GENS.values(),
+        # Models with different input sequences.
+        BERT_BASE_FP32_JAX_I32_INPUT_SEQUENCES.values(),
+        BERT_BASE_FP16_JAX_I32_INPUT_SEQUENCES.values(),
+        BERT_BASE_BF16_JAX_I32_INPUT_SEQUENCES.values(),
     )) + [
         GPT2LMHEAD_PIPELINE_JAX_1X4XI32,
         T5_SMALL_FP32_JAX_1X128XI32,

@@ -28,9 +28,16 @@ BATCH_TAG = string.Template("batch-${batch_size}")
 BATCH_SIZE_PARAM = TemplateFunc(func=lambda batch_size, **_unused: batch_size)
 BATCH_TENSOR_DIMS = lambda dims: string.Template("${batch_size}x" + dims)
 
+# Constants and functions help build different token generation templates.
 GEN_NAME = lambda name: string.Template(name + "_GEN${gen_size}")
 GEN_TAG = string.Template("gen-${gen_size}")
 GEN_SIZE_PARAM = TemplateFunc(func=lambda gen_size, **_unused: gen_size)
+
+# Constants and functions help build input sequence templates.
+SEQ_LEN_NAME = lambda name: string.Template(name + "_SEQLEN${seq_len}")
+SEQ_LEN_TAG = string.Template("seqlen-${seq_len}")
+SEQ_LEN_PARAM = TemplateFunc(func=lambda seq_len, **_unused: seq_len)
+SEQ_LEN_TENSOR_DIMS = lambda dims: string.Template("${seq_len}x" + dims)
 
 
 @dataclass(frozen=True)
@@ -136,6 +143,55 @@ def build_gen_models(template: ModelTemplate,
     gen_models[gen_size] = model
 
   return gen_models
+
+
+def build_input_sequence_models(
+    template: ModelTemplate,
+    input_sequence_lengths: Sequence[int]) -> Dict[int, def_types.Model]:
+  """Build model with varying sequence lengths by replacing `${seq_len}`, `${name}` in the
+  template.
+  The `${name}` will be replaced by model name. Note that the model name
+  template can't contain `${name}`.
+  Args:
+    template: model template to replace.
+    input_sequence_lengths: list of batch sizes to generate.
+  Returns:
+    Map of input sequence length to model.
+  """
+  model_map = {}
+  for input_sequence in input_sequence_lengths:
+    name = _substitute_template(obj=template.name, seq_len=input_sequence)
+    substitute = lambda obj: _substitute_template(
+        obj=obj, seq_len=input_sequence, name=name)
+    model = def_types.Model(
+        name=substitute(template.name),
+        tags=substitute(template.tags),
+        model_impl=template.model_impl,
+        model_parameters=substitute(template.model_parameters),
+        exported_model_types=template.exported_model_types,
+        artifacts_dir_url=substitute(template.artifacts_dir_url),
+    )
+    model_map[input_sequence] = model
+
+  return model_map
+
+
+def build_input_sequence_benchmark_cases(
+    model_dict: Dict[int, def_types.Model],
+    input_sequence_lengths: Sequence[int],
+    input_data: def_types.ModelTestData = testdata.INPUT_DATA_MODEL_DEFAULT,
+    verify_parameters: Optional[Dict[str, Any]] = None,
+) -> Dict[int, def_types.BenchmarkCase]:
+  """Build benchmark cases for multiple batch sizes."""
+  benchmark_cases: Dict[int, def_types.BenchmarkCase] = {}
+  for input_sequence in input_sequence_lengths:
+    benchmark_case = def_types.BenchmarkCase.build(
+        model=model_dict[input_sequence],
+        input_data=input_data,
+        verify_parameters=verify_parameters)
+    benchmark_cases[input_sequence] = benchmark_case
+
+  return benchmark_cases
 
 
 def build_batch_benchmark_cases(
