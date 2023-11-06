@@ -1,6 +1,6 @@
 gcr.io/iree-oss/openxla-benchmark/base@sha256:1bf3e319465ec8fb465baae3f6ba9a5b09cb84a5349a675c671a552fc77f2251
 gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:f43984cd6c16ad1faad4dfb6aac3f53e552dd728c9330c90752e78ae51e4276f
-gcr.io/iree-oss/openxla-benchmark/db_import@sha256:edc74977be1d73b802ae13ee699b747d3c5cac06f11ab2d901d273cf31664128
+gcr.io/iree-oss/openxla-benchmark/db_import@sha256:2c427286d467cdae7a206fdfe038bf32dbf9fbe68281866b571abeefe82907cd
 gcr.io/iree-oss/openxla-benchmark/mmperf@sha256:c972ce5b2144de0786f103611fecbd88d93dd45ecd068f8c97d98c08677cee57
 gcr.io/iree-oss/openxla-benchmark/convperf@sha256:0807d5e8144900752cfae72f3aa4d12530b408f73fc6f010a6cbad11cc09832c
 gcr.io/iree-oss/openxla-benchmark/android@sha256:3211ade3856dfd46469e573f17baaf367f9c0830dfcc70c6d85891447cadc39e
