@@ -436,6 +436,82 @@ GPT2LMHEAD_PIPELINE_JAX_1X4XI32 = def_types.Model(
     artifacts_dir_url=f"{PARENT_GCS_DIR}/GPT2LMHEAD_PIPELINE_JAX_1X4XI32",
 )
 
+# Stable Diffusion models.
+# Model implementation from https://huggingface.co/docs/diffusers/api/pipelines/stable_diffusion/text2img#diffusers.FlaxStableDiffusionPipeline.
+SD_PIPELINE_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.13_1690046172/"
+SD_PIPELINE_ARTIFACTS_DIR_URL_TEMPLATE = string.Template(SD_PIPELINE_GCS_DIR +
+                                                         "${name}")
+
+SD_PIPELINE_JAX_IMPL = def_types.ModelImplementation(
+    name="SD_PIPELINE_JAX",
+    tags=["stable-diffusion", "pipeline"],
+    framework_type=def_types.ModelFrameworkType.JAX,
+    module_path=
+    f"{utils.MODELS_MODULE_PATH}.jax.stable_diffusion.stable_diffusion_pipeline",
+    source_info=
+    "hhttps://huggingface.co/docs/diffusers/api/pipelines/stable_diffusion/text2img#diffusers.FlaxStableDiffusionPipeline",
+)
+
+SD_PIPELINE_FP32_JAX_64XI32_BATCH_TEMPLATE = utils.ModelTemplate(
+    name=utils.BATCH_NAME("SD_PIPELINE_FP32_JAX_64XI32"),
+    tags=[utils.BATCH_TAG],
+    model_impl=SD_PIPELINE_JAX_IMPL,
+    model_parameters={
+        "batch_size": utils.BATCH_SIZE_PARAM,
+        "data_type": "fp32",
+        "model_name": "runwayml/stable-diffusion-v1-5",
+        "seq_len": 64,
+    },
+    artifacts_dir_url=SD_PIPELINE_ARTIFACTS_DIR_URL_TEMPLATE,
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+)
+
+SD_PIPELINE_FP32_JAX_64XI32_BATCHES = utils.build_batch_models(
+    template=SD_PIPELINE_FP32_JAX_64XI32_BATCH_TEMPLATE, batch_sizes=[1, 8])
+
+SD_PIPELINE_FP16_JAX_64XI32_BATCH_TEMPLATE = utils.ModelTemplate(
+    name=utils.BATCH_NAME("SD_PIPELINE_FP16_JAX_64XI32"),
+    tags=[utils.BATCH_TAG],
+    model_impl=SD_PIPELINE_JAX_IMPL,
+    model_parameters={
+        "batch_size": utils.BATCH_SIZE_PARAM,
+        "data_type": "fp16",
+        "model_name": "runwayml/stable-diffusion-v1-5",
+        "seq_len": 64,
+    },
+    artifacts_dir_url=SD_PIPELINE_ARTIFACTS_DIR_URL_TEMPLATE,
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+)
+
+SD_PIPELINE_FP16_JAX_64XI32_BATCHES = utils.build_batch_models(
+    template=SD_PIPELINE_FP16_JAX_64XI32_BATCH_TEMPLATE, batch_sizes=[1, 8])
+
+SD_PIPELINE_BF16_JAX_64XI32_BATCH_TEMPLATE = utils.ModelTemplate(
+    name=utils.BATCH_NAME("SD_PIPELINE_BF16_JAX_64XI32"),
+    tags=[utils.BATCH_TAG],
+    model_impl=SD_PIPELINE_JAX_IMPL,
+    model_parameters={
+        "batch_size": utils.BATCH_SIZE_PARAM,
+        "data_type": "bf16",
+        "model_name": "runwayml/stable-diffusion-v1-5",
+        "seq_len": 64,
+    },
+    artifacts_dir_url=SD_PIPELINE_ARTIFACTS_DIR_URL_TEMPLATE,
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+)
+
+SD_PIPELINE_BF16_JAX_64XI32_BATCHES = utils.build_batch_models(
+    template=SD_PIPELINE_BF16_JAX_64XI32_BATCH_TEMPLATE, batch_sizes=[1, 8])
+
 ALL_MODELS = list(
     itertools.chain(
         # Models with different batch sizes.
@@ -456,6 +532,10 @@ ALL_MODELS = list(
         BERT_BASE_FP32_JAX_I32_INPUT_SEQUENCES.values(),
         BERT_BASE_FP16_JAX_I32_INPUT_SEQUENCES.values(),
         BERT_BASE_BF16_JAX_I32_INPUT_SEQUENCES.values(),
+        # Pipelines.
+        SD_PIPELINE_FP32_JAX_64XI32_BATCHES.values(),
+        SD_PIPELINE_FP16_JAX_64XI32_BATCHES.values(),
+        SD_PIPELINE_BF16_JAX_64XI32_BATCHES.values(),
     )) + [
         GPT2LMHEAD_PIPELINE_JAX_1X4XI32,
         T5_SMALL_FP32_JAX_1X128XI32,
