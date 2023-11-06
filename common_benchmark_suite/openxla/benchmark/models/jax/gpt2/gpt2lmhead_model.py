@@ -4,13 +4,16 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+import flax
+import jax.numpy as jnp
+
 from transformers import AutoTokenizer, GPT2Tokenizer, FlaxGPT2LMHeadModel
 from typing import Any, List, Tuple
 
-from openxla.benchmark.models import model_interfaces
+from openxla.benchmark.models.jax import jax_model_interface
 
 
-class GPT2LMHead(model_interfaces.InferenceModel):
+class GPT2LMHead(jax_model_interface.JaxInferenceModel):
   """See https://huggingface.co/docs/transformers/model_doc/gpt2 for more information."""
 
   batch_size: int
@@ -52,6 +55,15 @@ class GPT2LMHead(model_interfaces.InferenceModel):
 
   def postprocess(self, output: Any) -> List[str]:
     return self.tokenizer.batch_decode(output, skip_special_tokens=True)
+
+  def apply(self, input_ids: Any, attention_mask: Any) -> Any:
+    batch_size, sequence_length = input_ids.shape
+    position_ids = jnp.broadcast_to(
+        jnp.arange(sequence_length)[None, :], (batch_size, sequence_length))
+    outputs = self.model.module.apply(
+        {"params": flax.core.freeze(self.model.params)}, input_ids,
+        attention_mask, position_ids)
+    return outputs.logits
 
 
 def create_model(batch_size: int = 1,

@@ -7,12 +7,17 @@
 import argparse
 import jax
 import multiprocessing
+import numpy as np
+import numbers
 import os
 import pathlib
 import re
 import shutil
 import subprocess
 import sys
+import tensorflow as tf
+
+from jax.experimental import jax2tf
 from typing import Any, List, Optional
 
 # Add openxla dir to the search path.
@@ -45,6 +50,161 @@ def _generate_mlir(jit_function: Any, jit_inputs: Any, model_dir: pathlib.Path,
     mlir_path.unlink()
 
 
+def _generate_tf_function(model_obj: Any, inputs: Any):
+
+  def predict(*args):
+    return model_obj.apply(*args)
+
+  input_signature = []
+  for input in inputs:
+    input_signature.append(
+        tf.TensorSpec(shape=input.shape, dtype=tf.as_dtype(input.dtype)))
+
+  tf_predict = tf.function(jax2tf.convert(predict,
+                                          enable_xla=False,
+                                          with_gradient=False),
+                           input_signature=input_signature,
+                           autograph=False)
+  tf_predict(*inputs)
+  return tf_predict
+
+
+def _create_converter(tf_predict_fn):
+  converter = tf.lite.TFLiteConverter.from_concrete_functions(
+      [tf_predict_fn.get_concrete_function()], tf_predict_fn)
+  converter._experimental_disable_per_channel = True
+  converter._experimental_use_buffer_offset = True
+  converter.exclude_conversion_metadata = True
+  return converter
+
+
+def _generate_tflite_fp32_stablehlo(tf_predict_fn, model_dir: pathlib.Path):
+  try:
+    converter = _create_converter(tf_predict_fn)
+    converter.target_spec.supported_ops = [
+        tf.lite.OpsSet.EXPERIMENTAL_STABLEHLO_OPS,
+    ]
+    tflite_model = converter.convert()
+    tflite_model_path = model_dir / "model_fp32_stablehlo.tflite"
+    tflite_model_path.write_bytes(tflite_model)
+    print(f"Successfully generated {tflite_model_path.name}")
+  except Exception as e:
+    print(f"Failed to generate fp32 StableHLO TFLite model. Exception: {e}")
+
+
+def _generate_tflite_fp32(tf_predict_fn, model_dir: pathlib.Path):
+  try:
+    converter = _create_converter(tf_predict_fn)
+    converter.target_spec.supported_ops = [
+        tf.lite.OpsSet.TFLITE_BUILTINS,
+        tf.lite.OpsSet.SELECT_TF_OPS,
+    ]
+    tflite_model = converter.convert()
+    tflite_model_path = model_dir / "model_fp32.tflite"
+    tflite_model_path.write_bytes(tflite_model)
+    print(f"Successfully generated {tflite_model_path.name}")
+  except Exception as e:
+    print(f"Failed to generate fp32 TFLite model. Exception: {e}")
+
+
+def _generate_tflite_fp16(tf_predict_fn, model_dir: pathlib.Path):
+  try:
+    converter = _create_converter(tf_predict_fn)
+    converter.target_spec.supported_ops = [
+        tf.lite.OpsSet.TFLITE_BUILTINS,
+        tf.lite.OpsSet.SELECT_TF_OPS,
+    ]
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    converter.target_spec.supported_types = [tf.float16]
+    tflite_model = converter.convert()
+    tflite_model_path = model_dir / "model_fp16.tflite"
+    tflite_model_path.write_bytes(tflite_model)
+    print(f"Successfully generated {tflite_model_path.name}")
+  except Exception as e:
+    print(f"Failed to generate fp16 TFLite model. Exception: {e}")
+
+
+def _generate_tflite_dynamic_range_quant(tf_predict_fn,
+                                         model_dir: pathlib.Path):
+  try:
+    converter = _create_converter(tf_predict_fn)
+    converter.target_spec.supported_ops = [
+        tf.lite.OpsSet.TFLITE_BUILTINS,
+        tf.lite.OpsSet.SELECT_TF_OPS,
+    ]
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    tflite_model = converter.convert()
+    tflite_model_path = model_dir / "model_dynamic_range_quant.tflite"
+    tflite_model_path.write_bytes(tflite_model)
+    print(f"Successfully generated {tflite_model_path.name}")
+  except Exception as e:
+    print(
+        f"Failed to generate dynamic range quantized TFLite model. Exception: {e}"
+    )
+
+
+def _generate_tflite_int8(tf_predict_fn, inputs: Any, model_dir: pathlib.Path):
+  try:
+    converter = _create_converter(tf_predict_fn)
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    converter.default_ranges_stats = (-10, 10)
+    converter.inference_type = tf.int8
+    converter.target_spec.supported_ops = [
+        tf.lite.OpsSet.TFLITE_BUILTINS_INT8,
+    ]
+
+    def representative_examples():
+      for _ in range(10):
+        random_inputs = []
+        for input in inputs:
+          if issubclass(input.dtype.type, numbers.Integral):
+            min = -127
+            max = 127
+          elif issubclass(input.dtype.type, numbers.Real):
+            # If input is float, use values between 0 and 1.
+            min = 0
+            max = 1
+          else:
+            raise TypeError(f"Input dtype not supported: {input.dtype}")
+
+          random_inputs.append(
+              np.random.uniform(low=min, high=max,
+                                size=input.shape).astype(input.dtype.type))
+        yield random_inputs
+
+    converter.representative_dataset = representative_examples
+
+    tflite_model_int8 = converter.convert()
+    tflite_model_int8_path = model_dir / "model_int8.tflite"
+    tflite_model_int8_path.write_bytes(tflite_model_int8)
+    print(f"Successfully generated {tflite_model_int8_path.name}")
+  except Exception as e:
+    print(f"Failed to generate int8 TFLite model. Exception: {e}")
+
+
+def _generate_tflite(model_obj: Any, inputs: Any, model_dir: pathlib.Path,
+                     export_types: List[def_types.ModelArtifactType]):
+  tf_predict_fn = _generate_tf_function(model_obj, inputs)
+
+  if def_types.ModelArtifactType.TFLITE_FP32_STABLEHLO in export_types:
+    _generate_tflite_fp32_stablehlo(tf_predict_fn, model_dir)
+
+  if def_types.ModelArtifactType.TFLITE_FP32 in export_types:
+    _generate_tflite_fp32(tf_predict_fn, model_dir)
+
+  # Below we run post-training quantization using the guide:
+  #   https://www.tensorflow.org/lite/performance/model_optimization
+
+  if def_types.ModelArtifactType.TFLITE_FP16 in export_types:
+    _generate_tflite_fp16(tf_predict_fn, model_dir)
+
+  if def_types.ModelArtifactType.TFLITE_DYNAMIC_RANGE_QUANT in export_types:
+    _generate_tflite_dynamic_range_quant(tf_predict_fn, model_dir)
+
+  if def_types.ModelArtifactType.TFLITE_INT8 in export_types:
+    _generate_tflite_int8(tf_predict_fn, inputs, model_dir)
+
+
 def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
                         iree_ir_tool: Optional[pathlib.Path],
                         auto_upload: bool):
@@ -53,12 +213,13 @@ def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
   print(f"Created {model_dir}")
 
   try:
-    # Configure to dump hlo.
-    hlo_dir = model_dir / "hlo"
-    hlo_dir.mkdir(exist_ok=True)
-    # Only dump hlo for the inference function `jit_model_jitted`.
-    os.environ[
-        "XLA_FLAGS"] = f"--xla_dump_to={hlo_dir} --xla_dump_hlo_module_re=.*jit_forward.*"
+    if def_types.ModelArtifactType.XLA_HLO_DUMP in model.exported_model_types:
+      # Configure to dump hlo.
+      hlo_dir = model_dir / "hlo"
+      hlo_dir.mkdir(exist_ok=True)
+      # Only dump hlo for the inference function `jit_model_jitted`.
+      os.environ[
+          "XLA_FLAGS"] = f"--xla_dump_to={hlo_dir} --xla_dump_hlo_module_re=.*jit_forward.*"
 
     model_obj = utils.create_model_obj(model)
 
@@ -73,13 +234,21 @@ def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
     outputs = utils.canonicalize_to_tuple(output_obj)
     utils.save_outputs(outputs, model_dir)
 
-    utils.cleanup_hlo(hlo_dir, model_dir, HLO_FILENAME_REGEX)
-    os.unsetenv("XLA_FLAGS")
+    if def_types.ModelArtifactType.XLA_HLO_DUMP in model.exported_model_types:
+      utils.cleanup_hlo(hlo_dir, model_dir, HLO_FILENAME_REGEX)
+      os.unsetenv("XLA_FLAGS")
 
-    _generate_mlir(jit_function=jit_function,
-                   jit_inputs=jit_inputs,
-                   model_dir=model_dir,
-                   iree_ir_tool=iree_ir_tool)
+    if def_types.ModelArtifactType.STABLEHLO_MLIR in model.exported_model_types:
+      _generate_mlir(jit_function=jit_function,
+                     jit_inputs=jit_inputs,
+                     model_dir=model_dir,
+                     iree_ir_tool=iree_ir_tool)
+
+    if def_types.ModelArtifactType.TFLITE_FP32 in model.exported_model_types:
+      _generate_tflite(model_obj=model_obj,
+                       inputs=inputs,
+                       model_dir=model_dir,
+                       export_types=model.exported_model_types)
 
     print(f"Completed generating artifacts {model.name}\n")
 

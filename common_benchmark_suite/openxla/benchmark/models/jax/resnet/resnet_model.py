@@ -4,17 +4,20 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-from PIL import Image
+import flax
 import jax.numpy as jnp
+
+from PIL import Image
 from transformers import AutoImageProcessor, FlaxResNetModel
 from typing import Any, Tuple
 
-from openxla.benchmark.models import model_interfaces, utils
+from openxla.benchmark.models import utils
+from openxla.benchmark.models.jax import jax_model_interface
 
 DEFAULT_IMAGE_URL = "https://storage.googleapis.com/iree-model-artifacts/ILSVRC2012_val_00000023.JPEG"
 
 
-class ResNet(model_interfaces.InferenceModel):
+class ResNet(jax_model_interface.JaxInferenceModel):
   """See https://huggingface.co/docs/transformers/model_doc/resnet for more information."""
 
   def __init__(
@@ -56,6 +59,15 @@ class ResNet(model_interfaces.InferenceModel):
 
   def forward(self, input_tensor: Any) -> Any:
     return self.model(input_tensor).last_hidden_state
+
+  def apply(self, input_tensor: Any) -> Any:
+    input_tensor = jnp.transpose(input_tensor, (0, 2, 3, 1))
+    outputs = self.model.module.apply(
+        {
+            "params": flax.core.freeze(self.model.params["params"]),
+            "batch_stats": flax.core.freeze(self.model.params["batch_stats"])
+        }, input_tensor)
+    return outputs.last_hidden_state
 
 
 DTYPE_MAP = {

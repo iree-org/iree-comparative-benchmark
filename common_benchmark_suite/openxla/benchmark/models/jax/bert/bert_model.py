@@ -4,14 +4,15 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+import flax
 import jax.numpy as jnp
 from transformers import AutoTokenizer, BertTokenizer, FlaxBertModel
 from typing import Any, Tuple
 
-from openxla.benchmark.models import model_interfaces
+from openxla.benchmark.models.jax import jax_model_interface
 
 
-class Bert(model_interfaces.InferenceModel):
+class Bert(jax_model_interface.JaxInferenceModel):
   """See https://huggingface.co/docs/transformers/model_doc/bert for more information."""
 
   batch_size: int
@@ -31,6 +32,7 @@ class Bert(model_interfaces.InferenceModel):
     model: FlaxBertModel = FlaxBertModel.from_pretrained(
         model_name,
         dtype=dtype,
+        hidden_act="relu",
     )
     if dtype == jnp.float32:
       # The original model is fp32.
@@ -64,6 +66,12 @@ class Bert(model_interfaces.InferenceModel):
 
   def forward(self, input_ids: Any, attention_mask: Any) -> Any:
     return self.model(input_ids, attention_mask).last_hidden_state
+
+  def apply(self, input_ids: Any, attention_mask: Any) -> Any:
+    return self.model.module.apply(
+        {
+            "params": flax.core.freeze(self.model.params)
+        }, input_ids, attention_mask).last_hidden_state
 
 
 DTYPE_MAP = {
