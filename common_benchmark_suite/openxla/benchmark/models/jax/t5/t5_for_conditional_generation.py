@@ -42,10 +42,10 @@ class T5ForConditionalGeneration(jax_model_interface.JaxInferenceModel):
   def generate_default_inputs(self) -> str:
     return "summarize: My friends are cool but they eat too many carbs."
 
-  def preprocess(self, input_text: str) -> Tuple[Any,]:
+  def preprocess(self, input_text: str) -> Any:
     batch_input = [input_text] * self.batch_size
     inputs = self.tokenizer(batch_input, **self.tokenization_kwargs)
-    return (inputs["input_ids"],)
+    return inputs["input_ids"]
 
   def forward(self, input_ids: Any) -> Any:
     return self.model.generate(

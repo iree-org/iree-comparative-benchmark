@@ -294,7 +294,7 @@ def _parse_arguments() -> argparse.Namespace:
 
 
 def main(output_dir: pathlib.Path, filters: List[str],
-         iree_ir_tool: pathlib.Path, auto_upload: bool, jobs: int):
+         iree_ir_tool: pathlib.Path, auto_upload: bool):
   combined_filters = "|".join(f"({name_filter})" for name_filter in filters)
   name_pattern = re.compile(f"^{combined_filters}$")
   models = [
