@@ -80,6 +80,23 @@ T5_LARGE_BF16_JAX_512XI32_BATCHES = utils.build_batch_models(
     template=T5_LARGE_BF16_JAX_512XI32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48, 64, 512])
 
+T5_SMALL_FP32_JAX_1X128XI32 = def_types.Model(
+    name="T5_SMALL_FP32_JAX_1X128XI32",
+    tags=["fp32", "batch-1"],
+    model_impl=T5_JAX_IMPL,
+    model_parameters={
+        "batch_size": 1,
+        "data_type": "fp32",
+        "model_name": "t5-small",
+        "seq_len": 128
+    },
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+    artifacts_dir_url=f"{PARENT_GCS_DIR}/T5_SMALL_FP32_JAX_1X128XI32",
+)
+
 T5_4CG_JAX_IMPL = def_types.ModelImplementation(
     name="T5_4CG_JAX",
     tags=[
@@ -111,6 +128,28 @@ T5_4CG_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
 T5_4CG_LARGE_FP32_JAX_512XI32_BATCHES = utils.build_batch_models(
     template=T5_4CG_LARGE_FP32_JAX_512XI32_BATCH_TEMPLATE,
     batch_sizes=[1, 16, 24, 32, 48])
+
+T5_4CG_SMALL_FP32_JAX_1X128XI32_GEN_TEMPLATE = utils.ModelTemplate(
+    name=utils.GEN_NAME("T5_4CG_SMALL_FP32_JAX_1X128XI32"),
+    tags=["fp32", "batch-1", utils.GEN_TAG],
+    model_impl=T5_4CG_JAX_IMPL,
+    model_parameters={
+        "batch_size": 1,
+        "data_type": "fp32",
+        "model_name": "t5-small",
+        "seq_len": 128,
+        "max_new_tokens": utils.GEN_SIZE_PARAM,
+    },
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+)
+T5_4CG_SMALL_FP32_JAX_1X128XI32_GENS = utils.build_gen_models(
+    template=T5_4CG_SMALL_FP32_JAX_1X128XI32_GEN_TEMPLATE,
+    gen_sizes=[16, 32, 64, 128, 256])
+
 
 # Bert-Large models.
 # Model implementation from https://huggingface.co/docs/transformers/model_doc/bert#transformers.FlaxBertModel.
@@ -333,6 +372,7 @@ GPT2LMHEAD_PIPELINE_JAX_1X4XI32 = def_types.Model(
 
 ALL_MODELS = list(
     itertools.chain(
+        # Models with different batch sizes.
         T5_LARGE_FP32_JAX_512XI32_BATCHES.values(),
         T5_LARGE_FP16_JAX_512XI32_BATCHES.values(),
         T5_LARGE_BF16_JAX_512XI32_BATCHES.values(),
@@ -344,6 +384,9 @@ ALL_MODELS = list(
         RESNET50_FP16_JAX_3X224X224XF16_BATCHES.values(),
         RESNET50_BF16_JAX_3X224X224XBF16_BATCHES.values(),
         GPT2LMHEAD_FP32_JAX_512XI32_BATCHES.values(),
+        # Models with different gen sizes.
+        T5_4CG_SMALL_FP32_JAX_1X128XI32_GENS.values(),
     )) + [
         GPT2LMHEAD_PIPELINE_JAX_1X4XI32,
+        T5_SMALL_FP32_JAX_1X128XI32,
     ]

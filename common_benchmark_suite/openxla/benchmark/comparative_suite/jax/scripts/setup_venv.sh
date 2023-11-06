@@ -40,6 +40,9 @@ else
   python -m pip install --upgrade "jax[cuda11_local]" "flax" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 fi
 
+# Install Tensorflow to generate TFLite models.
+python -m pip install tf-nightly
+
 # Run through all model directories and install requirements.
 JAX_MODELS_DIR="$(dirname $(dirname $(dirname "${TD}")))/models/jax"
 find "${JAX_MODELS_DIR}" -type d | while read dir; do
