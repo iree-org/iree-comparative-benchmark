@@ -31,9 +31,9 @@ class ModelImplementation:
   # Framework the model is implemented in.
   framework_type: ModelFrameworkType
   # Source of the model.
-  source_info: str
-  # Model module path
-  module_path: str
+  source_info: Optional[str] = None
+  # Model module path.
+  module_path: Optional[str] = None
 
   def __str__(self):
     return self.name
@@ -51,6 +51,7 @@ class ModelArtifactType(Enum):
   XLA_HLO_DUMP = "xla_hlo_dump"
   STABLEHLO_MLIR = "stablehlo_mlir"
   LINALG_MLIR = "linalg_mlir"
+  TOSA_MLIR = "tosa_mlir"
 
 
 @dataclass(frozen=True)
