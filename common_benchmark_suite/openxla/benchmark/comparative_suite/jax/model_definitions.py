@@ -10,7 +10,7 @@ import string
 from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite import utils
 
-PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.14_1691969180/"
+PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.20_1699319513/"
 ARTIFACTS_DIR_URL_TEMPLATE = string.Template(PARENT_GCS_DIR + "${name}")
 
 T5_JAX_IMPL = def_types.ModelImplementation(
@@ -199,6 +199,8 @@ BERT_LARGE_FP16_JAX_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
+        def_types.ModelArtifactType.TFLITE_FP32,
+        def_types.ModelArtifactType.TFLITE_FP32_STABLEHLO,
     ],
 )
 
@@ -270,6 +272,8 @@ BERT_BASE_FP16_JAX_I32_INPUT_SEQUENCE_TEMPLATE = utils.ModelTemplate(
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
+        def_types.ModelArtifactType.TFLITE_FP32,
+        def_types.ModelArtifactType.TFLITE_FP32_STABLEHLO,
     ],
 )
 BERT_BASE_FP16_JAX_I32_INPUT_SEQUENCES = utils.build_input_sequence_models(
@@ -290,6 +294,8 @@ BERT_BASE_BF16_JAX_I32_INPUT_SEQUENCE_TEMPLATE = utils.ModelTemplate(
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
+        def_types.ModelArtifactType.TFLITE_FP32,
+        def_types.ModelArtifactType.TFLITE_FP32_STABLEHLO,
     ],
 )
 BERT_BASE_BF16_JAX_I32_INPUT_SEQUENCES = utils.build_input_sequence_models(
@@ -344,6 +350,8 @@ RESNET50_FP16_JAX_3X224X224XF16_BATCH_TEMPLATE = utils.ModelTemplate(
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
+        def_types.ModelArtifactType.TFLITE_FP32,
+        def_types.ModelArtifactType.TFLITE_FP32_STABLEHLO,
     ],
 )
 
@@ -360,6 +368,8 @@ RESNET50_BF16_JAX_3X224X224XBF16_BATCH_TEMPLATE = utils.ModelTemplate(
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
+        def_types.ModelArtifactType.TFLITE_FP32,
+        def_types.ModelArtifactType.TFLITE_FP32_STABLEHLO,
     ],
 )
 
@@ -377,10 +387,6 @@ RESNET50_BF16_JAX_3X224X224XBF16_BATCHES = utils.build_batch_models(
 
 # GPT2 models.
 # Model implementation from https://huggingface.co/docs/transformers/model_doc/gpt2#transformers.FlaxGPT2LMHeadModel.
-GPT2LMHEAD_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.13_1690046172/"
-GPT2LMHEAD_ARTIFACTS_DIR_URL_TEMPLATE = string.Template(GPT2LMHEAD_GCS_DIR +
-                                                        "${name}")
-
 GPT2LMHEAD_JAX_IMPL = def_types.ModelImplementation(
     name="GPT2LMHEAD_JAX",
     tags=["cnn", "gpt2lmhead"],
@@ -399,7 +405,7 @@ GPT2LMHEAD_FP32_JAX_512XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "data_type": "fp32",
         "model_name": "gpt2",
     },
-    artifacts_dir_url=GPT2LMHEAD_ARTIFACTS_DIR_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -429,19 +435,15 @@ GPT2LMHEAD_PIPELINE_JAX_1X4XI32 = def_types.Model(
     tags=["fp32", "batch-1"],
     model_impl=GPT2LMHEAD_PIPELINE_JAX_IMPL,
     model_parameters=dict(batch_size=1, data_type="fp32", model_name="gpt2"),
+    artifacts_dir_url=f"{PARENT_GCS_DIR}/GPT2LMHEAD_PIPELINE_JAX_1X4XI32",
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
     ],
-    artifacts_dir_url=f"{PARENT_GCS_DIR}/GPT2LMHEAD_PIPELINE_JAX_1X4XI32",
 )
 
 # Stable Diffusion models.
 # Model implementation from https://huggingface.co/docs/diffusers/api/pipelines/stable_diffusion/text2img#diffusers.FlaxStableDiffusionPipeline.
-SD_PIPELINE_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.13_1690046172/"
-SD_PIPELINE_ARTIFACTS_DIR_URL_TEMPLATE = string.Template(SD_PIPELINE_GCS_DIR +
-                                                         "${name}")
-
 SD_PIPELINE_JAX_IMPL = def_types.ModelImplementation(
     name="SD_PIPELINE_JAX",
     tags=["stable-diffusion", "pipeline"],
@@ -462,7 +464,7 @@ SD_PIPELINE_FP32_JAX_64XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "model_name": "runwayml/stable-diffusion-v1-5",
         "seq_len": 64,
     },
-    artifacts_dir_url=SD_PIPELINE_ARTIFACTS_DIR_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -482,7 +484,7 @@ SD_PIPELINE_FP16_JAX_64XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "model_name": "runwayml/stable-diffusion-v1-5",
         "seq_len": 64,
     },
-    artifacts_dir_url=SD_PIPELINE_ARTIFACTS_DIR_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -502,7 +504,7 @@ SD_PIPELINE_BF16_JAX_64XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "model_name": "runwayml/stable-diffusion-v1-5",
         "seq_len": 64,
     },
-    artifacts_dir_url=SD_PIPELINE_ARTIFACTS_DIR_URL_TEMPLATE,
+    artifacts_dir_url=ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
