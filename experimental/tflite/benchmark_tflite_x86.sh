@@ -8,28 +8,31 @@
 #
 # Environment variables:
 # PYTHON: Python interpreter, default: /usr/bin/python3
-# IREE_COMPILE_PATH: the path to the `iree-compile` binary.
 # OOBI_TARGET_DEVICE: target benchmark device, can also be specified the first
 #   argument.
-# OOBI_TEMP_DIR: directory to save intermediates.
 # OOBI_VENV_DIR: name of the virtual environment.
+# OOBI_TEMP_DIR: the path to store temporary files to.
 #
 # Example usage:
-# ./compile_workloads.sh <target-device> <output-dir>
+# ./benchmark_tflite_x86.sh <target-device> <results-path>
 
 set -xeuo pipefail
 
+VENV_DIR="${OOBI_VENV_DIR:-tflite-benchmarks.venv}"
 PYTHON="${PYTHON:-/usr/bin/python3}"
-VENV_DIR="${OOBI_VENV_DIR:-iree.venv}"
-IREE_COMPILE_PATH="${IREE_COMPILE_PATH:-/tmp/iree-build/install/bin/iree-compile}"
-TEMP_DIR="${OOBI_TEMP_DIR:-/tmp/openxla-benchmark}"
-TARGET_DEVICE_NAME="${1:-${OOBI_TARGET_DEVICE}}"
-OUTPUT_DIR="${2:-/tmp/compiled-artifacts/${TARGET_DEVICE_NAME}}"
+ROOT_DIR="${OOBI_TEMP_DIR:-/tmp/openxla-benchmark}"
+TARGET_DEVICE="${1:-"${OOBI_TARGET_DEVICE}"}"
+OUTPUT_PATH="${2:-"${OOBI_OUTPUT}"}"
+
+# Download benchmark tool.
+wget -P "${ROOT_DIR}" "https://storage.googleapis.com/tensorflow-nightly-public/prod/tensorflow/release/lite/tools/nightly/latest/linux_x86-64_benchmark_model"
+BENCHMARK_BINARY_PATH="${ROOT_DIR}/linux_x86-64_benchmark_model"
+chmod +x "${BENCHMARK_BINARY_PATH}"
 
 TD="$(cd $(dirname $0) && pwd)"
 VENV_DIR="${VENV_DIR}" PYTHON="${PYTHON}" source "${TD}/setup_venv.sh"
 
-mkdir -p "${OUTPUT_DIR}"
+"${TD}/../../comparative_benchmark/scripts/create_results_json.sh" "${OUTPUT_PATH}"
 
 declare -a BENCHMARK_NAMES=(
   "models/BERT_BASE_FP32_TFLITE_I32_SEQLEN.+/.+"
@@ -40,21 +43,21 @@ declare -a BENCHMARK_NAMES=(
   "models/VIT_CLASSIFICATION_FP16_TFLITE_3X224X224XF32/.+"
   "models/VIT_CLASSIFICATION_DYN_QUANT_TFLITE_3X224X224XF32/.+"
   "models/VIT_CLASSIFICATION_INT8_TFLITE_3X224X224XINT8/.+"
-  "models/BERT_BASE_FP32_JAX_I32_SEQLEN.+/.+"
-  "models/BERT_BASE_FP16_JAX_I32_SEQLEN.+/.+"
-  "models/BERT_BASE_BF16_JAX_I32_SEQLEN.+/.+"
-  "models/T5_4CG_SMALL_FP32_JAX_1X128XI32_GEN.+/.+"
-  "models/SD_PIPELINE_FP32_JAX_64XI32_BATCH1/.+"
-  "models/SD_PIPELINE_FP16_JAX_64XI32_BATCH1/.+"
-  "models/SD_PIPELINE_BF16_JAX_64XI32_BATCH1/.+"
 )
 
+# Thread-to-taskset config. If the taskset is blank, the benchmark is not pinned to a specific cpu id.
+# Here we run the benchmarks on 1, 8, 15 and 30 threads that are not pinned to any cores.
+THREAD_CONFIG="{1: '', 8: '', 15: '', 30: ''}"
+ITERATIONS=5
+
 for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
-  "${TD}/compile_workloads.py" \
+  "${TD}/run_benchmarks.py" \
     --benchmark_name="${benchmark_name}" \
-    --target_device="${TARGET_DEVICE_NAME}" \
-    --output="${OUTPUT_DIR}" \
-    --iree_compile_path="${IREE_COMPILE_PATH}" \
-    --temp-dir="${TEMP_DIR}" \
+    --target_device="${TARGET_DEVICE}" \
+    --output="${OUTPUT_PATH}" \
+    --tflite_benchmark_binary="${BENCHMARK_BINARY_PATH}" \
+    --thread_config="${THREAD_CONFIG}" \
+    --iterations="${ITERATIONS}" \
+    --root_dir="${ROOT_DIR}" \
     --verbose
 done
