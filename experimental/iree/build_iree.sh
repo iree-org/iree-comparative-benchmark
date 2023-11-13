@@ -33,7 +33,8 @@ rm -rf "${IREE_SOURCE_DIR}"
 mkdir -p "${IREE_SOURCE_DIR}"
 
 pushd "${IREE_SOURCE_DIR}"
-git clone https://github.com/openxla/iree.git
+#git clone https://github.com/openxla/iree.git
+git clone --branch matvec-fix https://github.com/mariecwhite/iree.git
 cd iree
 git submodule update --init
 popd
