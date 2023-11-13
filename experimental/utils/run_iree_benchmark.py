@@ -9,8 +9,9 @@
 import argparse
 import pathlib
 import re
+import shlex
 
-from typing import Any, Dict
+from typing import Any, List, Dict
 
 from common import command_lib
 
@@ -18,11 +19,11 @@ _LATENCY_REGEX = re.compile(r".*?BM_main/process_time/real_time\s+(.*?) ms.*")
 _IREE_MEM_PEAK_REGEX = re.compile(r".*?DEVICE_LOCAL: (.*?)B peak .*")
 
 
-def run_benchmark_command(benchmark_command: str,
+def run_benchmark_command(benchmark_command: List[str],
                           verbose: bool = False) -> Dict[str, Any]:
   """Runs `benchmark_command` and polls for memory consumption statistics.
   Args:
-    benchmark_command: A bash command string that runs the benchmark.
+    benchmark_command: A sequence of strings representing the command to run.
   Returns:
     An dictionary containing latency and memory usage metrics.
   """
@@ -68,7 +69,8 @@ def _parse_arguments() -> argparse.Namespace:
 
 
 def main(command_path: pathlib.Path, verbose: bool = False):
-  results = run_benchmark_command(command_path.read_text(), verbose)
+  command = shlex.split(command_path.read_text())
+  results = run_benchmark_command(command, verbose)
   print(f"results_dict: {results}")
 
 

@@ -7,9 +7,10 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import re
+import shlex
 import subprocess
 import time
-from typing import Any, Tuple
+from typing import Any, List, Tuple
 
 # Regexes for retrieving memory information.
 _VMHWM_REGEX = re.compile(r".*?VmHWM:.*?(\d+) kB.*")
@@ -17,18 +18,20 @@ _VMRSS_REGEX = re.compile(r".*?VmRSS:.*?(\d+) kB.*")
 _RSSFILE_REGEX = re.compile(r".*?RssFile:.*?(\d+) kB.*")
 
 
-def run_command_and_monitor_memory_usage(command: str,
+def run_command_and_monitor_memory_usage(command: List[str],
                                          verbose: bool = False
                                         ) -> Tuple[str, Any]:
   """Runs `command` and polls for memory consumption statistics.
   Args:
-    command: A bash command string that runs the benchmark.
+    command: A sequence of strings representing the command to run.
   Returns:
     A tuple containing output and memory usage in the form of [`vmhwm_mb`, `vmrss_mb`, `rssfile_mb`]
   """
-  print(f"Running command: {command}")
+  if verbose:
+    command_str = " ".join(command)
+    print(f"Running command: {command_str}")
+
   benchmark_process = subprocess.Popen(command,
-                                       shell=True,
                                        stdout=subprocess.PIPE,
                                        stderr=subprocess.STDOUT)
 
@@ -63,4 +66,7 @@ def run_command_and_monitor_memory_usage(command: str,
   output = stdout_data.decode()
   if verbose:
     print(output)
+    print(
+        f"vmhwm: {vmhwm * 1e-3}, vmrss: {vmrss * 1e-3}, rssfile: {rssfile * 1e-3}"
+    )
   return (output, [vmhwm * 1e-3, vmrss * 1e-3, rssfile * 1e-3])
