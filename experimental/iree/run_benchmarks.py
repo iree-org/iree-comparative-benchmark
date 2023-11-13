@@ -283,7 +283,7 @@ def main(output: pathlib.Path, artifact_dir: pathlib.Path,
       if name_pattern.match(benchmark.name):
         benchmarks[item] = benchmark
 
-  thread_config = ast.literal_eval(thread_config)
+  thread_config = ast.literal_eval(thread_config.replace("'", '"'))
   for directory, benchmark in benchmarks.items():
     model_artifact_dir = artifact_dir / directory
     for num_thread, cpu_ids in thread_config.items():

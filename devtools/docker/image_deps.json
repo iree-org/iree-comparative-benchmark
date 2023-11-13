@@ -4,5 +4,6 @@
   "db_import": [],
   "mmperf": ["base"],
   "convperf": ["base"],
-  "android": ["base"]
+  "android": ["base"],
+  "tflite-android": ["base"]
 }

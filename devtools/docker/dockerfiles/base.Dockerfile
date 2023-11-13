@@ -27,7 +27,7 @@ RUN apt-get update \
 ######## Python ########
 WORKDIR /install-python
 
-ARG PYTHON_VERSION=3.10
+ARG PYTHON_VERSION=3.11
 
 COPY devtools/docker/context/python_build_requirements.txt devtools/docker/context/install_python_deps.sh ./
 RUN ./install_python_deps.sh "${PYTHON_VERSION}" \
@@ -35,6 +35,7 @@ RUN ./install_python_deps.sh "${PYTHON_VERSION}" \
   && rm -rf /install-python
 
 ENV PYTHON_BIN /usr/bin/python3
+ENV TF_PYTHON_VERSION "${PYTHON_VERSION}"
 
 WORKDIR /
 

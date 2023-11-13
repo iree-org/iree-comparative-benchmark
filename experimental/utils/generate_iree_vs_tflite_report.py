@@ -6,7 +6,7 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #
-# A simple hard-coded script that generates tables comparing IREE vs TFLite.
+# A simple hard-coded script that generates tables comparing IREE with TFLite.
 
 import argparse
 import json
@@ -23,11 +23,14 @@ from common import html_utils
 sys.path.insert(
     0, str(pathlib.Path(__file__).parents[2] / "common_benchmark_suite"))
 
-from openxla.benchmark.comparative_suite.tflite import benchmark_definitions
+from openxla.benchmark.comparative_suite.tflite import benchmark_definitions as tflite_benchmark_definitions
+from openxla.benchmark.comparative_suite.jax import benchmark_definitions as jax_benchmark_definitions
 
 _TABLES = [
-    "BERT_BASE_FP32_TFLITE_I32",
-    "BERT_BASE_FP16_TFLITE_I32",
+    "BERT_BASE_FP32_TFLITE",
+    "BERT_BASE_FP32_JAX",
+    "BERT_BASE_FP16_TFLITE",
+    "BERT_BASE_FP16_JAX",
     "BERT_BASE_DYN_QUANT_TFLITE",
     "VIT_CLASSIFICATION",
 ]
@@ -170,10 +173,12 @@ def main(iree_results_path: pathlib.Path,
         _IREE_VS_TFLITE_MEMORY,
     ])
 
-  for benchmark in benchmark_definitions.ALL_BENCHMARKS:
+  all_benchmarks = tflite_benchmark_definitions.ALL_BENCHMARKS + jax_benchmark_definitions.ALL_BENCHMARKS
+  for benchmark in all_benchmarks:
     iree_benchmark = _get_best_result(benchmark.name,
                                       iree_results["benchmarks"])
-    tflite_benchmark = _get_best_result(benchmark.name,
+    tflite_benchmark_name = benchmark.name.replace("JAX", "TFLITE")
+    tflite_benchmark = _get_best_result(tflite_benchmark_name,
                                         tflite_results["benchmarks"])
 
     if iree_benchmark and tflite_benchmark:
@@ -215,6 +220,10 @@ def main(iree_results_path: pathlib.Path,
   for table_name, table in tables.items():
     if verbose:
       print(f"{table_name}: {table}")
+
+    # If table does not have resutls, do not include in the report.
+    if len(table) == 0:
+      continue
 
     table = table.round(2)
     table = table.style.set_table_styles(html_utils.get_table_css())

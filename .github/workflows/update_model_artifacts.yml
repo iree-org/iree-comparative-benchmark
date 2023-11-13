@@ -60,7 +60,7 @@ jobs:
             --env "AUTO_UPLOAD=0" \
             --env "JOBS=1" \
             --env "OUTPUT_DIR=jax" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:1bf3e319465ec8fb465baae3f6ba9a5b09cb84a5349a675c671a552fc77f2251" \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:0f98f0d27199bcb40f8f76fc628a12f19b87b6f2f7d270a8f5ad9265f06effec" \
             "common_benchmark_suite/openxla/benchmark/comparative_suite/jax/scripts/generate_model_artifacts.sh" \
               "RESNET50_FP32_JAX_.+" \
               "BERT_LARGE_FP32_JAX_.+_BATCH(1|16|24|32|48|64|512)" \

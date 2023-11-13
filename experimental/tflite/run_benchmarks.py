@@ -135,7 +135,8 @@ def _benchmark(benchmark: def_types.BenchmarkCase,
   command = []
   # Check if taskset is empty.
   if not bool(re.match(r'^$|^\\s*$', taskset)):
-    command += ["taskset", taskset]
+    taskset = taskset.split(" ")
+    command += ["taskset"] + taskset
   command += [
       str(tflite_benchmark_binary),
       f"--graph={tflite_model_path}",
@@ -238,7 +239,7 @@ def main(output: pathlib.Path, benchmark_name: str,
                         root_dir=root_dir,
                         verbose=verbose)
 
-  thread_config = ast.literal_eval(thread_config)
+  thread_config = ast.literal_eval(thread_config.replace("'", '"'))
   for benchmark in benchmarks:
     for num_threads, tasksets in thread_config.items():
       result = _benchmark(benchmark, target_device, tflite_benchmark_binary,
