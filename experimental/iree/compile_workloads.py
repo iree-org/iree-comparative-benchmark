@@ -30,7 +30,7 @@ ALL_DEVICE_NAMES = [device.name for device in devices.ALL_DEVICES]
 
 IREE_COMPILE_COMMON_FLAGS = [
     "--iree-hal-target-backends=llvm-cpu",
-    "--iree-llvmcpu-link-embedded=false",
+    "--iree-llvmcpu-link-embedded=true",
     "--iree-input-demote-f64-to-f32=false",
     "--iree-input-demote-i64-to-i32=false",
     "--iree-llvmcpu-debug-symbols=false",

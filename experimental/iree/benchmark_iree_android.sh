@@ -72,7 +72,7 @@ fi
 "${TD}/../../comparative_benchmark/scripts/create_results_json.sh" "${OUTPUT_PATH}"
 
 # A num_threads to cpu_ids map. We use the biggest cores for each configuration.
-THREAD_CONFIG="{1: '0', 4: '0,1,2,3'}"
+THREAD_CONFIG="{1: '0', 4: '1,2,3,4', 5: '0,1,2,3,4'}"
 
 "${TD}/run_benchmarks.py" \
   --target_device="${TARGET_DEVICE}" \

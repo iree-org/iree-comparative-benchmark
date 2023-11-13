@@ -315,7 +315,7 @@ jobs:
       - os-family=Linux
     env:
       BENCHMARK_ARTIFACTS_DIR: android-benchmark-artifacts-dir
-      TARGET_DEVICE: pixel-6-pro
+      TARGET_DEVICE: pixel-8-pro
       IREE_INSTALL_DIR: ${{ needs.build_iree.outputs.iree-install-dir }}
       IREE_INSTALL_DIR_ARCHIVE: ${{ needs.build_iree.outputs.iree-install-dir-archive }}
       IREE_INSTALL_DIR_GCS_ARTIFACT: ${{ needs.build_iree.outputs.iree-install-dir-gcs-artifact }}
@@ -364,17 +364,17 @@ jobs:
           echo "benchmark-artifacts-dir-gcs-artifact=${BENCHMARK_ARTIFACTS_DIR_GCS_ARTIFACT}" >> "${GITHUB_OUTPUT}"
 
 
-  benchmark_on_pixel-6-pro:
+  benchmark_on_pixel-8-pro:
     needs: [setup, build_iree, compile_models_for_android, build_tflite]
     runs-on:
       - self-hosted  # must come first
       - runner-group=${{ needs.setup.outputs.runner-group }}
       - environment=prod
-      - machine-type=pixel-6-pro
+      - machine-type=pixel-8-pro
     env:
       BENCHMARK_GCS_DIR: ${{ needs.setup.outputs.benchmark-gcs-dir }}
       RESULTS_DIR: results-dir
-      TARGET_DEVICE: pixel-6-pro
+      TARGET_DEVICE: pixel-8-pro
       IREE_ANDROID_TOOLS_DIR: ${{ needs.build_iree.outputs.iree-android-tools-dir }}
       IREE_ANDROID_TOOLS_DIR_ARCHIVE: ${{ needs.build_iree.outputs.iree-android-tools-dir-archive }}
       IREE_ANDROID_TOOLS_DIR_GCS_ARTIFACT: ${{ needs.build_iree.outputs.iree-android-tools-dir-gcs-artifact }}

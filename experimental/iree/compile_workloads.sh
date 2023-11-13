@@ -65,6 +65,8 @@ if [ "${TARGET_DEVICE_NAME}" = "c2-standard-60" ]; then
   BENCHMARK_NAMES=("${CASCADE_LAKE_BENCHMARKS[@]}")
 elif [ "${TARGET_DEVICE_NAME}" = "pixel-6-pro" ]; then
   BENCHMARK_NAMES=("${ANDROID_BENCHMARKS[@]}")
+elif [ "${TARGET_DEVICE_NAME}" = "pixel-8-pro" ]; then
+  BENCHMARK_NAMES=("${ANDROID_BENCHMARKS[@]}")
 else
   echo "Unsupported target device ${TARGET_DEVICE}."
   exit 1
