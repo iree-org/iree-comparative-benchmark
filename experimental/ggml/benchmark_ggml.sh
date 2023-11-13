@@ -85,7 +85,7 @@ if [[ "${TARGET_DEVICE_NAME}" =~ ^(pixel-4|pixel-6-pro|moto-edge-x30)$ ]]; then
   )
 
   # Setup mobile device for benchmarking.
-  adb push "${TD}/set_android_scaling_governor.sh" "/data/local/tmp"
+  adb push "${TD}/../../comparative_benchmark/scripts/set_android_scaling_governor.sh" "/data/local/tmp"
   adb shell "chmod +x /data/local/tmp/set_android_scaling_governor.sh"
   adb shell "su root sh /data/local/tmp/set_android_scaling_governor.sh performance"
 else

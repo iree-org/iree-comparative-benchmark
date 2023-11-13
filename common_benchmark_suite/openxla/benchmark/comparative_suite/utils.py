@@ -176,13 +176,31 @@ def build_input_sequence_models(
   return model_map
 
 
+def build_gen_benchmark_cases(
+    model_dict: Dict[int, def_types.Model],
+    gen_sizes: Sequence[int],
+    input_data: def_types.ModelTestData = testdata.INPUT_DATA_MODEL_DEFAULT,
+    verify_parameters: Optional[Dict[str, Any]] = None,
+) -> Dict[int, def_types.BenchmarkCase]:
+  """Build benchmark cases for multiple token generation lengths."""
+  benchmark_cases: Dict[int, def_types.BenchmarkCase] = {}
+  for gen_size in gen_sizes:
+    benchmark_case = def_types.BenchmarkCase.build(
+        model=model_dict[gen_size],
+        input_data=input_data,
+        verify_parameters=verify_parameters)
+    benchmark_cases[gen_size] = benchmark_case
+
+  return benchmark_cases
+
+
 def build_input_sequence_benchmark_cases(
     model_dict: Dict[int, def_types.Model],
     input_sequence_lengths: Sequence[int],
     input_data: def_types.ModelTestData = testdata.INPUT_DATA_MODEL_DEFAULT,
     verify_parameters: Optional[Dict[str, Any]] = None,
 ) -> Dict[int, def_types.BenchmarkCase]:
-  """Build benchmark cases for multiple batch sizes."""
+  """Build benchmark cases for multiple input sequences."""
   benchmark_cases: Dict[int, def_types.BenchmarkCase] = {}
   for input_sequence in input_sequence_lengths:
     benchmark_case = def_types.BenchmarkCase.build(

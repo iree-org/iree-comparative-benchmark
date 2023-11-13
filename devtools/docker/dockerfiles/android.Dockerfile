@@ -8,7 +8,7 @@
 
 FROM gcr.io/iree-oss/openxla-benchmark/base@sha256:1bf3e319465ec8fb465baae3f6ba9a5b09cb84a5349a675c671a552fc77f2251
 
-ARG NDK_VERSION=r25c
+ARG NDK_VERSION=r26b
 WORKDIR /install-ndk
 
 ENV ANDROID_NDK "/usr/src/android-ndk-${NDK_VERSION}"
