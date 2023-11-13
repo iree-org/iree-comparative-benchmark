@@ -135,7 +135,6 @@ jobs:
     env:
       BENCHMARK_ARTIFACTS_DIR: benchmark-artifacts-dir
       TARGET_DEVICE: c2-standard-60
-      IREE_RESULTS_FILE: jax-iree.json
       IREE_INSTALL_DIR: ${{ needs.build_iree.outputs.iree-install-dir }}
       IREE_INSTALL_DIR_ARCHIVE: ${{ needs.build_iree.outputs.iree-install-dir-archive }}
       IREE_INSTALL_DIR_GCS_ARTIFACT: ${{ needs.build_iree.outputs.iree-install-dir-gcs-artifact }}
@@ -151,19 +150,22 @@ jobs:
         id: compile
         env:
           IREE_COMPILE_PATH: ${{ env.IREE_INSTALL_DIR }}/bin/iree-compile
-          OOBI_TEMP_DIR: temp
+          IREE_TEMP_DIR: iree-temp
         run: |
           mkdir "${BENCHMARK_ARTIFACTS_DIR}"
-          mkdir "${OOBI_TEMP_DIR}"
+          mkdir "${IREE_TEMP_DIR}"
 
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
             --env IREE_COMPILE_PATH="${IREE_COMPILE_PATH}" \
-            --env OOBI_TEMP_DIR="${OOBI_TEMP_DIR}" \
+            --env OOBI_TEMP_DIR="${IREE_TEMP_DIR}" \
             "gcr.io/iree-oss/openxla-benchmark/base@sha256:1bf3e319465ec8fb465baae3f6ba9a5b09cb84a5349a675c671a552fc77f2251" \
               ./experimental/iree/compile_workloads.sh \
                   "${TARGET_DEVICE}" \
                   "${BENCHMARK_ARTIFACTS_DIR}"
       - name: "Benchmarking IREE:CPU"
+        env:
+          IREE_RESULTS_FILE: iree-${{ env.TARGET_DEVICE }}.json
+          RESULTS_GCS_DIR: ${{ env.BENCHMARK_GCS_DIR }}/${{ env.TARGET_DEVICE }}-results
         run: |
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
             --env OOBI_IREE_BENCHMARK_MODULE_PATH="${IREE_INSTALL_DIR}/bin/iree-benchmark-module" \
@@ -173,11 +175,24 @@ jobs:
               "${TARGET_DEVICE}" \
               "${BENCHMARK_ARTIFACTS_DIR}" \
               "${IREE_RESULTS_FILE}"
-      - name: "Uploading results"
+
+          gcloud storage cp "${IREE_RESULTS_FILE}" "${RESULTS_GCS_DIR}/"
+      - name: "Benchmarking TFLite:CPU"
         env:
+          TFLITE_TEMP_DIR: tflite-temp
+          TFLITE_RESULTS_FILE: tflite-${{ env.TARGET_DEVICE }}.json
           RESULTS_GCS_DIR: ${{ env.BENCHMARK_GCS_DIR }}/${{ env.TARGET_DEVICE }}-results
         run: |
-          gcloud storage cp "${IREE_RESULTS_FILE}" "${RESULTS_GCS_DIR}/"
+          mkdir "${TFLITE_TEMP_DIR}"
+
+          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+            --env OOBI_TEMP_DIR="${TFLITE_TEMP_DIR}" \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:1bf3e319465ec8fb465baae3f6ba9a5b09cb84a5349a675c671a552fc77f2251" \
+            ./experimental/tflite/benchmark_tflite_x86.sh \
+              "${TARGET_DEVICE}" \
+              "${TFLITE_RESULTS_FILE}"
+
+          gcloud storage cp "${TFLITE_RESULTS_FILE}" "${RESULTS_GCS_DIR}/"
 
 
   compile_models_for_android:
@@ -283,5 +298,16 @@ jobs:
               "${TARGET_DEVICE}" \
               "${IREE_ARTIFACTS_DIR_HTTPS_ARTIFACT}" \
               "${RESULTS_PATH}"
+
+          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+      - name: "Benchmarking TFLite on Android"
+        env:
+          TFLITE_RESULTS_JSON: tflite-${{ env.TARGET_DEVICE }}.json
+          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+        run: |
+          RESULTS_PATH="${RESULTS_DIR}/${TFLITE_RESULTS_JSON}"
+          ./experimental/tflite/benchmark_tflite_android.sh \
+            "${TARGET_DEVICE}" \
+            "${RESULTS_PATH}"
 
           gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"

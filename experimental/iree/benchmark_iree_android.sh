@@ -23,7 +23,7 @@ set -xeuo pipefail
 
 VENV_DIR="${OOBI_VENV_DIR:-iree-benchmarks.venv}"
 PYTHON="${PYTHON:-/usr/bin/python3}"
-ROOT_DIR="${OOBI_ANDROID_BENCHMARK_DIR:-/data/local/tmp/oobi_benchmarks}"
+ROOT_DIR="${OOBI_ANDROID_BENCHMARK_DIR:-/data/local/tmp/iree_benchmarks}"
 IREE_BENCHMARK_MODULE_PATH="${OOBI_IREE_BENCHMARK_MODULE_PATH:-/tmp/iree-build-android/tools/iree-benchmark-module}"
 IREE_RUN_MODULE_PATH="${OOBI_IREE_RUN_MODULE_PATH:-/tmp/iree-build-android/tools/iree-run-module}"
 TARGET_DEVICE="${1:-"${OOBI_TARGET_DEVICE}"}"
@@ -42,8 +42,8 @@ adb shell "su root sh ${ROOT_DIR}/set_android_scaling_governor.sh performance"
 #adb shell "su root sendhint -m DISPLAY_INACTIVE -e 0"
 adb shell "su root setprop persist.vendor.disable.thermal.control 1"
 
-adb push "${TD}/benchmark_lib.py" "${ROOT_DIR}"
-adb shell "chmod +x ${ROOT_DIR}/benchmark_lib.py"
+adb push "${TD}/../utils" "${ROOT_DIR}"
+adb shell "chmod +x ${ROOT_DIR}/utils/run_iree_benchmark.py"
 
 adb push "${IREE_RUN_MODULE_PATH}" "${ROOT_DIR}"
 IREE_RUN_MODULE_PATH="${ROOT_DIR}/iree-run-module"

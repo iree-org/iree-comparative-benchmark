@@ -16,21 +16,24 @@ import re
 import subprocess
 import sys
 
-import benchmark_lib
-
 from typing import Any, Dict, List
 
 # Add common_benchmark_suite dir to the search path.
 sys.path.insert(
     0, str(pathlib.Path(__file__).parents[2] / "common_benchmark_suite"))
-# Add comparative_benchmark dir to the search path.
-sys.path.insert(
-    0, str(pathlib.Path(__file__).parents[2] / "comparative_benchmark"))
 
 from openxla.benchmark import def_types, devices
 import openxla.benchmark.comparative_suite.jax.benchmark_definitions as jax_benchmark_definitions
 import openxla.benchmark.comparative_suite.tflite.benchmark_definitions as tflite_benchmark_definitions
+
+# Add comparative_benchmark dir to the search path.
+sys.path.insert(
+    0, str(pathlib.Path(__file__).parents[2] / "comparative_benchmark"))
 import utils
+
+sys.path.insert(0, str(pathlib.Path(__file__).parents[1] / "utils"))
+sys.path.insert(0, str(pathlib.Path(__file__).parents[2]))
+from experimental.utils import run_iree_benchmark
 
 ALL_DEVICE_NAMES = [device.name for device in devices.ALL_DEVICES]
 
@@ -112,7 +115,7 @@ def benchmark_on_x86(target_device: def_types.DeviceSpec,
   command = [str(iree_benchmark_module_path)] + get_common_command_parameters(
       target_device, artifacts_dir,
       task_topology_cpu_ids) + ["--print_statistics"]
-  metrics = benchmark_lib.run_benchmark_command(" ".join(command), verbose)
+  metrics = run_iree_benchmark.run_benchmark_command(" ".join(command), verbose)
   metrics["accuracy"] = is_accurate
   return metrics
 
@@ -157,8 +160,8 @@ def benchmark_on_android(target_device: def_types.DeviceSpec,
                  check=True,
                  capture_output=True)
 
-  benchmark_lib_path = root_dir / "benchmark_lib.py"
-  command = f"adb shell su root /data/data/com.termux/files/usr/bin/python {benchmark_lib_path} --command_path=\"{command_path}\""
+  benchmark_binary_path = root_dir / "utils" / "run_iree_benchmark.py"
+  command = f"adb shell su root /data/data/com.termux/files/usr/bin/python {benchmark_binary_path} --command_path=\"{command_path}\""
   if verbose:
     command += " --verbose"
 
@@ -192,6 +195,8 @@ def benchmark_one(benchmark: def_types.BenchmarkCase,
       "framework": str(model.model_impl.framework_type),
       "device": target_device.name,
       "num_threads": num_threads,
+      "task_topology_cpu_ids": task_topology_cpu_ids,
+      "compiler": "iree",
       "tags": model.model_impl.tags + model.tags,
   }
 
