@@ -69,7 +69,7 @@ declare -a BENCHMARK_NAMES=(
 
 # Thread-to-taskset config. Here we run 1 thread on the largest core, and 4 threads on the 4 largest (2 big, 2 medium) cores.
 # Assumes the benchmarks run on Pixel-6-Pro.
-THREAD_CONFIG="{1: '80', 4: 'F0'}"
+THREAD_CONFIG="{1: '80', 4: 'F0', 5: '1F0'}"
 ITERATIONS=5
 
 for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
@@ -83,3 +83,6 @@ for benchmark_name in "${BENCHMARK_NAMES[@]}"; do
     --root_dir="${ROOT_DIR}" \
     --verbose
 done
+
+# Cleanup.
+adb shell rm -rf "${ROOT_DIR}"
