@@ -1,0 +1,165 @@
+# Copyright 2023 The OpenXLA Authors
+#
+# Licensed under the Apache License v2.0 with LLVM Exceptions.
+# See https://llvm.org/LICENSE.txt for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# Mobile Comparative Benchmarks Workflow.
+
+name: Mobile Comparative Benchmarks
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Scheduled to run at 09:00 UTC and 21:00 UTC.
+    - cron: '0 09,21 * * *'
+
+concurrency:
+  # A PR number if a pull request and otherwise the commit hash. This cancels
+  # queued and in-progress runs for the same PR (presubmit) or commit
+  # (postsubmit).
+  group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
+  cancel-in-progress: true
+
+env:
+  GCS_DIR: gs://openxla-github-actions-${{ github.event_name == 'pull_request' && 'presubmit' || 'postsubmit' }}-artifacts/${{ github.run_id }}/${{ github.run_attempt }}
+
+jobs:
+  setup:
+    runs-on: ubuntu-22.04
+    outputs:
+      runner-group: ${{ steps.configure.outputs.runner-group }}
+      benchmark-gcs-dir: ${{ steps.configure.outputs.benchmark-gcs-dir }}
+    steps:
+      - name: "Checking out PR repository"
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
+      - name: "Configuring CI options"
+        id: configure
+        env:
+          RUNNER_GROUP: ${{ github.event_name == 'pull_request' && 'presubmit' || 'postsubmit' }}
+        run: |
+          # Just informative logging. There should only be two commits in the
+          # history here, but limiting the depth helps when copying from a local
+          # repo instead of using checkout, e.g. with
+          # https://github.com/nektos/act where there will be more.
+          git log --oneline --graph --max-count=3
+          # Workflow jobs can't access `env` in `runs-on`, so we need to make
+          # `runner-group` a job output variable.
+          echo "runner-group=${RUNNER_GROUP}" > "${GITHUB_OUTPUT}"
+
+          # For presubmit testing, the result artifacts are uploaded to the
+          # temporary workflow GCS dir. In postsubmit, the result artifacts are
+          # uploaded to the comparative benchmark GCS dir.
+          if [[ "${RUNNER_GROUP}" == "presubmit" ]]; then
+            BENCHMARK_GCS_DIR="${GCS_DIR}/comparative-benchmark-artifacts"
+          else
+            BENCHMARK_GCS_DIR="gs://comparative-benchmark-artifacts/$(date +'%Y-%m-%d').$(date +'%s')"
+          fi
+          echo "benchmark-gcs-dir=${BENCHMARK_GCS_DIR}" >> "${GITHUB_OUTPUT}"
+
+  build_iree:
+    needs: setup
+    runs-on:
+      - self-hosted  # must come first
+      - runner-group=${{ needs.setup.outputs.runner-group }}
+      - environment=prod
+      - cpu
+      - os-family=Linux
+    env:
+      IREE_SOURCE_DIR: iree-src
+      IREE_INSTALL_DIR: iree-install
+      ANDROID_PLATFORM_VERSION: 31
+      X86_BUILD_DIR: iree-build
+      ANDROID_BUILD_DIR: iree-build-android
+      BENCHMARK_GCS_DIR: ${{ needs.setup.outputs.benchmark-gcs-dir }}
+    outputs:
+      iree-install-dir: ${{ env.IREE_INSTALL_DIR }}
+      iree-install-dir-archive: ${{ steps.archive.outputs.iree-install-dir-archive }}
+      iree-install-dir-gcs-artifact: ${{ steps.upload.outputs.iree-install-dir-gcs-artifact }}
+    steps:
+      - name: "Checking out PR repository"
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
+      - name: "Building IREE"
+        run: |
+          mkdir -p "${IREE_SOURCE_DIR}"
+          mkdir -p "${X86_BUILD_DIR}"
+          mkdir -p "${ANDROID_BUILD_DIR}"
+
+          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+              --env IREE_SOURCE_DIR="${IREE_SOURCE_DIR}" \
+              --env IREE_INSTALL_DIR="${IREE_INSTALL_DIR}" \
+              --env ANDROID_PLATFORM_VERSION="${ANDROID_PLATFORM_VERSION}" \
+              "gcr.io/iree-oss/openxla-benchmark/android@sha256:34f140fcf806f64f5d0492dfc5af774ea440406264cd68c0405e23a69cbe6d93" \
+                ./experimental/iree/build_iree.sh \
+                    "${X86_BUILD_DIR}" \
+                    "${ANDROID_BUILD_DIR}"
+      - name: "Creating archives"
+        id: archive
+        env:
+          IREE_INSTALL_DIR_ARCHIVE: ${{ env.IREE_INSTALL_DIR }}.tgz
+        run: |
+          tar -zcvf "${IREE_INSTALL_DIR_ARCHIVE}" -C "${X86_BUILD_DIR}" "${IREE_INSTALL_DIR}"
+          echo "iree-install-dir-archive=${IREE_INSTALL_DIR_ARCHIVE}" >> "${GITHUB_OUTPUT}"
+      - name: "Uploading archives"
+        id: upload
+        env:
+          IREE_INSTALL_DIR_ARCHIVE: ${{ steps.archive.outputs.iree-install-dir-archive }}
+          IREE_INSTALL_DIR_GCS_ARTIFACT: ${{ env.BENCHMARK_GCS_DIR }}/${{ steps.archive.outputs.iree-install-dir-archive }}
+        run: |
+          gcloud storage cp "${IREE_INSTALL_DIR_ARCHIVE}" "${IREE_INSTALL_DIR_GCS_ARTIFACT}"
+          echo "iree-install-dir-gcs-artifact=${IREE_INSTALL_DIR_GCS_ARTIFACT}" >> "${GITHUB_OUTPUT}"
+
+  # We compile and benchmark on the same machine because it takes too much time to compress and upload compiled artifacts.
+  compile_and_benchmark_on_c2-standard-60:
+    needs: [setup, build_iree]
+    runs-on:
+      - self-hosted  # must come first
+      - runner-group=${{ needs.setup.outputs.runner-group }}
+      - environment=prod
+      - machine-type=c2-standard-60
+    env:
+      BENCHMARK_ARTIFACTS_DIR: benchmark-artifacts-dir
+      TARGET_DEVICE: c2-standard-60
+      IREE_RESULTS_FILE: jax-iree.json
+      IREE_INSTALL_DIR: ${{ needs.build_iree.outputs.iree-install-dir }}
+      IREE_INSTALL_DIR_ARCHIVE: ${{ needs.build_iree.outputs.iree-install-dir-archive }}
+      IREE_INSTALL_DIR_GCS_ARTIFACT: ${{ needs.build_iree.outputs.iree-install-dir-gcs-artifact }}
+      BENCHMARK_GCS_DIR: ${{ needs.setup.outputs.benchmark-gcs-dir }}
+    steps:
+      - name: "Checking out PR repository"
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
+      - name: "Downloading and unpacking IREE tools"
+        run: |
+          gcloud storage cp "${IREE_INSTALL_DIR_GCS_ARTIFACT}" "${IREE_INSTALL_DIR_ARCHIVE}"
+          tar -xvf "${IREE_INSTALL_DIR_ARCHIVE}"
+      - name: "Compiling workloads"
+        id: compile
+        env:
+          IREE_COMPILE_PATH: ${{ env.IREE_INSTALL_DIR }}/bin/iree-compile
+          OOBI_TEMP_DIR: temp
+        run: |
+          mkdir "${BENCHMARK_ARTIFACTS_DIR}"
+          mkdir "${OOBI_TEMP_DIR}"
+
+          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+            --env IREE_COMPILE_PATH="${IREE_COMPILE_PATH}" \
+            --env OOBI_TEMP_DIR="${OOBI_TEMP_DIR}" \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:1bf3e319465ec8fb465baae3f6ba9a5b09cb84a5349a675c671a552fc77f2251" \
+              ./experimental/iree/compile_workloads.sh \
+                  "${TARGET_DEVICE}" \
+                  "${BENCHMARK_ARTIFACTS_DIR}"
+      - name: "Benchmarking IREE:CPU"
+        run: |
+          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+            --env OOBI_IREE_BENCHMARK_MODULE_PATH="${IREE_INSTALL_DIR}/bin/iree-benchmark-module" \
+            --env OOBI_IREE_RUN_MODULE_PATH="${IREE_INSTALL_DIR}/bin/iree-run-module" \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:1bf3e319465ec8fb465baae3f6ba9a5b09cb84a5349a675c671a552fc77f2251" \
+            ./experimental/iree/benchmark_iree.sh \
+              "${TARGET_DEVICE}" \
+              "${BENCHMARK_ARTIFACTS_DIR}" \
+              "${IREE_RESULTS_FILE}"
+      - name: "Uploading results"
+        env:
+          RESULTS_GCS_DIR: ${{ env.BENCHMARK_GCS_DIR }}/${{ env.TARGET_DEVICE }}-results
+        run: |
+          gcloud storage cp "${IREE_RESULTS_FILE}" "${RESULTS_GCS_DIR}/"
