@@ -14,7 +14,7 @@ import pathlib
 import re
 import subprocess
 import sys
-from typing import Any, Dict, Sequence, Tuple
+from typing import Any, Dict, List, Sequence, Tuple
 
 # Add common_benchmark_suite dir to the search path.
 sys.path.insert(
@@ -65,14 +65,17 @@ def _download_artifacts_android(benchmarks: Sequence[def_types.BenchmarkCase],
                                                   tflite_model_path, verbose)
 
 
-def _run_benchmark_command_x86(command: str, verbose: bool):
-  return run_tflite_benchmark.run_benchmark_command(command, verbose)
+def _run_benchmark_command_x86(command: List[str], verbose: bool):
+  metrics = run_tflite_benchmark.run_benchmark_command(command, verbose)
+  metrics["command"] = " ".join(command)
+  return metrics
 
 
-def _run_benchmark_command_android(command: str, root_dir: pathlib.Path,
+def _run_benchmark_command_android(command: List[str], root_dir: pathlib.Path,
                                    verbose: bool):
   command_path = root_dir / "command.txt"
-  subprocess.run(f"adb shell \"echo '{command}' > {command_path}\"",
+  command_str = " ".join(command)
+  subprocess.run(f"adb shell \"echo '{command_str}' > {command_path}\"",
                  shell=True,
                  check=True,
                  capture_output=True)
@@ -93,6 +96,7 @@ def _run_benchmark_command_android(command: str, root_dir: pathlib.Path,
     metrics = ast.literal_eval(dictionary_string)
   else:
     metrics = {"error": f"Could not parse results"}
+  metrics["command"] = command_str
 
   return metrics
 
@@ -113,9 +117,13 @@ def _benchmark(benchmark: def_types.BenchmarkCase,
                num_threads: int, taskset: str, num_iterations: int,
                verbose: bool) -> utils.BenchmarkResult:
   model = benchmark.model
+  tflite_model = model_utils.create_model_obj(benchmark.model)
+  tflite_model_path = root_dir / model.name / tflite_model.model_filename
+
   benchmark_definition = {
       "benchmark_name": benchmark.name,
       "model_name": model.name,
+      "model_source": tflite_model.model_uri,
       "framework": str(model.model_impl.framework_type),
       "device": target_device.name,
       "num_threads": num_threads,
@@ -123,9 +131,6 @@ def _benchmark(benchmark: def_types.BenchmarkCase,
       "compiler": "tflite",
       "tags": model.model_impl.tags + model.tags,
   }
-
-  tflite_model = model_utils.create_model_obj(benchmark.model)
-  tflite_model_path = root_dir / model.name / tflite_model.model_filename
 
   command = []
   # Check if taskset is empty.
@@ -137,12 +142,11 @@ def _benchmark(benchmark: def_types.BenchmarkCase,
       f"--num_threads={num_threads}",
       f"--num_runs={num_iterations}",
   ]
-  command_str = " ".join(command)
 
   if target_device in devices.mobile_devices.ALL_DEVICES:
-    metrics = _run_benchmark_command_android(command_str, root_dir, verbose)
+    metrics = _run_benchmark_command_android(command, root_dir, verbose)
   else:
-    metrics = _run_benchmark_command_x86(command_str, verbose)
+    metrics = _run_benchmark_command_x86(command, verbose)
 
   return utils.BenchmarkResult(
       definition=benchmark_definition,

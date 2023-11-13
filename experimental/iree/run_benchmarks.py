@@ -115,8 +115,9 @@ def benchmark_on_x86(target_device: def_types.DeviceSpec,
   command = [str(iree_benchmark_module_path)] + get_common_command_parameters(
       target_device, artifacts_dir,
       task_topology_cpu_ids) + ["--print_statistics"]
-  metrics = run_iree_benchmark.run_benchmark_command(" ".join(command), verbose)
+  metrics = run_iree_benchmark.run_benchmark_command(command, verbose)
   metrics["accuracy"] = is_accurate
+  metrics["command"] = " ".join(command)
   return metrics
 
 
@@ -178,6 +179,7 @@ def benchmark_on_android(target_device: def_types.DeviceSpec,
     metrics = {"error": f"Could not parse results"}
 
   metrics["accuracy"] = is_accurate
+  metrics["command"] = benchmark_command
   return metrics
 
 

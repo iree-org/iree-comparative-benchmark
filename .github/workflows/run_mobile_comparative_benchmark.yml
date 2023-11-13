@@ -30,6 +30,7 @@ jobs:
     outputs:
       runner-group: ${{ steps.configure.outputs.runner-group }}
       benchmark-gcs-dir: ${{ steps.configure.outputs.benchmark-gcs-dir }}
+      run-timestamp: ${{ steps.configure.outputs.run-timestamp }}
     steps:
       - name: "Checking out PR repository"
         uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
@@ -47,13 +48,16 @@ jobs:
           # `runner-group` a job output variable.
           echo "runner-group=${RUNNER_GROUP}" > "${GITHUB_OUTPUT}"
 
+          RUN_TIMESTAMP="$(date +'%Y-%m-%d').$(date +'%s')"
+          echo "run-timestamp=${RUN_TIMESTAMP}" >> "${GITHUB_OUTPUT}"
+
           # For presubmit testing, the result artifacts are uploaded to the
           # temporary workflow GCS dir. In postsubmit, the result artifacts are
           # uploaded to the comparative benchmark GCS dir.
           if [[ "${RUNNER_GROUP}" == "presubmit" ]]; then
             BENCHMARK_GCS_DIR="${GCS_DIR}/comparative-benchmark-artifacts"
           else
-            BENCHMARK_GCS_DIR="gs://comparative-benchmark-artifacts/$(date +'%Y-%m-%d').$(date +'%s')"
+            BENCHMARK_GCS_DIR="gs://comparative-benchmark-artifacts/${RUN_TIMESTAMP}"
           fi
           echo "benchmark-gcs-dir=${BENCHMARK_GCS_DIR}" >> "${GITHUB_OUTPUT}"
 
@@ -163,6 +167,7 @@ jobs:
                   "${TARGET_DEVICE}" \
                   "${BENCHMARK_ARTIFACTS_DIR}"
       - name: "Benchmarking IREE:CPU"
+        id: benchmark-iree
         env:
           IREE_RESULTS_FILE: iree-${{ env.TARGET_DEVICE }}.json
           RESULTS_GCS_DIR: ${{ env.BENCHMARK_GCS_DIR }}/${{ env.TARGET_DEVICE }}-results
@@ -177,7 +182,11 @@ jobs:
               "${IREE_RESULTS_FILE}"
 
           gcloud storage cp "${IREE_RESULTS_FILE}" "${RESULTS_GCS_DIR}/"
+
+          echo "iree-results-file=${IREE_RESULTS_FILE}" >> "${GITHUB_OUTPUT}"
+          echo "iree-results-gcs-path=${RESULTS_GCS_DIR}/${IREE_RESULTS_FILE}" >> "${GITHUB_OUTPUT}"
       - name: "Benchmarking TFLite:CPU"
+        id: benchmark-tflite
         env:
           TFLITE_TEMP_DIR: tflite-temp
           TFLITE_RESULTS_FILE: tflite-${{ env.TARGET_DEVICE }}.json
@@ -193,6 +202,38 @@ jobs:
               "${TFLITE_RESULTS_FILE}"
 
           gcloud storage cp "${TFLITE_RESULTS_FILE}" "${RESULTS_GCS_DIR}/"
+
+          echo "tflite-results-file=${TFLITE_RESULTS_FILE}" >> "${GITHUB_OUTPUT}"
+          echo "tflite-results-gcs-path=${RESULTS_GCS_DIR}/${TFLITE_RESULTS_FILE}" >> "${GITHUB_OUTPUT}"
+      - name: "Generating report"
+        env:
+          IREE_RESULTS_FILE: ${{ steps.benchmark-iree.outputs.iree-results-file }}
+          IREE_RESULTS_GCS_PATH: ${{ steps.benchmark-iree.outputs.iree-results-gcs-path }}
+          TFLITE_RESULTS_FILE: ${{ steps.benchmark-tflite.outputs.tflite-results-file }}
+          TFLITE_RESULTS_GCS_PATH: ${{ steps.benchmark-tflite.outputs.tflite-results-gcs-path }}
+          SUMMARY_HTML: server_summary.html
+          SUMMARY_HTML_GCS_PATH: "gs://tflite-benchmark-artifacts/server"
+          RUN_TIMESTAMP: ${{ needs.setup.outputs.run-timestamp }}
+        run: |
+          gcloud storage cp "${IREE_RESULTS_GCS_PATH}" "${IREE_RESULTS_FILE}"
+          gcloud storage cp "${TFLITE_RESULTS_GCS_PATH}" "${TFLITE_RESULTS_FILE}"
+
+          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:1bf3e319465ec8fb465baae3f6ba9a5b09cb84a5349a675c671a552fc77f2251" \
+            ./experimental/utils/generate_iree_vs_tflite_report.sh \
+              "${IREE_RESULTS_FILE}" \
+              "${TFLITE_RESULTS_FILE}" \
+              "${SUMMARY_HTML}"
+
+          gcloud storage cp "${SUMMARY_HTML}" "${BENCHMARK_GCS_DIR}/${SUMMARY_HTML}"
+
+          gcloud storage cp "${IREE_RESULTS_FILE}" "${SUMMARY_HTML_GCS_PATH}/latest/iree.json"
+          gcloud storage cp "${TFLITE_RESULTS_FILE}" "${SUMMARY_HTML_GCS_PATH}/latest/tflite.json"
+          gcloud storage cp "${SUMMARY_HTML}" "${SUMMARY_HTML_GCS_PATH}/latest/${SUMMARY_HTML}"
+
+          gcloud storage cp "${IREE_RESULTS_FILE}" "${SUMMARY_HTML_GCS_PATH}/${RUN_TIMESTAMP}/${IREE_RESULTS_FILE}"
+          gcloud storage cp "${TFLITE_RESULTS_FILE}" "${SUMMARY_HTML_GCS_PATH}/${RUN_TIMESTAMP}/${TFLITE_RESULTS_FILE}"
+          gcloud storage cp "${SUMMARY_HTML}" "${SUMMARY_HTML_GCS_PATH}/${RUN_TIMESTAMP}/${SUMMARY_HTML}"
 
 
   compile_models_for_android:
@@ -284,11 +325,12 @@ jobs:
           gcloud storage cp "${IREE_ANDROID_TOOLS_DIR_GCS_ARTIFACT}" "${IREE_ANDROID_TOOLS_DIR_ARCHIVE}"
           tar -xvf "${IREE_ANDROID_TOOLS_DIR_ARCHIVE}"
       - name: "Benchmarking IREE on Android"
+        id: benchmark-iree
         env:
-          IREE_RESULTS_JSON: iree-${{ env.TARGET_DEVICE }}.json
+          IREE_RESULTS_FILE: iree-${{ env.TARGET_DEVICE }}.json
           RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
         run: |
-          RESULTS_PATH="${RESULTS_DIR}/${IREE_RESULTS_JSON}"
+          RESULTS_PATH="${RESULTS_DIR}/${IREE_RESULTS_FILE}"
           # We use the `https` path instead of `gs` since artifact streaming only works with `https`.
           IREE_ARTIFACTS_DIR_HTTPS_ARTIFACT=$(echo "${IREE_ARTIFACTS_DIR_GCS_ARTIFACT}" | sed -E 's/gs:\/\/(.*)/https:\/\/storage.googleapis.com\/\1/')
 
@@ -300,14 +342,49 @@ jobs:
               "${RESULTS_PATH}"
 
           gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+
+          echo "iree-results-file=${IREE_RESULTS_FILE}" >> "${GITHUB_OUTPUT}"
+          echo "iree-results-gcs-path=${RESULTS_GCS_DIR}/${IREE_RESULTS_FILE}" >> "${GITHUB_OUTPUT}"
       - name: "Benchmarking TFLite on Android"
+        id: benchmark-tflite
         env:
-          TFLITE_RESULTS_JSON: tflite-${{ env.TARGET_DEVICE }}.json
+          TFLITE_RESULTS_FILE: tflite-${{ env.TARGET_DEVICE }}.json
           RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
         run: |
-          RESULTS_PATH="${RESULTS_DIR}/${TFLITE_RESULTS_JSON}"
+          RESULTS_PATH="${RESULTS_DIR}/${TFLITE_RESULTS_FILE}"
           ./experimental/tflite/benchmark_tflite_android.sh \
             "${TARGET_DEVICE}" \
             "${RESULTS_PATH}"
 
           gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+
+          echo "tflite-results-file=${TFLITE_RESULTS_FILE}" >> "${GITHUB_OUTPUT}"
+          echo "tflite-results-gcs-path=${RESULTS_GCS_DIR}/${TFLITE_RESULTS_FILE}" >> "${GITHUB_OUTPUT}"
+      - name: "Generating report"
+        env:
+          IREE_RESULTS_FILE: ${{ steps.benchmark-iree.outputs.iree-results-file }}
+          IREE_RESULTS_GCS_PATH: ${{ steps.benchmark-iree.outputs.iree-results-gcs-path }}
+          TFLITE_RESULTS_FILE: ${{ steps.benchmark-tflite.outputs.tflite-results-file }}
+          TFLITE_RESULTS_GCS_PATH: ${{ steps.benchmark-tflite.outputs.tflite-results-gcs-path }}
+          SUMMARY_HTML: mobile_summary.html
+          SUMMARY_HTML_GCS_PATH: "gs://tflite-benchmark-artifacts/mobile"
+          BENCHMARK_GCS_DIR: ${{ needs.setup.outputs.benchmark-gcs-dir }}
+          RUN_TIMESTAMP: ${{ needs.setup.outputs.run-timestamp }}
+        run: |
+          gcloud storage cp "${IREE_RESULTS_GCS_PATH}" "${IREE_RESULTS_FILE}"
+          gcloud storage cp "${TFLITE_RESULTS_GCS_PATH}" "${TFLITE_RESULTS_FILE}"
+
+          ./experimental/utils/generate_iree_vs_tflite_report.sh \
+              "${IREE_RESULTS_FILE}" \
+              "${TFLITE_RESULTS_FILE}" \
+              "${SUMMARY_HTML}"
+
+          gcloud storage cp "${SUMMARY_HTML}" "${BENCHMARK_GCS_DIR}/${SUMMARY_HTML}"
+
+          gcloud storage cp "${IREE_RESULTS_FILE}" "${SUMMARY_HTML_GCS_PATH}/latest/iree.json"
+          gcloud storage cp "${TFLITE_RESULTS_FILE}" "${SUMMARY_HTML_GCS_PATH}/latest/tflite.json"
+          gcloud storage cp "${SUMMARY_HTML}" "${SUMMARY_HTML_GCS_PATH}/latest/${SUMMARY_HTML}"
+
+          gcloud storage cp "${IREE_RESULTS_FILE}" "${SUMMARY_HTML_GCS_PATH}/${RUN_TIMESTAMP}/${IREE_RESULTS_FILE}"
+          gcloud storage cp "${TFLITE_RESULTS_FILE}" "${SUMMARY_HTML_GCS_PATH}/${RUN_TIMESTAMP}/${TFLITE_RESULTS_FILE}"
+          gcloud storage cp "${SUMMARY_HTML}" "${SUMMARY_HTML_GCS_PATH}/${RUN_TIMESTAMP}/${SUMMARY_HTML}"
