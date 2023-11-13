@@ -34,7 +34,7 @@ VENV_DIR="${VENV_DIR}" PYTHON="${PYTHON}" source "${TD}/setup_venv.sh"
 
 "${TD}/../../comparative_benchmark/scripts/create_results_json.sh" "${OUTPUT_PATH}"
 
-THREADS="1,8,15,30"
+THREAD_CONFIG="{1: '0', 8: '0,1,2,3,4,5,6,7', 15: '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14', 30: '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29'}"
 
 "${TD}/run_benchmarks.py" \
   --target_device="${TARGET_DEVICE}" \
@@ -42,5 +42,5 @@ THREADS="1,8,15,30"
   --artifact_dir="${COMPILED_ARTIFACTS_PATH}" \
   --iree_run_module_path="${IREE_RUN_MODULE_PATH}" \
   --iree_benchmark_module_path="${IREE_BENCHMARK_MODULE_PATH}" \
-  --threads="${THREADS}" \
+  --thread_config="${THREAD_CONFIG}" \
   --verbose

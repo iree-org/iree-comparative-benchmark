@@ -57,6 +57,7 @@ jobs:
           fi
           echo "benchmark-gcs-dir=${BENCHMARK_GCS_DIR}" >> "${GITHUB_OUTPUT}"
 
+
   build_iree:
     needs: setup
     runs-on:
@@ -68,6 +69,7 @@ jobs:
     env:
       IREE_SOURCE_DIR: iree-src
       IREE_INSTALL_DIR: iree-install
+      IREE_ANDROID_TOOLS_DIR: tools
       ANDROID_PLATFORM_VERSION: 31
       X86_BUILD_DIR: iree-build
       ANDROID_BUILD_DIR: iree-build-android
@@ -76,6 +78,9 @@ jobs:
       iree-install-dir: ${{ env.IREE_INSTALL_DIR }}
       iree-install-dir-archive: ${{ steps.archive.outputs.iree-install-dir-archive }}
       iree-install-dir-gcs-artifact: ${{ steps.upload.outputs.iree-install-dir-gcs-artifact }}
+      iree-android-tools-dir: ${{ env.IREE_ANDROID_TOOLS_DIR }}
+      iree-android-tools-dir-archive: ${{ steps.archive.outputs.iree-android-tools-dir-archive }}
+      iree-android-tools-dir-gcs-artifact: ${{ steps.upload.outputs.iree-android-tools-dir-gcs-artifact }}
     steps:
       - name: "Checking out PR repository"
         uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
@@ -97,17 +102,27 @@ jobs:
         id: archive
         env:
           IREE_INSTALL_DIR_ARCHIVE: ${{ env.IREE_INSTALL_DIR }}.tgz
+          IREE_ANDROID_TOOLS_DIR_ARCHIVE: ${{ env.IREE_ANDROID_TOOLS_DIR }}.tgz
         run: |
           tar -zcvf "${IREE_INSTALL_DIR_ARCHIVE}" -C "${X86_BUILD_DIR}" "${IREE_INSTALL_DIR}"
           echo "iree-install-dir-archive=${IREE_INSTALL_DIR_ARCHIVE}" >> "${GITHUB_OUTPUT}"
+
+          tar -zcvf "${IREE_ANDROID_TOOLS_DIR_ARCHIVE}" -C "${ANDROID_BUILD_DIR}" "${IREE_ANDROID_TOOLS_DIR}"
+          echo "iree-android-tools-dir-archive=${IREE_ANDROID_TOOLS_DIR_ARCHIVE}" >> "${GITHUB_OUTPUT}"
       - name: "Uploading archives"
         id: upload
         env:
           IREE_INSTALL_DIR_ARCHIVE: ${{ steps.archive.outputs.iree-install-dir-archive }}
           IREE_INSTALL_DIR_GCS_ARTIFACT: ${{ env.BENCHMARK_GCS_DIR }}/${{ steps.archive.outputs.iree-install-dir-archive }}
+          IREE_ANDROID_TOOLS_DIR_ARCHIVE: ${{ steps.archive.outputs.iree-android-tools-dir-archive }}
+          IREE_ANDROID_TOOLS_DIR_GCS_ARTIFACT: ${{ env.BENCHMARK_GCS_DIR }}/${{ steps.archive.outputs.iree-android-tools-dir-archive }}
         run: |
           gcloud storage cp "${IREE_INSTALL_DIR_ARCHIVE}" "${IREE_INSTALL_DIR_GCS_ARTIFACT}"
           echo "iree-install-dir-gcs-artifact=${IREE_INSTALL_DIR_GCS_ARTIFACT}" >> "${GITHUB_OUTPUT}"
+
+          gcloud storage cp "${IREE_ANDROID_TOOLS_DIR_ARCHIVE}" "${IREE_ANDROID_TOOLS_DIR_GCS_ARTIFACT}"
+          echo "iree-android-tools-dir-gcs-artifact=${IREE_ANDROID_TOOLS_DIR_GCS_ARTIFACT}" >> "${GITHUB_OUTPUT}"
+
 
   # We compile and benchmark on the same machine because it takes too much time to compress and upload compiled artifacts.
   compile_and_benchmark_on_c2-standard-60:
@@ -154,7 +169,7 @@ jobs:
             --env OOBI_IREE_BENCHMARK_MODULE_PATH="${IREE_INSTALL_DIR}/bin/iree-benchmark-module" \
             --env OOBI_IREE_RUN_MODULE_PATH="${IREE_INSTALL_DIR}/bin/iree-run-module" \
             "gcr.io/iree-oss/openxla-benchmark/base@sha256:1bf3e319465ec8fb465baae3f6ba9a5b09cb84a5349a675c671a552fc77f2251" \
-            ./experimental/iree/benchmark_iree.sh \
+            ./experimental/iree/benchmark_iree_x86.sh \
               "${TARGET_DEVICE}" \
               "${BENCHMARK_ARTIFACTS_DIR}" \
               "${IREE_RESULTS_FILE}"
@@ -163,3 +178,110 @@ jobs:
           RESULTS_GCS_DIR: ${{ env.BENCHMARK_GCS_DIR }}/${{ env.TARGET_DEVICE }}-results
         run: |
           gcloud storage cp "${IREE_RESULTS_FILE}" "${RESULTS_GCS_DIR}/"
+
+
+  compile_models_for_android:
+    needs: [setup, build_iree]
+    runs-on:
+      - self-hosted  # must come first
+      - runner-group=${{ needs.setup.outputs.runner-group }}
+      - environment=prod
+      - cpu
+      - os-family=Linux
+    env:
+      BENCHMARK_ARTIFACTS_DIR: android-benchmark-artifacts-dir
+      TARGET_DEVICE: pixel-6-pro
+      IREE_INSTALL_DIR: ${{ needs.build_iree.outputs.iree-install-dir }}
+      IREE_INSTALL_DIR_ARCHIVE: ${{ needs.build_iree.outputs.iree-install-dir-archive }}
+      IREE_INSTALL_DIR_GCS_ARTIFACT: ${{ needs.build_iree.outputs.iree-install-dir-gcs-artifact }}
+      BENCHMARK_GCS_DIR: ${{ needs.setup.outputs.benchmark-gcs-dir }}
+    outputs:
+      benchmark-artifacts-dir: ${{ env.BENCHMARK_ARTIFACTS_DIR }}
+      benchmark-artifacts-dir-archive: ${{ steps.archive.outputs.benchmark-artifacts-dir-archive }}
+      benchmark-artifacts-dir-gcs-artifact: ${{ steps.upload.outputs.benchmark-artifacts-dir-gcs-artifact }}
+    steps:
+      - name: "Checking out PR repository"
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
+      - name: "Downloading and unpacking IREE tools"
+        run: |
+          gcloud storage cp "${IREE_INSTALL_DIR_GCS_ARTIFACT}" "${IREE_INSTALL_DIR_ARCHIVE}"
+          tar -xvf "${IREE_INSTALL_DIR_ARCHIVE}"
+      - name: "Compiling workloads"
+        id: compile
+        env:
+          IREE_COMPILE_PATH: ${{ env.IREE_INSTALL_DIR }}/bin/iree-compile
+          OOBI_TEMP_DIR: temp
+        run: |
+          mkdir "${BENCHMARK_ARTIFACTS_DIR}"
+          mkdir "${OOBI_TEMP_DIR}"
+
+          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+            --env IREE_COMPILE_PATH="${IREE_COMPILE_PATH}" \
+            --env OOBI_TEMP_DIR="${OOBI_TEMP_DIR}" \
+            "gcr.io/iree-oss/openxla-benchmark/android@sha256:34f140fcf806f64f5d0492dfc5af774ea440406264cd68c0405e23a69cbe6d93" \
+              ./experimental/iree/compile_workloads.sh \
+                  "${TARGET_DEVICE}" \
+                  "${BENCHMARK_ARTIFACTS_DIR}"
+      - name: "Creating archives"
+        id: archive
+        env:
+          BENCHMARK_ARTIFACTS_DIR_ARCHIVE: ${{ env.BENCHMARK_ARTIFACTS_DIR }}.tgz
+        run: |
+          tar -cvf "${BENCHMARK_ARTIFACTS_DIR_ARCHIVE}" "${BENCHMARK_ARTIFACTS_DIR}"
+          echo "benchmark-artifacts-dir-archive=${BENCHMARK_ARTIFACTS_DIR_ARCHIVE}" >> "${GITHUB_OUTPUT}"
+      - name: "Uploading archives"
+        id: upload
+        env:
+          BENCHMARK_ARTIFACTS_DIR_ARCHIVE: ${{ steps.archive.outputs.benchmark-artifacts-dir-archive }}
+          BENCHMARK_ARTIFACTS_DIR_GCS_ARTIFACT: ${{ env.BENCHMARK_GCS_DIR }}/${{ steps.archive.outputs.benchmark-artifacts-dir-archive }}
+        run: |
+          gcloud storage cp "${BENCHMARK_ARTIFACTS_DIR_ARCHIVE}" "${BENCHMARK_ARTIFACTS_DIR_GCS_ARTIFACT}"
+          echo "benchmark-artifacts-dir-gcs-artifact=${BENCHMARK_ARTIFACTS_DIR_GCS_ARTIFACT}" >> "${GITHUB_OUTPUT}"
+
+
+  benchmark_on_pixel-6-pro:
+    needs: [setup, build_iree, compile_models_for_android]
+    runs-on:
+      - self-hosted  # must come first
+      - runner-group=${{ needs.setup.outputs.runner-group }}
+      - environment=prod
+      - machine-type=pixel-6-pro
+    env:
+      BENCHMARK_GCS_DIR: ${{ needs.setup.outputs.benchmark-gcs-dir }}
+      RESULTS_DIR: results-dir
+      TARGET_DEVICE: pixel-6-pro
+      IREE_ANDROID_TOOLS_DIR: ${{ needs.build_iree.outputs.iree-android-tools-dir }}
+      IREE_ANDROID_TOOLS_DIR_ARCHIVE: ${{ needs.build_iree.outputs.iree-android-tools-dir-archive }}
+      IREE_ANDROID_TOOLS_DIR_GCS_ARTIFACT: ${{ needs.build_iree.outputs.iree-android-tools-dir-gcs-artifact }}
+      IREE_ARTIFACTS_DIR: ${{ needs.compile_models_for_android.outputs.benchmark-artifacts-dir }}
+      IREE_ARTIFACTS_DIR_ARCHIVE: ${{ needs.compile_models_for_android.outputs.benchmark-artifacts-dir-archive }}
+      IREE_ARTIFACTS_DIR_GCS_ARTIFACT: ${{ needs.compile_models_for_android.outputs.benchmark-artifacts-dir-gcs-artifact }}
+    steps:
+      - name: "Checking out PR repository"
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
+      - name: "Setup"
+        id: setup
+        run: |
+          echo "results-gcs-dir=${BENCHMARK_GCS_DIR}/${TARGET_DEVICE}-results" >> "${GITHUB_OUTPUT}"
+          mkdir "${RESULTS_DIR}"
+      - name: "Downloading and unpacking tools"
+        run: |
+          gcloud storage cp "${IREE_ANDROID_TOOLS_DIR_GCS_ARTIFACT}" "${IREE_ANDROID_TOOLS_DIR_ARCHIVE}"
+          tar -xvf "${IREE_ANDROID_TOOLS_DIR_ARCHIVE}"
+      - name: "Benchmarking IREE on Android"
+        env:
+          IREE_RESULTS_JSON: iree-${{ env.TARGET_DEVICE }}.json
+          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+        run: |
+          RESULTS_PATH="${RESULTS_DIR}/${IREE_RESULTS_JSON}"
+          # We use the `https` path instead of `gs` since artifact streaming only works with `https`.
+          IREE_ARTIFACTS_DIR_HTTPS_ARTIFACT=$(echo "${IREE_ARTIFACTS_DIR_GCS_ARTIFACT}" | sed -E 's/gs:\/\/(.*)/https:\/\/storage.googleapis.com\/\1/')
+
+          OOBI_IREE_RUN_MODULE_PATH="${IREE_ANDROID_TOOLS_DIR}/iree-run-module" \
+          OOBI_IREE_BENCHMARK_MODULE_PATH="${IREE_ANDROID_TOOLS_DIR}/iree-benchmark-module" \
+            ./experimental/iree/benchmark_iree_android.sh \
+              "${TARGET_DEVICE}" \
+              "${IREE_ARTIFACTS_DIR_HTTPS_ARTIFACT}" \
+              "${RESULTS_PATH}"
+
+          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"

@@ -7,7 +7,6 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import argparse
-import json
 import pathlib
 import re
 import subprocess
@@ -94,25 +93,22 @@ def run_benchmark_command(benchmark_command: str,
 
 def _parse_arguments() -> argparse.Namespace:
   parser = argparse.ArgumentParser(description="Runs benchmarks.")
-  parser.add_argument("--command",
-                      type=str,
-                      required=True,
-                      help="The command to run.")
-  parser.add_argument("-o",
-                      "--output",
+  # We need to store the command in a text file because argparse is unable to
+  # ignore quoted string with dashes in it, instead interpreting them as
+  # arguments.
+  parser.add_argument("--command_path",
                       type=pathlib.Path,
                       required=True,
-                      help="JSON filepath to save results to.")
+                      help="The command to run stored in a text file.")
   parser.add_argument("--verbose",
                       action="store_true",
                       help="Show verbose messages.")
   return parser.parse_args()
 
 
-def main(command: str, output: pathlib.Path):
-  results = run_benchmark_command(command)
-  with open(output, "w") as outfile:
-    json.dump(results, outfile)
+def main(command_path: pathlib.Path, verbose: bool = False):
+  results = run_benchmark_command(command_path.read_text(), verbose)
+  print(f"results_dict: {results}")
 
 
 if __name__ == "__main__":
