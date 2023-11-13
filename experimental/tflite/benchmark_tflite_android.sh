@@ -13,6 +13,7 @@
 # OOBI_VENV_DIR: name of the virtual environment.
 # OOBI_TEMP_DIR: the path to store temporary files to.
 # OOBI_ANDROID_BENCHMARK_DIR: the on-device directory where benchmark artifacts are copied to.
+# TFLITE_BENCHMARK_BINARY: the path to a custom built TFLite benchmark binary.
 #
 # Example usage:
 # ./benchmark_tflite_x86.sh <target-device> <results-path>
@@ -38,12 +39,18 @@ adb shell "su root setprop persist.vendor.disable.thermal.control 1"
 adb push "${TD}/../utils" "${ROOT_DIR}"
 adb shell "chmod +x ${ROOT_DIR}/utils/run_tflite_benchmark.py"
 
-BENCHMARK_BINARY_URL="https://storage.googleapis.com/tensorflow-nightly-public/prod/tensorflow/release/lite/tools/nightly/latest/android_aarch64_benchmark_model"
 BENCHMARK_BINARY_PATH="${ROOT_DIR}/android_aarch64_benchmark_model"
+
+# Download benchmark tool if not set.
+if [[ -z "${TFLITE_BENCHMARK_BINARY}" ]]; then
+BENCHMARK_BINARY_URL="https://storage.googleapis.com/tensorflow-nightly-public/prod/tensorflow/release/lite/tools/nightly/latest/android_aarch64_benchmark_model"
 "${TD}/../../comparative_benchmark/scripts/adb_fetch_and_push.py" \
     --source_url="${BENCHMARK_BINARY_URL}" \
     --destination="${BENCHMARK_BINARY_PATH}" \
     --verbose
+else
+adb push "${TFLITE_BENCHMARK_BINARY}" "${BENCHMARK_BINARY_PATH}"
+fi
 
 VENV_DIR="${VENV_DIR}" PYTHON="${PYTHON}" source "${TD}/setup_venv.sh"
 

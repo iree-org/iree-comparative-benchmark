@@ -71,7 +71,7 @@ jobs:
           mkdir ${RESULTS_DIR}
           # Run under privileged mode because system-level scheduling is used.
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" --privileged \
-            gcr.io/iree-oss/openxla-benchmark/convperf@sha256:0807d5e8144900752cfae72f3aa4d12530b408f73fc6f010a6cbad11cc09832c \
+            gcr.io/iree-oss/openxla-benchmark/convperf@sha256:af5b286a988168b4236914ac95fc429d028a924c5e18c50a5d40ae22f2371c26 \
           ./experimental/microbenchmarks/convperf/build_and_run_convperf.sh "${BUILD_DIR}" "${RESULTS_DIR}"
       - name: "Uploading results"
         run: |

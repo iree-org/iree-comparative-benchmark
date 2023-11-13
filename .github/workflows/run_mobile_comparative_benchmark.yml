@@ -98,7 +98,7 @@ jobs:
               --env IREE_SOURCE_DIR="${IREE_SOURCE_DIR}" \
               --env IREE_INSTALL_DIR="${IREE_INSTALL_DIR}" \
               --env ANDROID_PLATFORM_VERSION="${ANDROID_PLATFORM_VERSION}" \
-              "gcr.io/iree-oss/openxla-benchmark/android@sha256:34f140fcf806f64f5d0492dfc5af774ea440406264cd68c0405e23a69cbe6d93" \
+              "gcr.io/iree-oss/openxla-benchmark/android@sha256:1b17fde3fd12d0b5d59e69dc82af97fef02efa8991cea9b665899f29f884cf8c" \
                 ./experimental/iree/build_iree.sh \
                     "${X86_BUILD_DIR}" \
                     "${ANDROID_BUILD_DIR}"
@@ -128,9 +128,70 @@ jobs:
           echo "iree-android-tools-dir-gcs-artifact=${IREE_ANDROID_TOOLS_DIR_GCS_ARTIFACT}" >> "${GITHUB_OUTPUT}"
 
 
+  build_tflite:
+    needs: setup
+    runs-on:
+      - self-hosted  # must come first
+      - runner-group=${{ needs.setup.outputs.runner-group }}
+      - environment=prod
+      - cpu
+      - os-family=Linux
+    env:
+      TF_SOURCE_DIR: tf-src
+      X86_BUILD_DIR: tf-build
+      ANDROID_BUILD_DIR: tf-build-android
+      BENCHMARK_GCS_DIR: ${{ needs.setup.outputs.benchmark-gcs-dir }}
+    outputs:
+      tflite-build-dir: ${{ env.X86_BUILD_DIR }}
+      tflite-build-dir-archive: ${{ steps.archive.outputs.tflite-build-dir-archive }}
+      tflite-build-dir-gcs-artifact: ${{ steps.upload.outputs.tflite-build-dir-gcs-artifact }}
+      tflite-android-build-dir: ${{ env.ANDROID_BUILD_DIR }}
+      tflite-android-build-dir-archive: ${{ steps.archive.outputs.tflite-android-build-dir-archive }}
+      tflite-android-build-dir-gcs-artifact: ${{ steps.upload.outputs.tflite-android-build-dir-gcs-artifact }}
+    steps:
+      - name: "Checking out PR repository"
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
+      - name: "Building TFLite"
+        run: |
+          mkdir -p "${TF_SOURCE_DIR}"
+          mkdir -p "${X86_BUILD_DIR}"
+          mkdir -p "${ANDROID_BUILD_DIR}"
+
+          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+            --env OOBI_TEMP_DIR="${TF_SOURCE_DIR}" \
+            "gcr.io/iree-oss/openxla-benchmark/tflite-android@sha256:33b04e7b2e4658f511f80c5b9aa0bb87acee5e7c74d19aa4f2e063658030226c" \
+              ./experimental/tflite/build_tflite.sh \
+                  "${X86_BUILD_DIR}" \
+                  "${ANDROID_BUILD_DIR}"
+      - name: "Creating archives"
+        id: archive
+        env:
+          TFLITE_BUILD_DIR_ARCHIVE: ${{ env.X86_BUILD_DIR }}.tgz
+          TFLITE_ANDROID_BUILD_DIR_ARCHIVE: ${{ env.ANDROID_BUILD_DIR }}.tgz
+        run: |
+          tar -zcvf "${TFLITE_BUILD_DIR_ARCHIVE}" "${X86_BUILD_DIR}"
+          echo "tflite-build-dir-archive=${TFLITE_BUILD_DIR_ARCHIVE}" >> "${GITHUB_OUTPUT}"
+
+          tar -zcvf "${TFLITE_ANDROID_BUILD_DIR_ARCHIVE}" "${ANDROID_BUILD_DIR}"
+          echo "tflite-android-build-dir-archive=${TFLITE_ANDROID_BUILD_DIR_ARCHIVE}" >> "${GITHUB_OUTPUT}"
+      - name: "Uploading archives"
+        id: upload
+        env:
+          TFLITE_BUILD_DIR_ARCHIVE: ${{ steps.archive.outputs.tflite-build-dir-archive }}
+          TFLITE_BUILD_DIR_GCS_ARTIFACT: ${{ env.BENCHMARK_GCS_DIR }}/${{ steps.archive.outputs.tflite-build-dir-archive }}
+          TFLITE_ANDROID_BUILD_DIR_ARCHIVE: ${{ steps.archive.outputs.tflite-android-build-dir-archive }}
+          TFLITE_ANDROID_BUILD_DIR_GCS_ARTIFACT: ${{ env.BENCHMARK_GCS_DIR }}/${{ steps.archive.outputs.tflite-android-build-dir-archive }}
+        run: |
+          gcloud storage cp "${TFLITE_BUILD_DIR_ARCHIVE}" "${TFLITE_BUILD_DIR_GCS_ARTIFACT}"
+          echo "tflite-build-dir-gcs-artifact=${TFLITE_BUILD_DIR_GCS_ARTIFACT}" >> "${GITHUB_OUTPUT}"
+
+          gcloud storage cp "${TFLITE_ANDROID_BUILD_DIR_ARCHIVE}" "${TFLITE_ANDROID_BUILD_DIR_GCS_ARTIFACT}"
+          echo "tflite-android-build-dir-gcs-artifact=${TFLITE_ANDROID_BUILD_DIR_GCS_ARTIFACT}" >> "${GITHUB_OUTPUT}"
+
+
   # We compile and benchmark on the same machine because it takes too much time to compress and upload compiled artifacts.
   compile_and_benchmark_on_c2-standard-60:
-    needs: [setup, build_iree]
+    needs: [setup, build_iree, build_tflite]
     runs-on:
       - self-hosted  # must come first
       - runner-group=${{ needs.setup.outputs.runner-group }}
@@ -142,6 +203,9 @@ jobs:
       IREE_INSTALL_DIR: ${{ needs.build_iree.outputs.iree-install-dir }}
       IREE_INSTALL_DIR_ARCHIVE: ${{ needs.build_iree.outputs.iree-install-dir-archive }}
       IREE_INSTALL_DIR_GCS_ARTIFACT: ${{ needs.build_iree.outputs.iree-install-dir-gcs-artifact }}
+      TFLITE_BUILD_DIR: ${{ needs.build_tflite.outputs.tflite-build-dir }}
+      TFLITE_BUILD_DIR_ARCHIVE: ${{ needs.build_tflite.outputs.tflite-build-dir-archive }}
+      TFLITE_BUILD_DIR_GCS_ARTIFACT: ${{ needs.build_tflite.outputs.tflite-build-dir-gcs-artifact }}
       BENCHMARK_GCS_DIR: ${{ needs.setup.outputs.benchmark-gcs-dir }}
     steps:
       - name: "Checking out PR repository"
@@ -162,7 +226,7 @@ jobs:
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
             --env IREE_COMPILE_PATH="${IREE_COMPILE_PATH}" \
             --env OOBI_TEMP_DIR="${IREE_TEMP_DIR}" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:1bf3e319465ec8fb465baae3f6ba9a5b09cb84a5349a675c671a552fc77f2251" \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:0f98f0d27199bcb40f8f76fc628a12f19b87b6f2f7d270a8f5ad9265f06effec" \
               ./experimental/iree/compile_workloads.sh \
                   "${TARGET_DEVICE}" \
                   "${BENCHMARK_ARTIFACTS_DIR}"
@@ -175,7 +239,7 @@ jobs:
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
             --env OOBI_IREE_BENCHMARK_MODULE_PATH="${IREE_INSTALL_DIR}/bin/iree-benchmark-module" \
             --env OOBI_IREE_RUN_MODULE_PATH="${IREE_INSTALL_DIR}/bin/iree-run-module" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:1bf3e319465ec8fb465baae3f6ba9a5b09cb84a5349a675c671a552fc77f2251" \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:0f98f0d27199bcb40f8f76fc628a12f19b87b6f2f7d270a8f5ad9265f06effec" \
             ./experimental/iree/benchmark_iree_x86.sh \
               "${TARGET_DEVICE}" \
               "${BENCHMARK_ARTIFACTS_DIR}" \
@@ -185,6 +249,10 @@ jobs:
 
           echo "iree-results-file=${IREE_RESULTS_FILE}" >> "${GITHUB_OUTPUT}"
           echo "iree-results-gcs-path=${RESULTS_GCS_DIR}/${IREE_RESULTS_FILE}" >> "${GITHUB_OUTPUT}"
+      - name: "Downloading and unpacking TFLite tools"
+        run: |
+          gcloud storage cp "${TFLITE_BUILD_DIR_GCS_ARTIFACT}" "${TFLITE_BUILD_DIR_ARCHIVE}"
+          tar -xvf "${TFLITE_BUILD_DIR_ARCHIVE}"
       - name: "Benchmarking TFLite:CPU"
         id: benchmark-tflite
         env:
@@ -196,7 +264,8 @@ jobs:
 
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
             --env OOBI_TEMP_DIR="${TFLITE_TEMP_DIR}" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:1bf3e319465ec8fb465baae3f6ba9a5b09cb84a5349a675c671a552fc77f2251" \
+            --env TFLITE_BENCHMARK_BINARY="${TFLITE_BUILD_DIR}/benchmark_model" \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:0f98f0d27199bcb40f8f76fc628a12f19b87b6f2f7d270a8f5ad9265f06effec" \
             ./experimental/tflite/benchmark_tflite_x86.sh \
               "${TARGET_DEVICE}" \
               "${TFLITE_RESULTS_FILE}"
@@ -219,7 +288,7 @@ jobs:
           gcloud storage cp "${TFLITE_RESULTS_GCS_PATH}" "${TFLITE_RESULTS_FILE}"
 
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:1bf3e319465ec8fb465baae3f6ba9a5b09cb84a5349a675c671a552fc77f2251" \
+            "gcr.io/iree-oss/openxla-benchmark/base@sha256:0f98f0d27199bcb40f8f76fc628a12f19b87b6f2f7d270a8f5ad9265f06effec" \
             ./experimental/utils/generate_iree_vs_tflite_report.sh \
               "${IREE_RESULTS_FILE}" \
               "${TFLITE_RESULTS_FILE}" \
@@ -231,8 +300,8 @@ jobs:
           gcloud storage cp "${TFLITE_RESULTS_FILE}" "${SUMMARY_HTML_GCS_PATH}/latest/tflite.json"
           gcloud storage cp "${SUMMARY_HTML}" "${SUMMARY_HTML_GCS_PATH}/latest/${SUMMARY_HTML}"
 
-          gcloud storage cp "${IREE_RESULTS_FILE}" "${SUMMARY_HTML_GCS_PATH}/${RUN_TIMESTAMP}/${IREE_RESULTS_FILE}"
-          gcloud storage cp "${TFLITE_RESULTS_FILE}" "${SUMMARY_HTML_GCS_PATH}/${RUN_TIMESTAMP}/${TFLITE_RESULTS_FILE}"
+          gcloud storage cp "${IREE_RESULTS_FILE}" "${SUMMARY_HTML_GCS_PATH}/${RUN_TIMESTAMP}/iree.json"
+          gcloud storage cp "${TFLITE_RESULTS_FILE}" "${SUMMARY_HTML_GCS_PATH}/${RUN_TIMESTAMP}/tflite.json"
           gcloud storage cp "${SUMMARY_HTML}" "${SUMMARY_HTML_GCS_PATH}/${RUN_TIMESTAMP}/${SUMMARY_HTML}"
 
 
@@ -274,7 +343,7 @@ jobs:
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
             --env IREE_COMPILE_PATH="${IREE_COMPILE_PATH}" \
             --env OOBI_TEMP_DIR="${OOBI_TEMP_DIR}" \
-            "gcr.io/iree-oss/openxla-benchmark/android@sha256:34f140fcf806f64f5d0492dfc5af774ea440406264cd68c0405e23a69cbe6d93" \
+            "gcr.io/iree-oss/openxla-benchmark/android@sha256:1b17fde3fd12d0b5d59e69dc82af97fef02efa8991cea9b665899f29f884cf8c" \
               ./experimental/iree/compile_workloads.sh \
                   "${TARGET_DEVICE}" \
                   "${BENCHMARK_ARTIFACTS_DIR}"
@@ -296,7 +365,7 @@ jobs:
 
 
   benchmark_on_pixel-6-pro:
-    needs: [setup, build_iree, compile_models_for_android]
+    needs: [setup, build_iree, compile_models_for_android, build_tflite]
     runs-on:
       - self-hosted  # must come first
       - runner-group=${{ needs.setup.outputs.runner-group }}
@@ -312,6 +381,9 @@ jobs:
       IREE_ARTIFACTS_DIR: ${{ needs.compile_models_for_android.outputs.benchmark-artifacts-dir }}
       IREE_ARTIFACTS_DIR_ARCHIVE: ${{ needs.compile_models_for_android.outputs.benchmark-artifacts-dir-archive }}
       IREE_ARTIFACTS_DIR_GCS_ARTIFACT: ${{ needs.compile_models_for_android.outputs.benchmark-artifacts-dir-gcs-artifact }}
+      TFLITE_ANDROID_BUILD_DIR: ${{ needs.build_tflite.outputs.tflite-android-build-dir }}
+      TFLITE_ANDROID_BUILD_DIR_ARCHIVE: ${{ needs.build_tflite.outputs.tflite-android-build-dir-archive }}
+      TFLITE_ANDROID_BUILD_DIR_GCS_ARTIFACT: ${{ needs.build_tflite.outputs.tflite-android-build-dir-gcs-artifact }}
     steps:
       - name: "Checking out PR repository"
         uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
@@ -342,9 +414,12 @@ jobs:
               "${RESULTS_PATH}"
 
           gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
-
           echo "iree-results-file=${IREE_RESULTS_FILE}" >> "${GITHUB_OUTPUT}"
           echo "iree-results-gcs-path=${RESULTS_GCS_DIR}/${IREE_RESULTS_FILE}" >> "${GITHUB_OUTPUT}"
+      - name: "Downloading and unpacking TFLite tools"
+        run: |
+          gcloud storage cp "${TFLITE_ANDROID_BUILD_DIR_GCS_ARTIFACT}" "${TFLITE_ANDROID_BUILD_DIR_ARCHIVE}"
+          tar -xvf "${TFLITE_ANDROID_BUILD_DIR_ARCHIVE}"
       - name: "Benchmarking TFLite on Android"
         id: benchmark-tflite
         env:
@@ -352,9 +427,11 @@ jobs:
           RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
         run: |
           RESULTS_PATH="${RESULTS_DIR}/${TFLITE_RESULTS_FILE}"
-          ./experimental/tflite/benchmark_tflite_android.sh \
-            "${TARGET_DEVICE}" \
-            "${RESULTS_PATH}"
+
+          TFLITE_BENCHMARK_BINARY="${TFLITE_ANDROID_BUILD_DIR}/benchmark_model" \
+            ./experimental/tflite/benchmark_tflite_android.sh \
+              "${TARGET_DEVICE}" \
+              "${RESULTS_PATH}"
 
           gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
 
@@ -385,6 +462,6 @@ jobs:
           gcloud storage cp "${TFLITE_RESULTS_FILE}" "${SUMMARY_HTML_GCS_PATH}/latest/tflite.json"
           gcloud storage cp "${SUMMARY_HTML}" "${SUMMARY_HTML_GCS_PATH}/latest/${SUMMARY_HTML}"
 
-          gcloud storage cp "${IREE_RESULTS_FILE}" "${SUMMARY_HTML_GCS_PATH}/${RUN_TIMESTAMP}/${IREE_RESULTS_FILE}"
-          gcloud storage cp "${TFLITE_RESULTS_FILE}" "${SUMMARY_HTML_GCS_PATH}/${RUN_TIMESTAMP}/${TFLITE_RESULTS_FILE}"
+          gcloud storage cp "${IREE_RESULTS_FILE}" "${SUMMARY_HTML_GCS_PATH}/${RUN_TIMESTAMP}/iree.json"
+          gcloud storage cp "${TFLITE_RESULTS_FILE}" "${SUMMARY_HTML_GCS_PATH}/${RUN_TIMESTAMP}/tflite.json"
           gcloud storage cp "${SUMMARY_HTML}" "${SUMMARY_HTML_GCS_PATH}/${RUN_TIMESTAMP}/${SUMMARY_HTML}"
