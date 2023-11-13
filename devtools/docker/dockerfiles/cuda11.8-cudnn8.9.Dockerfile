@@ -6,7 +6,7 @@
 
 # An image that supports CUDA.
 
-FROM gcr.io/iree-oss/openxla-benchmark/base@sha256:0f98f0d27199bcb40f8f76fc628a12f19b87b6f2f7d270a8f5ad9265f06effec
+FROM gcr.io/iree-oss/openxla-benchmark/base@sha256:2dbee52eaa63e62137682f0eda701ac4cf59b8e16395daa757f6e1906b52dd82
 
 ######## NVIDIA ########
 WORKDIR /install-cuda
