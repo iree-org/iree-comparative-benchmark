@@ -116,6 +116,7 @@ def _generate_tflite_fp16(tf_predict_fn, model_dir: pathlib.Path):
     ]
     converter.optimizations = [tf.lite.Optimize.DEFAULT]
     converter.target_spec.supported_types = [tf.float16]
+    converter.target_spec._experimental_supported_accumulation_type = tf.dtypes.float16
     tflite_model = converter.convert()
     tflite_model_path = model_dir / "model_fp16.tflite"
     tflite_model_path.write_bytes(tflite_model)
