@@ -159,8 +159,8 @@ def _generate_tflite_int8(tf_predict_fn, inputs: Any, model_dir: pathlib.Path):
         random_inputs = []
         for input in inputs:
           if issubclass(input.dtype.type, numbers.Integral):
-            min = -127
-            max = 127
+            min = -10
+            max = 10
           elif issubclass(input.dtype.type, numbers.Real):
             # If input is float, use values between 0 and 1.
             min = 0
