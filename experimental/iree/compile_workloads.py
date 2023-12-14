@@ -66,7 +66,7 @@ COMPILE_FLAGS_PER_TARGET = {
     ],
     "pixel-8-pro": [
         "--iree-llvmcpu-target-triple=aarch64-none-linux-android34",
-        "--iree-llvmcpu-target-cpu-features=+fp-armv8,+neon,+crc,+lse,+rdm,+ras,+rcpc,+dotprod,+v9a,+sb,+ssbs,+fullfp16,+fp16fml,+i8mm,+bf16,+flagm"
+        "--iree-llvmcpu-target-cpu-features=+v9a,+fullfp16,fp-armv8,+neon,+aes,+sha2,+crc,+lse,+rdm,+complxnum,+rcpc,+sha3,+sm4,+dotprod,+fp16fml,+dit,+flagm,+ssbs,+sb,+sve2-aes,+sve2-bitperm,+sve2-sha3,+sve2-sm4,+altnzcv,+fptoint,+bf16,+i8mm,+bti,+mte,+pauth,+perfmon,+predres,+spe,+ras"
     ],
 }
 
