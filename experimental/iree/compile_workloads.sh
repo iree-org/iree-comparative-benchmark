@@ -55,7 +55,8 @@ declare -a ANDROID_BENCHMARKS=(
   "models/VIT_CLASSIFICATION_DYN_QUANT_TFLITE_3X224X224XF32/.+"
   "models/VIT_CLASSIFICATION_INT8_TFLITE_3X224X224XINT8/.+"
   "models/BERT_BASE_FP32_JAX_I32_SEQLEN.+/.+"
-  "models/BERT_BASE_FP16_JAX_I32_SEQLEN.+/.+"
+  # Disable sequence lengths >8 due to https://github.com/openxla/iree/issues/16042.
+  "models/BERT_BASE_FP16_JAX_I32_SEQLEN8/.+"
   "models/T5_4CG_SMALL_FP32_JAX_1X128XI32_GEN.+/.+"
   "models/SD_PIPELINE_FP32_JAX_64XI32_BATCH1/.+"
   "models/SD_PIPELINE_FP16_JAX_64XI32_BATCH1/.+"
