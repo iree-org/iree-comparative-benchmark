@@ -54,17 +54,17 @@ jobs:
           fi
           echo "benchmark-gcs-dir=${BENCHMARK_GCS_DIR}" >> "${GITHUB_OUTPUT}"
 
-  benchmark_on_c2-standard-16:
+  benchmark_on_c2-standard-60:
     needs: [setup]
     runs-on:
       - self-hosted  # must come first
       - runner-group=${{ needs.setup.outputs.runner-group }}
       - environment=prod
-      - machine-type=c2-standard-16
+      - machine-type=c2-standard-60
     env:
       BENCHMARK_GCS_DIR: ${{ needs.setup.outputs.benchmark-gcs-dir }}
       RESULTS_DIR: results-dir
-      TARGET_DEVICE: c2-standard-16
+      TARGET_DEVICE: c2-standard-60
       GGML_BUILD_DIR: build-dir
     steps:
       - name: "Checking out PR repository"
@@ -77,7 +77,7 @@ jobs:
       - name: "Building GGML CPU"
         run: |
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:2dbee52eaa63e62137682f0eda701ac4cf59b8e16395daa757f6e1906b52dd82" \
+            "gcr.io/iree-oss/openxla-benchmark/base-python3.11@sha256:fe125eee60a701732ee61aa23e8bb1ae9d48ef0846a4ea78f607b00f7cbc43ec" \
             ./experimental/ggml/build_ggml.sh \
               "${TARGET_DEVICE}" \
               "${GGML_BUILD_DIR}"
@@ -88,7 +88,7 @@ jobs:
         run: |
           RESULTS_PATH="${RESULTS_DIR}/${GGML_RESULTS_JSON}"
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:2dbee52eaa63e62137682f0eda701ac4cf59b8e16395daa757f6e1906b52dd82" \
+            "gcr.io/iree-oss/openxla-benchmark/base-python3.11@sha256:fe125eee60a701732ee61aa23e8bb1ae9d48ef0846a4ea78f607b00f7cbc43ec" \
             ./experimental/ggml/benchmark_ggml.sh \
               "${TARGET_DEVICE}" \
               "${GGML_BUILD_DIR}" \
@@ -118,7 +118,7 @@ jobs:
         run: |
           mkdir -p "${GGML_BUILD_DIR}"
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/android@sha256:4c219b20213c7f26edf848b6924a95991c0d359463709d4ee55b499eeaa3349b" \
+            "gcr.io/iree-oss/openxla-benchmark/android@sha256:826ea5ef02dfd9baf54ea221ebfc62dbd0b60f42faa0e0c12c4c0a9c70a760a8" \
             ./experimental/ggml/build_ggml.sh \
               "${TARGET_DEVICE}" \
               "${GGML_BUILD_DIR}"

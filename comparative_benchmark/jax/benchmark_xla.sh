@@ -54,7 +54,7 @@ declare -a CPU_BENCHMARK_NAMES=(
 if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then
   BENCHMARK_NAMES=("${GPU_BENCHMARK_NAMES[@]}")
   ITERATIONS=50
-elif [ "${TARGET_DEVICE}" = "c2-standard-16" ]; then
+elif [ "${TARGET_DEVICE}" = "c2-standard-60" ]; then
   BENCHMARK_NAMES=("${CPU_BENCHMARK_NAMES[@]}")
   ITERATIONS=5
 else

@@ -46,7 +46,7 @@ jobs:
       - self-hosted  # must come first
       - runner-group=${{ needs.setup.outputs.runner-group }}
       - environment=prod
-      - machine-type=c2-standard-16
+      - machine-type=c2-standard-60
     steps:
       - name: "Checking out PR repository"
         uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791  # v2.5.0
@@ -60,7 +60,7 @@ jobs:
             --env "AUTO_UPLOAD=0" \
             --env "JOBS=1" \
             --env "OUTPUT_DIR=jax" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:2dbee52eaa63e62137682f0eda701ac4cf59b8e16395daa757f6e1906b52dd82" \
+            "gcr.io/iree-oss/openxla-benchmark/base-python3.11@sha256:fe125eee60a701732ee61aa23e8bb1ae9d48ef0846a4ea78f607b00f7cbc43ec" \
             "common_benchmark_suite/openxla/benchmark/comparative_suite/jax/scripts/generate_model_artifacts.sh" \
               "RESNET50_FP32_JAX_.+" \
               "BERT_LARGE_FP32_JAX_.+_BATCH(1|16|24|32|48|64|512)" \
