@@ -98,7 +98,7 @@ jobs:
               --env IREE_SOURCE_DIR="${IREE_SOURCE_DIR}" \
               --env IREE_INSTALL_DIR="${IREE_INSTALL_DIR}" \
               --env ANDROID_PLATFORM_VERSION="${ANDROID_PLATFORM_VERSION}" \
-              "gcr.io/iree-oss/openxla-benchmark/android@sha256:4c219b20213c7f26edf848b6924a95991c0d359463709d4ee55b499eeaa3349b" \
+              "gcr.io/iree-oss/openxla-benchmark/android@sha256:826ea5ef02dfd9baf54ea221ebfc62dbd0b60f42faa0e0c12c4c0a9c70a760a8" \
                 ./experimental/iree/build_iree.sh \
                     "${X86_BUILD_DIR}" \
                     "${ANDROID_BUILD_DIR}"
@@ -159,7 +159,7 @@ jobs:
 
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
             --env OOBI_TEMP_DIR="${TF_SOURCE_DIR}" \
-            "gcr.io/iree-oss/openxla-benchmark/tflite-android@sha256:e02858dd5998dbae6798e11c8646bcff59135ffeb35e0f08a52977106979f1d2" \
+            "gcr.io/iree-oss/openxla-benchmark/tflite-android@sha256:4f4c368993e8739ee990810726f1916607191e83f033f7e87cb37fab6a7d394c" \
               ./experimental/tflite/build_tflite.sh \
                   "${X86_BUILD_DIR}" \
                   "${ANDROID_BUILD_DIR}"
@@ -226,7 +226,7 @@ jobs:
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
             --env IREE_COMPILE_PATH="${IREE_COMPILE_PATH}" \
             --env OOBI_TEMP_DIR="${IREE_TEMP_DIR}" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:2dbee52eaa63e62137682f0eda701ac4cf59b8e16395daa757f6e1906b52dd82" \
+            "gcr.io/iree-oss/openxla-benchmark/base-python3.11@sha256:fe125eee60a701732ee61aa23e8bb1ae9d48ef0846a4ea78f607b00f7cbc43ec" \
               ./experimental/iree/compile_workloads.sh \
                   "${TARGET_DEVICE}" \
                   "${BENCHMARK_ARTIFACTS_DIR}"
@@ -239,7 +239,7 @@ jobs:
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
             --env OOBI_IREE_BENCHMARK_MODULE_PATH="${IREE_INSTALL_DIR}/bin/iree-benchmark-module" \
             --env OOBI_IREE_RUN_MODULE_PATH="${IREE_INSTALL_DIR}/bin/iree-run-module" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:2dbee52eaa63e62137682f0eda701ac4cf59b8e16395daa757f6e1906b52dd82" \
+            "gcr.io/iree-oss/openxla-benchmark/base-python3.11@sha256:fe125eee60a701732ee61aa23e8bb1ae9d48ef0846a4ea78f607b00f7cbc43ec" \
             ./experimental/iree/benchmark_iree_x86.sh \
               "${TARGET_DEVICE}" \
               "${BENCHMARK_ARTIFACTS_DIR}" \
@@ -265,7 +265,7 @@ jobs:
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
             --env OOBI_TEMP_DIR="${TFLITE_TEMP_DIR}" \
             --env TFLITE_BENCHMARK_BINARY="${TFLITE_BUILD_DIR}/benchmark_model" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:2dbee52eaa63e62137682f0eda701ac4cf59b8e16395daa757f6e1906b52dd82" \
+            "gcr.io/iree-oss/openxla-benchmark/base-python3.11@sha256:fe125eee60a701732ee61aa23e8bb1ae9d48ef0846a4ea78f607b00f7cbc43ec" \
             ./experimental/tflite/benchmark_tflite_x86.sh \
               "${TARGET_DEVICE}" \
               "${TFLITE_RESULTS_FILE}"
@@ -288,7 +288,7 @@ jobs:
           gcloud storage cp "${TFLITE_RESULTS_GCS_PATH}" "${TFLITE_RESULTS_FILE}"
 
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/base@sha256:2dbee52eaa63e62137682f0eda701ac4cf59b8e16395daa757f6e1906b52dd82" \
+            "gcr.io/iree-oss/openxla-benchmark/base-python3.11@sha256:fe125eee60a701732ee61aa23e8bb1ae9d48ef0846a4ea78f607b00f7cbc43ec" \
             ./experimental/utils/generate_iree_vs_tflite_report.sh \
               "${IREE_RESULTS_FILE}" \
               "${TFLITE_RESULTS_FILE}" \
@@ -343,7 +343,7 @@ jobs:
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
             --env IREE_COMPILE_PATH="${IREE_COMPILE_PATH}" \
             --env OOBI_TEMP_DIR="${OOBI_TEMP_DIR}" \
-            "gcr.io/iree-oss/openxla-benchmark/android@sha256:4c219b20213c7f26edf848b6924a95991c0d359463709d4ee55b499eeaa3349b" \
+            "gcr.io/iree-oss/openxla-benchmark/android@sha256:826ea5ef02dfd9baf54ea221ebfc62dbd0b60f42faa0e0c12c4c0a9c70a760a8" \
               ./experimental/iree/compile_workloads.sh \
                   "${TARGET_DEVICE}" \
                   "${BENCHMARK_ARTIFACTS_DIR}"

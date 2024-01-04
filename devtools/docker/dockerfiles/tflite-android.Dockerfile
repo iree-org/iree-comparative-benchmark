@@ -6,21 +6,7 @@
 
 # An image for cross-compiling towards Android that is compatible with Tensorflow.
 
-FROM gcr.io/iree-oss/openxla-benchmark/base@sha256:2dbee52eaa63e62137682f0eda701ac4cf59b8e16395daa757f6e1906b52dd82
-
-
-######## Android NDK ########
-ARG NDK_VERSION=r25c
-WORKDIR /install-ndk
-
-ENV ANDROID_NDK "/usr/src/android-ndk-${NDK_VERSION}"
-ENV ANDROID_NDK_API_LEVEL "25"
-
-RUN wget -q "https://dl.google.com/android/repository/android-ndk-${NDK_VERSION}-linux.zip" \
-    && unzip -q "android-ndk-${NDK_VERSION}-linux.zip" -d /usr/src/  \
-    && rm -rf /install-ndk
-
-WORKDIR /
+FROM gcr.io/iree-oss/openxla-benchmark/android@sha256:826ea5ef02dfd9baf54ea221ebfc62dbd0b60f42faa0e0c12c4c0a9c70a760a8
 
 ######## Android SDK ########
 ENV ANDROID_SDK "/usr/src/android-sdk"

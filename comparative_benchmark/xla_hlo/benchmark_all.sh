@@ -21,7 +21,7 @@ VENV_DIR="${VENV_DIR}" PYTHON="${PYTHON}" source "${TD}/setup_venv.sh"
 declare -a GPU_BENCHMARK_NAMES=(
   "models/RESNET50_(FP32|FP16|BF16)_TF_.+"
   # FP16 disabled due to type errors: https://github.com/openxla/openxla-benchmark/issues/117
-  "models/BERT_LARGE_(FP32|BF16)_JAX_.+"
+  "models/BERT_LARGE_(FP32|BF16)_JAX_.+_BATCH(1|16|24|32|48|64|512)/.+"
   # Batch 512 disabled: https://github.com/openxla/openxla-benchmark/issues/125.
   "models/T5_LARGE_(FP32|FP16|BF16)_JAX_.+_BATCH(1|16|24|32|48|64)/.+"
   "models/T5_4CG_LARGE_FP32_JAX_.+"
@@ -49,7 +49,7 @@ if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then
   BENCHMARK_NAMES=("${GPU_BENCHMARK_NAMES[@]}")
   HLO_TOOL="hlo_runner_main"
   ITERATIONS=50
-elif [ "${TARGET_DEVICE}" = "c2-standard-16" ]; then
+elif [ "${TARGET_DEVICE}" = "c2-standard-60" ]; then
   # Since each iteration includes both compilation and inference, we keep the
   # total iterations small because of the amount of time it takes to do both.
   # Std deviation is <1ms.

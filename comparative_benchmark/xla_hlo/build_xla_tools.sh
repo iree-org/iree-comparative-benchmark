@@ -5,9 +5,14 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+VENV_DIR="${OOBI_VENV_DIR:-xla-tools.venv}"
+PYTHON="${PYTHON:-/usr/bin/python3}"
 BUILD_DIR="${XLA_BUILD_DIR:-build-xla}"
 TOOLS_OUTPUT_DIR="${1:-"${XLA_TOOLS_OUTPUT_DIR}"}"
 CUDA_VERSION="${2:-"${XLA_CUDA_VERSION}"}"
+
+TD="$(cd $(dirname $0) && pwd)"
+VENV_DIR="${VENV_DIR}" PYTHON="${PYTHON}" source "${TD}/setup_venv.sh"
 
 mkdir -p "${BUILD_DIR}"
 pushd "${BUILD_DIR}"

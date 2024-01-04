@@ -1,9 +1,11 @@
 {
   "base": [],
-  "cuda11.8-cudnn8.9": ["base"],
+  "base-python3.10": ["base"],
+  "base-python3.11": ["base"],
+  "cuda11.8-cudnn8.9": ["base-python3.10"],
   "db_import": [],
-  "mmperf": ["base"],
-  "convperf": ["base"],
-  "android": ["base"],
-  "tflite-android": ["base"]
+  "mmperf": ["base-python3.10"],
+  "convperf": ["base-python3.10"],
+  "android": ["base-python3.11"],
+  "tflite-android": ["android"]
 }
