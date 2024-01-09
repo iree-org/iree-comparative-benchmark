@@ -65,7 +65,7 @@ echo "PJRT_NAMES_AND_LIBRARY_PATHS: ${PJRT_NAMES_AND_LIBRARY_PATHS}"
 echo "IREE_CUDA_DEPS_DIR: ${IREE_CUDA_DEPS_DIR}"
 
 # Build.
-bazel build iree/integrations/pjrt/...
+bazel build --copt="-Wno-error=macro-redefined" --copt="-Wno-error=defaulted-function-deleted" iree/integrations/pjrt/...
 
 popd
 popd
