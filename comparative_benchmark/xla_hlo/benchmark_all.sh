@@ -22,15 +22,9 @@ declare -a GPU_BENCHMARK_NAMES=(
   "models/RESNET50_(FP32|FP16|BF16)_TF_.+"
   # FP16 disabled due to type errors: https://github.com/openxla/openxla-benchmark/issues/117
   "models/BERT_LARGE_(FP32|BF16)_JAX_.+_BATCH(1|16|24|32|48|64|512)/.+"
-  # Batch 512 disabled: https://github.com/openxla/openxla-benchmark/issues/125.
-  "models/T5_LARGE_(FP32|FP16|BF16)_JAX_.+_BATCH(1|16|24|32|48|64)/.+"
+  "models/T5_LARGE_(FP32|FP16|BF16)_JAX_.+"
   "models/T5_4CG_LARGE_FP32_JAX_.+"
   "models/GPT2LMHEAD_FP32_JAX_.+"
-  "models/RESNET50_FP32_TF_.+"
-  "models/BERT_LARGE_FP32_TF_.+"
-  # Batch 512 disabled: https://github.com/openxla/openxla-benchmark/issues/125.
-  "models/T5_LARGE_FP32_TF_.+_BATCH(1|16|24|32|48|64)/.+"
-  "models/EFFICIENTNETB7_FP32_TF_.+"
 )
 
 declare -a CPU_BENCHMARK_NAMES=(
@@ -39,10 +33,6 @@ declare -a CPU_BENCHMARK_NAMES=(
   "models/T5_LARGE_FP32_JAX_.+_BATCH(1|16|32)/.+"
   "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH(1|16|32)/.+"
   "models/GPT2LMHEAD_FP32_JAX_.+_BATCH(1|64|128)/.+"
-  "models/RESNET50_FP32_TF_.+_BATCH(1|64|128)/.+"
-  "models/BERT_LARGE_FP32_TF_.+_BATCH(1|32|64)/.+"
-  "models/T5_LARGE_FP32_TF_.+_BATCH(1|16|32)/.+"
-  "models/EFFICIENTNETB7_FP32_TF_.+_BATCH(1|64|128)/.+"
 )
 
 if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then

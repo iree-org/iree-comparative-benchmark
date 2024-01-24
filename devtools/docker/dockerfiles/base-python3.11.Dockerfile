@@ -6,7 +6,7 @@
 
 # An image for cross-compiling towards Android.
 
-FROM gcr.io/iree-oss/openxla-benchmark/base@sha256:afffb72a93df141d15fd78c3ae047186ecf6fd8dd5eea77e100c95d745c8072f
+FROM gcr.io/iree-oss/openxla-benchmark/base@sha256:e05581d117fd00c31fcd3055ac43862d227a19335434c35be6a7b82411b06d3d
 
 ######## Python ########
 WORKDIR /install-python

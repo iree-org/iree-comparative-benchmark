@@ -78,7 +78,7 @@ jobs:
         run: |
           mkdir -p "${XLA_TOOLS_DIR}"
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:80097c98004dcad65b390eeea141dba238c4a5a3e97644775e2635c45051d442" \
+            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:5e42a41cc8a606fef86630863a207d294f2070fd7bbc9c86b48c089a97eb0f89" \
             ./comparative_benchmark/xla_hlo/build_xla_tools.sh \
               "${XLA_TOOLS_DIR}" \
               "${CUDA_VERSION}"
@@ -133,7 +133,7 @@ jobs:
           RESULTS_PATH="${RESULTS_DIR}/${XLA_HLO_RESULTS_JSON}"
           docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
             --env "OOBI_XLA_TOOLS_DIR=${XLA_TOOLS_DIR}" \
-            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:80097c98004dcad65b390eeea141dba238c4a5a3e97644775e2635c45051d442" \
+            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:5e42a41cc8a606fef86630863a207d294f2070fd7bbc9c86b48c089a97eb0f89" \
             ./comparative_benchmark/xla_hlo/benchmark_all.sh \
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
@@ -145,7 +145,7 @@ jobs:
         run: |
           RESULTS_PATH="${RESULTS_DIR}/${JAX_XLA_RESULTS_JSON}"
           docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:80097c98004dcad65b390eeea141dba238c4a5a3e97644775e2635c45051d442" \
+            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:5e42a41cc8a606fef86630863a207d294f2070fd7bbc9c86b48c089a97eb0f89" \
             ./comparative_benchmark/jax/benchmark_xla.sh \
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
@@ -158,23 +158,24 @@ jobs:
 #        run: |
 #          RESULTS_PATH="${RESULTS_DIR}/${JAX_IREE_RESULTS_JSON}"
 #          docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-#            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:80097c98004dcad65b390eeea141dba238c4a5a3e97644775e2635c45051d442" \
+#            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:5e42a41cc8a606fef86630863a207d294f2070fd7bbc9c86b48c089a97eb0f89" \
 #            ./comparative_benchmark/jax/benchmark_iree.sh \
 #              "${TARGET_DEVICE}"\
 #              "${RESULTS_PATH}"
 #          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
-      - name: "Benchmarking TF-XLA:GPU"
-        env:
-          TF_XLA_RESULTS_JSON: tf-xla.json
-          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
-        run: |
-          RESULTS_PATH="${RESULTS_DIR}/${TF_XLA_RESULTS_JSON}"
-          docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:80097c98004dcad65b390eeea141dba238c4a5a3e97644775e2635c45051d442" \
-            ./comparative_benchmark/tf_xla/benchmark_all.sh \
-              "${TARGET_DEVICE}"\
-              "${RESULTS_PATH}"
-          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+#      # Disabled in favor of JAX and reducing maintenance burden.
+#      - name: "Benchmarking TF-XLA:GPU"
+#        env:
+#          TF_XLA_RESULTS_JSON: tf-xla.json
+#          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+#        run: |
+#          RESULTS_PATH="${RESULTS_DIR}/${TF_XLA_RESULTS_JSON}"
+#          docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+#            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:5e42a41cc8a606fef86630863a207d294f2070fd7bbc9c86b48c089a97eb0f89" \
+#            ./comparative_benchmark/tf_xla/benchmark_all.sh \
+#              "${TARGET_DEVICE}"\
+#              "${RESULTS_PATH}"
+#          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
       - name: "Benchmarking PT-Inductor:GPU"
         env:
           PT_INDUCTOR_RESULTS_JSON: pt-inductor.json
@@ -182,7 +183,7 @@ jobs:
         run: |
           RESULTS_PATH="${RESULTS_DIR}/${PT_INDUCTOR_RESULTS_JSON}"
           docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:80097c98004dcad65b390eeea141dba238c4a5a3e97644775e2635c45051d442" \
+            "gcr.io/iree-oss/openxla-benchmark/cuda11.8-cudnn8.9@sha256:5e42a41cc8a606fef86630863a207d294f2070fd7bbc9c86b48c089a97eb0f89" \
             ./comparative_benchmark/pt_inductor/benchmark_all.sh \
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
@@ -223,7 +224,7 @@ jobs:
           RESULTS_PATH="${RESULTS_DIR}/${XLA_HLO_RESULTS_JSON}"
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
             --env "OOBI_XLA_TOOLS_DIR=${XLA_TOOLS_DIR}" \
-            "gcr.io/iree-oss/openxla-benchmark/base-python3.10@sha256:e19b4743fe06d0d779fb8a47e5d37112e1a25319dce8e1f381d73a99ed29dac2" \
+            "gcr.io/iree-oss/openxla-benchmark/base-python3.10@sha256:245a074284cfed5de60cf06a153e3bcd9a9c42702b6bb66a39bb47ef23b61669" \
             ./comparative_benchmark/xla_hlo/benchmark_all.sh \
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
@@ -235,7 +236,7 @@ jobs:
         run: |
           RESULTS_PATH="${RESULTS_DIR}/${JAX_XLA_RESULTS_JSON}"
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/base-python3.10@sha256:e19b4743fe06d0d779fb8a47e5d37112e1a25319dce8e1f381d73a99ed29dac2" \
+            "gcr.io/iree-oss/openxla-benchmark/base-python3.10@sha256:245a074284cfed5de60cf06a153e3bcd9a9c42702b6bb66a39bb47ef23b61669" \
             ./comparative_benchmark/jax/benchmark_xla.sh \
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
@@ -247,23 +248,24 @@ jobs:
         run: |
           RESULTS_PATH="${RESULTS_DIR}/${JAX_IREE_RESULTS_JSON}"
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/base-python3.10@sha256:e19b4743fe06d0d779fb8a47e5d37112e1a25319dce8e1f381d73a99ed29dac2" \
+            "gcr.io/iree-oss/openxla-benchmark/base-python3.10@sha256:245a074284cfed5de60cf06a153e3bcd9a9c42702b6bb66a39bb47ef23b61669" \
             ./comparative_benchmark/jax/benchmark_iree.sh \
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
           gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
-      - name: "Benchmarking TF-XLA:CPU"
-        env:
-          TF_XLA_RESULTS_JSON: tf-xla.json
-          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
-        run: |
-          RESULTS_PATH="${RESULTS_DIR}/${TF_XLA_RESULTS_JSON}"
-          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/base-python3.10@sha256:e19b4743fe06d0d779fb8a47e5d37112e1a25319dce8e1f381d73a99ed29dac2" \
-            ./comparative_benchmark/tf_xla/benchmark_all.sh \
-              "${TARGET_DEVICE}"\
-              "${RESULTS_PATH}"
-          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+#      # Disabled in favor of JAX and reducing maintenance burden.
+#      - name: "Benchmarking TF-XLA:CPU"
+#        env:
+#          TF_XLA_RESULTS_JSON: tf-xla.json
+#          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+#        run: |
+#          RESULTS_PATH="${RESULTS_DIR}/${TF_XLA_RESULTS_JSON}"
+#          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+#            "gcr.io/iree-oss/openxla-benchmark/base-python3.10@sha256:245a074284cfed5de60cf06a153e3bcd9a9c42702b6bb66a39bb47ef23b61669" \
+#            ./comparative_benchmark/tf_xla/benchmark_all.sh \
+#              "${TARGET_DEVICE}"\
+#              "${RESULTS_PATH}"
+#          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
       - name: "Benchmarking PT-Inductor:CPU"
         env:
           PT_INDUCTOR_RESULTS_JSON: pt-inductor.json
@@ -271,7 +273,7 @@ jobs:
         run: |
           RESULTS_PATH="${RESULTS_DIR}/${PT_INDUCTOR_RESULTS_JSON}"
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/base-python3.10@sha256:e19b4743fe06d0d779fb8a47e5d37112e1a25319dce8e1f381d73a99ed29dac2" \
+            "gcr.io/iree-oss/openxla-benchmark/base-python3.10@sha256:245a074284cfed5de60cf06a153e3bcd9a9c42702b6bb66a39bb47ef23b61669" \
             ./comparative_benchmark/pt_inductor/benchmark_all.sh \
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"

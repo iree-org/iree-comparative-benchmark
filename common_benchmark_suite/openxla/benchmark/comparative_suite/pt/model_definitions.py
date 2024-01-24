@@ -36,13 +36,8 @@ EXAMPLE_FP32_PT_BATCH_TEMPLATE = utils.ModelTemplate(
 EXAMPLE_FP32_PT_BATCHES = utils.build_batch_models(
     template=EXAMPLE_FP32_PT_BATCH_TEMPLATE, batch_sizes=[1, 16, 32])
 
-PARENT_FP32_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/pytorch/pt_models_20230813.929_1692010793/"
-FP32_ARTIFACTS_DIR_URL_TEMPLATE = string.Template(PARENT_FP32_GCS_DIR +
-                                                  "${name}")
-
-PARENT_FP16_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/pytorch/pt_models_20230816.932_1692245822/"
-FP16_ARTIFACTS_DIR_URL_TEMPLATE = string.Template(PARENT_FP16_GCS_DIR +
-                                                  "${name}")
+BERT_FP32_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/pytorch/pt_models_20240124.1093_1706139741/"
+BERT_ARTIFACTS_DIR_URL_TEMPLATE = string.Template(BERT_FP32_GCS_DIR + "${name}")
 
 # Bert models.
 # Model implementation from https://huggingface.co/docs/transformers/model_doc/bert#transformers.BertModel.
@@ -68,7 +63,7 @@ BERT_LARGE_FP32_PT_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "import_on_gpu": False,
         "import_with_fx": True,
     },
-    artifacts_dir_url=FP32_ARTIFACTS_DIR_URL_TEMPLATE,
+    artifacts_dir_url=BERT_ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -87,7 +82,7 @@ BERT_LARGE_FP16_PT_384XI32_BATCH_TEMPLATE = utils.ModelTemplate(
         "import_on_gpu": True,
         "import_with_fx": True,
     },
-    artifacts_dir_url=FP16_ARTIFACTS_DIR_URL_TEMPLATE,
+    artifacts_dir_url=BERT_ARTIFACTS_DIR_URL_TEMPLATE,
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -123,7 +118,9 @@ RESNET50_FP32_PT_3X224X224XF32_BATCH_TEMPLATE = utils.ModelTemplate(
         "import_on_gpu": False,
         "import_with_fx": True,
     },
-    artifacts_dir_url=FP32_ARTIFACTS_DIR_URL_TEMPLATE,
+    artifacts_dir_url=string.Template(
+        "https://storage.googleapis.com/iree-model-artifacts/pytorch/pt_models_20230813.929_1692010793/${name}"
+    ),
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,
@@ -140,7 +137,9 @@ RESNET50_FP16_PT_3X224X224XF16_BATCH_TEMPLATE = utils.ModelTemplate(
         "import_on_gpu": True,
         "import_with_fx": False,
     },
-    artifacts_dir_url=FP16_ARTIFACTS_DIR_URL_TEMPLATE,
+    artifacts_dir_url=string.Template(
+        "https://storage.googleapis.com/iree-model-artifacts/pytorch/pt_models_20240124.1093_1706139741/${name}"
+    ),
     exported_model_types=[
         def_types.ModelArtifactType.STABLEHLO_MLIR,
         def_types.ModelArtifactType.XLA_HLO_DUMP,

@@ -72,10 +72,8 @@ popd
 
 declare -a GPU_BENCHMARK_NAMES=(
   "models/RESNET50_FP32_JAX_.+"
-  # Batches 1024 and 1280 disabled: https://github.com/openxla/openxla-benchmark/issues/125.
-  "models/BERT_LARGE_FP32_JAX_.+_BATCH(1|16|24|32|48|64|512)/.+"
-  # Batch 512 disabled: https://github.com/openxla/openxla-benchmark/issues/125.
-  "models/T5_LARGE_FP32_JAX_.+_BATCH(1|16|24|32|48|64)/.+"
+  "models/BERT_LARGE_FP32_JAX_.+"
+  "models/T5_LARGE_FP32_JAX_.+"
   "models/T5_4CG_LARGE_FP32_JAX_.+"
   "models/GPT2LMHEAD_FP32_JAX_.+"
 )
@@ -89,7 +87,7 @@ declare -a CPU_BENCHMARK_NAMES=(
   # "models/T5_LARGE_FP32_JAX_.+_BATCH(1|16|32)/.+"
   # "models/T5_4CG_LARGE_FP32_JAX_.+_BATCH(1|16|32)/.+"
   # Batch 64 and 128 disabled due to accuracy error: https://github.com/openxla/iree/issues/14601.
-  "models/GPT2LMHEAD_FP32_JAX_.+_BATCH1/.+"
+  # "models/GPT2LMHEAD_FP32_JAX_.+_BATCH1/.+"
 )
 
 if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then

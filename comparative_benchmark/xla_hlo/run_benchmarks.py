@@ -116,8 +116,10 @@ def _parse_gpu_compile_time_ms(raw_output: str) -> float:
 
 def _parse_gpu_peak_memory(raw_output: str) -> float:
   matches = GPU_PEAK_MEMORY_REGEXP.findall(raw_output)
-  assert matches, "Unable to find peak memory"
-  return _parse_log_size(matches[-1])
+  if matches:
+    return _parse_log_size(matches[-1])
+  print(f"Unable to find peak memory from output {str}")
+  return 0
 
 
 def _run_compiler_benchmark_gpu(
