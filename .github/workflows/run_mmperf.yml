@@ -70,7 +70,7 @@ jobs:
       - name: "Building mmperf for CPU"
         run: |
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            gcr.io/iree-oss/openxla-benchmark/mmperf@sha256:73606e7a6a2f321a47b0822c7234a504bc6f8df459a5be82d979888d211e4c13 \
+            gcr.io/iree-oss/openxla-benchmark/mmperf@sha256:b941cc4ac0063c016c41ac9a89129596d0986f6d5949bcadb0520a19f391d9ef \
           ./experimental/microbenchmarks/mmperf/build_mmperf.sh "cpu" "${BUILD_DIR}"
       - name: "Removing unused files"
         run: |
@@ -114,7 +114,7 @@ jobs:
       - name: "Building mmperf for CUDA"
         run: |
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            gcr.io/iree-oss/openxla-benchmark/mmperf@sha256:73606e7a6a2f321a47b0822c7234a504bc6f8df459a5be82d979888d211e4c13 \
+            gcr.io/iree-oss/openxla-benchmark/mmperf@sha256:b941cc4ac0063c016c41ac9a89129596d0986f6d5949bcadb0520a19f391d9ef \
           ./experimental/microbenchmarks/mmperf/build_mmperf.sh "cuda" "${BUILD_DIR}"
       - name: "Removing unused files"
         run: |
@@ -163,7 +163,7 @@ jobs:
         run: |
           mkdir ${RESULTS_DIR}
           docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            gcr.io/iree-oss/openxla-benchmark/mmperf@sha256:73606e7a6a2f321a47b0822c7234a504bc6f8df459a5be82d979888d211e4c13 \
+            gcr.io/iree-oss/openxla-benchmark/mmperf@sha256:b941cc4ac0063c016c41ac9a89129596d0986f6d5949bcadb0520a19f391d9ef \
           ./experimental/microbenchmarks/mmperf/run_mmperf.sh "${BUILD_DIR}" "${RESULTS_DIR}"
       - name: "Uploading results"
         run: |
@@ -195,7 +195,7 @@ jobs:
         run: |
           mkdir ${RESULTS_DIR}
           docker run --gpus all --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            gcr.io/iree-oss/openxla-benchmark/mmperf@sha256:73606e7a6a2f321a47b0822c7234a504bc6f8df459a5be82d979888d211e4c13 \
+            gcr.io/iree-oss/openxla-benchmark/mmperf@sha256:b941cc4ac0063c016c41ac9a89129596d0986f6d5949bcadb0520a19f391d9ef \
           ./experimental/microbenchmarks/mmperf/run_mmperf.sh "${BUILD_DIR}" "${RESULTS_DIR}"
       - name: "Uploading results"
         run: |

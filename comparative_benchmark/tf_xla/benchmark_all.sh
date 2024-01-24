@@ -36,8 +36,7 @@ unset WITH_CUDA
 declare -a GPU_BENCHMARK_NAMES=(
   "models/RESNET50_FP32_TF_.+"
   "models/BERT_LARGE_FP32_TF_.+"
-  # Batch 512 disabled: https://github.com/openxla/openxla-benchmark/issues/125.
-  "models/T5_LARGE_FP32_TF_.+_BATCH(1|16|24|32|48|64)/.+"
+  "models/T5_LARGE_FP32_TF_.+"
   "models/EFFICIENTNETB7_FP32_TF_.+"
 )
 
@@ -45,8 +44,7 @@ declare -a CPU_BENCHMARK_NAMES=(
   "models/RESNET50_FP32_TF_.+_BATCH(1|64|128)/.+"
   "models/BERT_LARGE_FP32_TF_.+_BATCH(1|32|64)/.+"
   "models/T5_LARGE_FP32_TF_.+_BATCH(1|16|32)/.+"
-  # Batch 128 disabled: https://github.com/openxla/openxla-benchmark/issues/125.
-  "models/EFFICIENTNETB7_FP32_TF_.+_BATCH(1|64)/.+"
+  "models/EFFICIENTNETB7_FP32_TF_.+_BATCH(1|64|128)/.+"
 )
 
 if [ "${TARGET_DEVICE}" = "a2-highgpu-1g" ]; then

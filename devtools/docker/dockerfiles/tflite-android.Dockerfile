@@ -6,7 +6,7 @@
 
 # An image for cross-compiling towards Android that is compatible with Tensorflow.
 
-FROM gcr.io/iree-oss/openxla-benchmark/android@sha256:826ea5ef02dfd9baf54ea221ebfc62dbd0b60f42faa0e0c12c4c0a9c70a760a8
+FROM gcr.io/iree-oss/openxla-benchmark/android@sha256:cba9827bc47a6afb575efc72ed821ceda32b3132a406235d3edf6d125deef0d7
 
 ######## Android SDK ########
 ENV ANDROID_SDK "/usr/src/android-sdk"
