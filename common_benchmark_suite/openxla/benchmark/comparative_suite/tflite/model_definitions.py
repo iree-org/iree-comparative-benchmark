@@ -10,7 +10,7 @@ import string
 from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite import utils
 
-PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/tflite/tflite_models_1703027804"
+PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/tflite/tflite_models_1706050932"
 ARTIFACTS_DIR_URL_TEMPLATE = string.Template(PARENT_GCS_DIR + "/${name}")
 
 TFLITE_MODEL_IMPL = def_types.ModelImplementation(
@@ -20,7 +20,7 @@ TFLITE_MODEL_IMPL = def_types.ModelImplementation(
     module_path=f"{utils.MODELS_MODULE_PATH}.tflite.tflite_model",
 )
 
-JAX_MODELS_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.23_1702848353"
+JAX_MODELS_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.23_1705868085"
 
 BERT_BASE_FP32_TFLITE_I32_INPUT_SEQUENCE_TEMPLATE = utils.ModelTemplate(
     name=utils.SEQ_LEN_NAME("BERT_BASE_FP32_TFLITE_I32"),
