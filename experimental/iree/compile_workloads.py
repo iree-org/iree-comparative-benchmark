@@ -37,6 +37,7 @@ IREE_COMPILE_COMMON_FLAGS = [
     "--iree-vm-emit-polyglot-zip=false",
     "--iree-opt-data-tiling",
     "--iree-llvmcpu-enable-ukernels=all",
+    "--iree-llvmcpu-use-decompose-softmax-fuse=false",
 ]
 
 FRAMEWORK_TO_DIALECT = {
