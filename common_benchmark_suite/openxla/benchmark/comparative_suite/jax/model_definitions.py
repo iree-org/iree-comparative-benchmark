@@ -613,6 +613,139 @@ GEMMA2BIT_GREEDY_FP16_JAX_1X1024XI32_256XI32 = def_types.Model(
     f"{PARENT_GCS_DIR}/GEMMA2BIT_GREEDY_FP16_JAX_1X1024XI32_256XI32",
 )
 
+# Dotprod microbenchmarks.
+DOT_PRODUCT_JAX_IMPL = def_types.ModelImplementation(
+    name="DOT_PRODUCT_JAX",
+    tags=["microbenchmark"],
+    framework_type=def_types.ModelFrameworkType.JAX,
+    module_path=f"{utils.MODELS_MODULE_PATH}.jax.dotprod.dot_product",
+    source_info="",
+)
+
+DOT_PRODUCT_JAX_1X256X2048XI8I8 = def_types.Model(
+    name="DOT_PRODUCT_JAX_1X256X2048XI8I8",
+    tags=["i8i8i32"],
+    model_impl=DOT_PRODUCT_JAX_IMPL,
+    model_parameters={
+        "model_name": "dotprod",
+        "lhs_shape": (1, 256),
+        "lhs_type": "int8",
+        "rhs_shape": (256, 2048),
+        "rhs_type": "int8",
+    },
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.LINALG_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+    artifacts_dir_url=f"{PARENT_GCS_DIR}/DOT_PRODUCT_JAX_1X256X2048XI8I8",
+)
+
+DOT_PRODUCT_JAX_1X256X2048XI8I4 = def_types.Model(
+    name="DOT_PRODUCT_JAX_1X256X2048XI8I4",
+    tags=["i8i4i32"],
+    model_impl=DOT_PRODUCT_JAX_IMPL,
+    model_parameters={
+        "model_name": "dotprod",
+        "lhs_shape": (1, 256),
+        "lhs_type": "int8",
+        "rhs_shape": (256, 2048),
+        "rhs_type": "int4",
+    },
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.LINALG_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+    artifacts_dir_url=f"{PARENT_GCS_DIR}/DOT_PRODUCT_JAX_1X256X2048XI8I4",
+)
+
+DOT_PRODUCT_JAX_1X256X2048XF32F32 = def_types.Model(
+    name="DOT_PRODUCT_JAX_1X256X2048XF32F32",
+    tags=["f32f32f32"],
+    model_impl=DOT_PRODUCT_JAX_IMPL,
+    model_parameters={
+        "model_name": "dotprod",
+        "lhs_shape": (1, 256),
+        "lhs_type": "fp32",
+        "rhs_shape": (256, 2048),
+        "rhs_type": "fp32",
+    },
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.LINALG_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+        def_types.ModelArtifactType.TFLITE_FP32,
+        def_types.ModelArtifactType.TFLITE_FP32_STABLEHLO,
+        def_types.ModelArtifactType.TFLITE_FP16,
+        def_types.ModelArtifactType.TFLITE_DYNAMIC_RANGE_QUANT,
+        def_types.ModelArtifactType.TFLITE_INT8,
+    ],
+    artifacts_dir_url=f"{PARENT_GCS_DIR}/DOT_PRODUCT_JAX_1X256X2048XF32F32",
+)
+
+DOT_PRODUCT_JAX_256X256X2048XI8I8 = def_types.Model(
+    name="DOT_PRODUCT_JAX_256X256X2048XI8I8",
+    tags=["i8i8i32"],
+    model_impl=DOT_PRODUCT_JAX_IMPL,
+    model_parameters={
+        "model_name": "dotprod",
+        "lhs_shape": (256, 256),
+        "lhs_type": "int8",
+        "rhs_shape": (256, 2048),
+        "rhs_type": "int8",
+    },
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.LINALG_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+    artifacts_dir_url=f"{PARENT_GCS_DIR}/DOT_PRODUCT_JAX_256X256X2048XI8I8",
+)
+
+DOT_PRODUCT_JAX_256X256X2048XI8I4 = def_types.Model(
+    name="DOT_PRODUCT_JAX_256X256X2048XI8I4",
+    tags=["i8i4i32"],
+    model_impl=DOT_PRODUCT_JAX_IMPL,
+    model_parameters={
+        "model_name": "dotprod",
+        "lhs_shape": (256, 256),
+        "lhs_type": "int8",
+        "rhs_shape": (256, 2048),
+        "rhs_type": "int4",
+    },
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.LINALG_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+    artifacts_dir_url=f"{PARENT_GCS_DIR}/DOT_PRODUCT_JAX_256X256X2048XI8I4",
+)
+
+DOT_PRODUCT_JAX_256X256X2048XF32F32 = def_types.Model(
+    name="DOT_PRODUCT_JAX_256X256X2048XF32F32",
+    tags=["f32f32f32"],
+    model_impl=DOT_PRODUCT_JAX_IMPL,
+    model_parameters={
+        "model_name": "dotprod",
+        "lhs_shape": (1, 256),
+        "lhs_type": "fp32",
+        "rhs_shape": (256, 2048),
+        "rhs_type": "fp32",
+    },
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.LINALG_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+        def_types.ModelArtifactType.TFLITE_FP32,
+        def_types.ModelArtifactType.TFLITE_FP32_STABLEHLO,
+        def_types.ModelArtifactType.TFLITE_FP16,
+        def_types.ModelArtifactType.TFLITE_DYNAMIC_RANGE_QUANT,
+        def_types.ModelArtifactType.TFLITE_INT8,
+    ],
+    artifacts_dir_url=f"{PARENT_GCS_DIR}/DOT_PRODUCT_JAX_256X256X2048XF32F32",
+)
+
 ALL_MODELS = list(
     itertools.chain(
         # Models with different batch sizes.
@@ -638,10 +771,12 @@ ALL_MODELS = list(
         SD_PIPELINE_FP16_JAX_64XI32_BATCHES.values(),
         SD_PIPELINE_BF16_JAX_64XI32_BATCHES.values(),
     )) + [
-        GPT2LMHEAD_PIPELINE_JAX_1X4XI32,
-        T5_SMALL_FP32_JAX_1X128XI32,
+        GPT2LMHEAD_PIPELINE_JAX_1X4XI32, T5_SMALL_FP32_JAX_1X128XI32,
         VIT_CLASSIFICATION_JAX_3X224X224XF32,
         GEMMA2BIT_GREEDY_FP32_JAX_1X1024XI32_256XI32,
         GEMMA2BIT_GREEDY_BF16_JAX_1X1024XI32_256XI32,
         GEMMA2BIT_GREEDY_FP16_JAX_1X1024XI32_256XI32,
+        DOT_PRODUCT_JAX_1X256X2048XI8I8, DOT_PRODUCT_JAX_1X256X2048XI8I4,
+        DOT_PRODUCT_JAX_256X256X2048XI8I8, DOT_PRODUCT_JAX_256X256X2048XI8I4,
+        DOT_PRODUCT_JAX_1X256X2048XF32F32, DOT_PRODUCT_JAX_256X256X2048XF32F32
     ]

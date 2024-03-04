@@ -177,6 +177,30 @@ GEMMA2BIT_GREEDY_FP16_JAX_1X1024XI32_256XI32_CASE = def_types.BenchmarkCase.buil
     verify_parameters={"absolute_tolerance": 0.5},
 )
 
+DOT_PRODUCT_JAX_1X256X2048XI8I8_CASE = def_types.BenchmarkCase.build(
+    model=model_definitions.DOT_PRODUCT_JAX_1X256X2048XI8I8,
+    input_data=testdata.INPUT_DATA_MODEL_DEFAULT,
+    verify_parameters={"absolute_tolerance": 0.5},
+)
+
+DOT_PRODUCT_JAX_1X256X2048XI8I4_CASE = def_types.BenchmarkCase.build(
+    model=model_definitions.DOT_PRODUCT_JAX_1X256X2048XI8I4,
+    input_data=testdata.INPUT_DATA_MODEL_DEFAULT,
+    verify_parameters={"absolute_tolerance": 0.5},
+)
+
+DOT_PRODUCT_JAX_256X256X2048XI8I8_CASE = def_types.BenchmarkCase.build(
+    model=model_definitions.DOT_PRODUCT_JAX_256X256X2048XI8I8,
+    input_data=testdata.INPUT_DATA_MODEL_DEFAULT,
+    verify_parameters={"absolute_tolerance": 0.5},
+)
+
+DOT_PRODUCT_JAX_256X256X2048XI8I4_CASE = def_types.BenchmarkCase.build(
+    model=model_definitions.DOT_PRODUCT_JAX_256X256X2048XI8I4,
+    input_data=testdata.INPUT_DATA_MODEL_DEFAULT,
+    verify_parameters={"absolute_tolerance": 0.5},
+)
+
 ALL_BENCHMARKS = list(
     itertools.chain(
         T5_LARGE_FP32_JAX_512XI32_CASES.values(),
@@ -207,4 +231,8 @@ ALL_BENCHMARKS = list(
         GEMMA2BIT_GREEDY_FP32_JAX_1X1024XI32_256XI32_CASE,
         GEMMA2BIT_GREEDY_BF16_JAX_1X1024XI32_256XI32_CASE,
         GEMMA2BIT_GREEDY_FP16_JAX_1X1024XI32_256XI32_CASE,
+        DOT_PRODUCT_JAX_1X256X2048XI8I8_CASE,
+        DOT_PRODUCT_JAX_1X256X2048XI8I4_CASE,
+        DOT_PRODUCT_JAX_256X256X2048XI8I8_CASE,
+        DOT_PRODUCT_JAX_256X256X2048XI8I4_CASE,
     ]

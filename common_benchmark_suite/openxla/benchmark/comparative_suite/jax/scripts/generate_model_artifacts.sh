@@ -54,6 +54,7 @@ pip list > "${VERSION_DIR}/models_version_info.txt"
 
 declare -a args=(
   -o "${VERSION_DIR}"
+  --iree_compile_path="$(which iree-compile)"
   --iree_ir_tool="$(which iree-ir-tool)"
 )
 
