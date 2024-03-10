@@ -10,7 +10,7 @@ import string
 from openxla.benchmark import def_types
 from openxla.benchmark.comparative_suite import utils
 
-PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.23_1705868085"
+PARENT_GCS_DIR = "https://storage.googleapis.com/iree-model-artifacts/jax/jax_models_0.4.25_1709787220"
 ARTIFACTS_DIR_URL_TEMPLATE = string.Template(PARENT_GCS_DIR + "/${name}")
 
 T5_JAX_IMPL = def_types.ModelImplementation(
