@@ -241,18 +241,19 @@ jobs:
               "${TARGET_DEVICE}"\
               "${RESULTS_PATH}"
           gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
-      - name: "Benchmarking JAX-IREE:CPU"
-        env:
-          JAX_IREE_RESULTS_JSON: jax-iree.json
-          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
-        run: |
-          RESULTS_PATH="${RESULTS_DIR}/${JAX_IREE_RESULTS_JSON}"
-          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
-            "gcr.io/iree-oss/openxla-benchmark/base-python3.11@sha256:b9b98da7bcc5e431800ff798a6dcc394b1838a9ed3d695f5cd0dac3510fc8c8d" \
-            ./comparative_benchmark/jax/benchmark_iree.sh \
-              "${TARGET_DEVICE}"\
-              "${RESULTS_PATH}"
-          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
+#      # Disabled due to https://github.com/openxla/openxla-benchmark/issues/169.
+#      - name: "Benchmarking JAX-IREE:CPU"
+#        env:
+#          JAX_IREE_RESULTS_JSON: jax-iree.json
+#          RESULTS_GCS_DIR: ${{ steps.setup.outputs.results-gcs-dir }}
+#        run: |
+#          RESULTS_PATH="${RESULTS_DIR}/${JAX_IREE_RESULTS_JSON}"
+#          docker run --mount="type=bind,src="${PWD}",target=/work" --workdir="/work" \
+#            "gcr.io/iree-oss/openxla-benchmark/base-python3.11@sha256:b9b98da7bcc5e431800ff798a6dcc394b1838a9ed3d695f5cd0dac3510fc8c8d" \
+#            ./comparative_benchmark/jax/benchmark_iree.sh \
+#              "${TARGET_DEVICE}"\
+#              "${RESULTS_PATH}"
+#          gcloud storage cp "${RESULTS_PATH}" "${RESULTS_GCS_DIR}/"
 #      # Disabled in favor of JAX and reducing maintenance burden.
 #      - name: "Benchmarking TF-XLA:CPU"
 #        env:
