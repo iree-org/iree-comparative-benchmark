@@ -37,7 +37,7 @@ if [ -z "$WITH_CUDA" ]; then
   python -m pip install --upgrade "jax[cpu]" "flax"
 else
   echo "Installing jax and dependencies with cuda support"
-  python -m pip install --upgrade "jax[cuda11_local]" "flax" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+  python -m pip install --upgrade "jax[cuda11]" "flax" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 fi
 
 # Install Tensorflow to generate TFLite models.
