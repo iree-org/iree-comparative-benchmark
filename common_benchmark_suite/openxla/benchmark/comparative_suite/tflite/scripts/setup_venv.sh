@@ -27,7 +27,7 @@ python -m pip install --upgrade pip || echo "Could not upgrade pip"
 
 # Get IREE tools for importing and binarizing.
 python -m pip install \
-  --find-links https://openxla.github.io/iree/pip-release-links.html \
+  --find-links https://iree.dev/pip-release-links.html \
   iree-compiler \
   iree-tools-tflite
 
