@@ -29,7 +29,7 @@ python -m pip install --upgrade pip || echo "Could not upgrade pip"
 
 # Get iree-ir-tool for IR postprocessing.
 python -m pip install \
-  --find-links https://openxla.github.io/iree/pip-release-links.html \
+  --find-links https://iree.dev/pip-release-links.html \
   iree-compiler
 
 if [ -z "$WITH_CUDA" ]; then
