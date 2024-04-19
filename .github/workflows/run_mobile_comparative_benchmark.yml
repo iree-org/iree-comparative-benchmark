@@ -9,6 +9,7 @@
 name: Mobile Comparative Benchmarks
 
 on:
+  pull_request:
   workflow_dispatch:
   schedule:
     # Scheduled to run at 09:00 UTC and 21:00 UTC.
