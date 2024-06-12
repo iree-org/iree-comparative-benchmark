@@ -41,7 +41,9 @@ pushd tensorflow
 # Log the git version of Tensorflow repo.
 git log --oneline --graph --max-count=1
 
-bazel build -c opt --define xnnpack_use_latest_ops=true //tensorflow/lite/tools/benchmark:benchmark_model
+# Disable avx512fp16 on build servers due to a gcc compiler error:
+#   gcc: error: unrecognized command-line option '-mavx512fp16'
+bazel build -c opt --define xnnpack_use_latest_ops=true --define xnn_enable_avx512fp16=false //tensorflow/lite/tools/benchmark:benchmark_model
 cp "$(realpath bazel-bin/tensorflow/lite/tools/benchmark/benchmark_model)" "${X86_OUTPUT_DIR}/"
 
 # The compiler flags used here were retrieved by running ./configure in the root Tensorflow repo.
