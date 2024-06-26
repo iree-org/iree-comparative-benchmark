@@ -159,6 +159,24 @@ SD_PIPELINE_BF16_JAX_64XI32_CASES = utils.build_batch_benchmark_cases(
     batch_sizes=[1, 8],
 )
 
+GEMMA2BIT_GREEDY_FP32_JAX_1X1024XI32_256XI32_CASE = def_types.BenchmarkCase.build(
+    model=model_definitions.GEMMA2BIT_GREEDY_FP32_JAX_1X1024XI32_256XI32,
+    input_data=testdata.INPUT_DATA_MODEL_DEFAULT,
+    verify_parameters={"absolute_tolerance": 0.5},
+)
+
+GEMMA2BIT_GREEDY_BF16_JAX_1X1024XI32_256XI32_CASE = def_types.BenchmarkCase.build(
+    model=model_definitions.GEMMA2BIT_GREEDY_BF16_JAX_1X1024XI32_256XI32,
+    input_data=testdata.INPUT_DATA_MODEL_DEFAULT,
+    verify_parameters={"absolute_tolerance": 0.5},
+)
+
+GEMMA2BIT_GREEDY_FP16_JAX_1X1024XI32_256XI32_CASE = def_types.BenchmarkCase.build(
+    model=model_definitions.GEMMA2BIT_GREEDY_FP16_JAX_1X1024XI32_256XI32,
+    input_data=testdata.INPUT_DATA_MODEL_DEFAULT,
+    verify_parameters={"absolute_tolerance": 0.5},
+)
+
 ALL_BENCHMARKS = list(
     itertools.chain(
         T5_LARGE_FP32_JAX_512XI32_CASES.values(),
@@ -186,4 +204,7 @@ ALL_BENCHMARKS = list(
         GPT2LMHEAD_PIPELINE_JAX_1X4XI32_CASE,
         T5_SMALL_FP32_JAX_1X128XI32_CASE,
         GPT2LMHEAD_PIPELINE_JAX_1X4XI32_CASE,
+        GEMMA2BIT_GREEDY_FP32_JAX_1X1024XI32_256XI32_CASE,
+        GEMMA2BIT_GREEDY_BF16_JAX_1X1024XI32_256XI32_CASE,
+        GEMMA2BIT_GREEDY_FP16_JAX_1X1024XI32_256XI32_CASE,
     ]
