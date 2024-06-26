@@ -124,13 +124,14 @@ please read "User's Guide".
 
 Pipelines may include more than one model or control flow.
 
-| Framework  | Pipeline          | Data Type        | Variations                                   |
-|------------|-------------------|------------------|----------------------------------------------|
-| JAX        | T5-Small          | FP32, FP16, BF16 | Token generation sizes: 16, 32, 64, 128, 256 |
-| JAX        | Stable Diffusion  | FP32, FP16, BF16 | Input sequence 64 tokens                     |
-| JAX        | GPT-2 with LMHead | FP32             | Generates 200 tokens                         |
-| Tensorflow | GPT-2 with LMHead | FP32             | Generates 200 tokens                         |
-| GGML       | GPT-2 with LMHead | FP32, FP16       | Generates 200 tokens                         |
+| Framework  | Pipeline          | Data Type        | Variations                                     |
+|------------|-------------------|------------------|------------------------------------------------|
+| JAX        | Gemma-2B-IT       | FP32, FP16, BF16 | Input sequence 1024 tokens. Max new tokens 256 |
+| JAX        | T5-Small          | FP32, FP16, BF16 | Token generation sizes: 16, 32, 64, 128, 256   |
+| JAX        | Stable Diffusion  | FP32, FP16, BF16 | Input sequence 64 tokens                       |
+| JAX        | GPT-2 with LMHead | FP32             | Generates 200 tokens                           |
+| Tensorflow | GPT-2 with LMHead | FP32             | Generates 200 tokens                           |
+| GGML       | GPT-2 with LMHead | FP32, FP16       | Generates 200 tokens                           |
 
 ## Dashboards
 

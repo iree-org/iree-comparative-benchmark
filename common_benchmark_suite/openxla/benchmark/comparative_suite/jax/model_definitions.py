@@ -545,6 +545,74 @@ VIT_CLASSIFICATION_JAX_3X224X224XF32 = def_types.Model(
     artifacts_dir_url=f"{PARENT_GCS_DIR}/VIT_CLASSIFICATION_JAX_3X224X224XF32",
 )
 
+# Gemma models.
+# Model implementation from https://huggingface.co/docs/transformers/model_doc/gemma#transformers.FlaxGemmaForCausalLM.
+GEMMA_PIPELINE_JAX_IMPL = def_types.ModelImplementation(
+    name="GEMMA_PIPELINE_JAX",
+    tags=["gemma", "pipeline"],
+    framework_type=def_types.ModelFrameworkType.JAX,
+    module_path=f"{utils.MODELS_MODULE_PATH}.jax.gemma.gemma_pipeline",
+    source_info=
+    "https://huggingface.co/docs/transformers/model_doc/gemma#transformers.FlaxGemmaForCausalLM",
+)
+
+GEMMA2BIT_GREEDY_FP32_JAX_1X1024XI32_256XI32 = def_types.Model(
+    name="GEMMA2BIT_GREEDY_FP32_JAX_1X1024XI32_256XI32",
+    tags=["fp32", "batch-1", "seqlen-1024"],
+    model_impl=GEMMA_PIPELINE_JAX_IMPL,
+    model_parameters={
+        "batch_size": 1,
+        "data_type": "fp32",
+        "seq_len": 1024,
+        "max_new_tokens": 256,
+        "model_name": "google/gemma-2b-it",
+    },
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+    artifacts_dir_url=
+    f"{PARENT_GCS_DIR}/GEMMA2BIT_GREEDY_FP32_JAX_1X1024XI32_256XI32",
+)
+
+GEMMA2BIT_GREEDY_BF16_JAX_1X1024XI32_256XI32 = def_types.Model(
+    name="GEMMA2BIT_GREEDY_BF16_JAX_1X1024XI32_256XI32",
+    tags=["bf16", "batch-1", "seqlen-1024"],
+    model_impl=GEMMA_PIPELINE_JAX_IMPL,
+    model_parameters={
+        "batch_size": 1,
+        "data_type": "bf16",
+        "seq_len": 1024,
+        "max_new_tokens": 256,
+        "model_name": "google/gemma-2b-it",
+    },
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+    artifacts_dir_url=
+    f"{PARENT_GCS_DIR}/GEMMA2BIT_GREEDY_BF16_JAX_1X1024XI32_256XI32",
+)
+
+GEMMA2BIT_GREEDY_FP16_JAX_1X1024XI32_256XI32 = def_types.Model(
+    name="GEMMA2BIT_GREEDY_FP16_JAX_1X1024XI32_256XI32",
+    tags=["fp16", "batch-1", "seqlen-1024"],
+    model_impl=GEMMA_PIPELINE_JAX_IMPL,
+    model_parameters={
+        "batch_size": 1,
+        "data_type": "fp16",
+        "seq_len": 1024,
+        "max_new_tokens": 256,
+        "model_name": "google/gemma-2b-it",
+    },
+    exported_model_types=[
+        def_types.ModelArtifactType.STABLEHLO_MLIR,
+        def_types.ModelArtifactType.XLA_HLO_DUMP,
+    ],
+    artifacts_dir_url=
+    f"{PARENT_GCS_DIR}/GEMMA2BIT_GREEDY_FP16_JAX_1X1024XI32_256XI32",
+)
+
 ALL_MODELS = list(
     itertools.chain(
         # Models with different batch sizes.
@@ -573,4 +641,7 @@ ALL_MODELS = list(
         GPT2LMHEAD_PIPELINE_JAX_1X4XI32,
         T5_SMALL_FP32_JAX_1X128XI32,
         VIT_CLASSIFICATION_JAX_3X224X224XF32,
+        GEMMA2BIT_GREEDY_FP32_JAX_1X1024XI32_256XI32,
+        GEMMA2BIT_GREEDY_BF16_JAX_1X1024XI32_256XI32,
+        GEMMA2BIT_GREEDY_FP16_JAX_1X1024XI32_256XI32,
     ]
