@@ -6,6 +6,7 @@
 
 import jax.numpy as jnp
 
+from pathlib import Path
 from transformers import AutoTokenizer, GemmaTokenizer, FlaxPreTrainedModel, FlaxGemmaForCausalLM, GenerationConfig
 from typing import Any, List, Tuple
 
@@ -49,7 +50,8 @@ class GemmaPipeline(jax_model_interface.JaxInferenceModel):
     self.tokenizer = AutoTokenizer.from_pretrained(
         model_name,
         model_max_length=self.seq_len,
-        padding_side="left",
+        max_length=self.seq_len,
+        padding="max_length",
     )
     self.tokenizer.pad_token = self.tokenizer.eos_token
     self.tokenization_kwargs = {
@@ -63,7 +65,10 @@ class GemmaPipeline(jax_model_interface.JaxInferenceModel):
         use_cache=True)
 
   def generate_default_inputs(self) -> str:
-    return "Once upon a time"
+    input_file = Path(__file__).parent / "summarization_prompt.txt"
+    with open(input_file, 'r', encoding='utf-8') as file:
+      text = file.read()
+    return text
 
   def preprocess(self, input_text: str) -> Tuple[Any,]:
     batch_input_text = [input_text] * self.batch_size
@@ -71,10 +76,9 @@ class GemmaPipeline(jax_model_interface.JaxInferenceModel):
     return (inputs["input_ids"],)
 
   def forward(self, input_text: Any) -> Any:
-    output = self.model.generate(input_text,
-                                 params=self.params,
-                                 generation_config=self.generation_config)
-    print(f"output: {output}")
+    return self.model.generate(input_text,
+                               params=self.params,
+                               generation_config=self.generation_config)
 
   def postprocess(self, output: Any) -> List[str]:
     return self.tokenizer.batch_decode(output, skip_special_tokens=True)
