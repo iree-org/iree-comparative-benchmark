@@ -31,7 +31,7 @@ GCS_UPLOAD_DIR = os.getenv("GCS_UPLOAD_DIR", "gs://iree-model-artifacts/jax")
 
 
 def _generate_mlir(jit_function: Any, jit_inputs: Any, model_dir: pathlib.Path,
-                   iree_ir_tool: Optional[pathlib.Path]):
+                   iree_ir_tool: Optional[pathlib.Path]) -> pathlib.Path:
   mlir = jit_function.lower(*jit_inputs).compiler_ir(dialect="stablehlo")
   mlir_path = model_dir / "stablehlo.mlir"
   print(f"Saving mlir to {mlir_path}")
@@ -48,6 +48,30 @@ def _generate_mlir(jit_function: Any, jit_inputs: Any, model_dir: pathlib.Path,
         check=True,
     )
     mlir_path.unlink()
+    return binary_mlir_path
+
+  return mlir_path
+
+
+def _generate_linalg_mlir(stablehlo_mlir_path: pathlib.Path,
+                          iree_compile_path: pathlib.Path,
+                          iree_ir_tool: Optional[pathlib.Path]):
+  linalg_mlir_path = stablehlo_mlir_path.parent / "linalg.mlir"
+  subprocess.run(
+      f"{iree_compile_path} {stablehlo_mlir_path} --compile-to=preprocessing > {linalg_mlir_path}",
+      shell=True,
+      check=True)
+
+  if iree_ir_tool:
+    binary_mlir_path = stablehlo_mlir_path.parent / "linalg.mlirbc"
+    subprocess.run(
+        [
+            iree_ir_tool, "cp", "--emit-bytecode", linalg_mlir_path, "-o",
+            binary_mlir_path
+        ],
+        check=True,
+    )
+    linalg_mlir_path.unlink()
 
 
 def _generate_tf_function(model_obj: Any, inputs: Any):
@@ -207,6 +231,7 @@ def _generate_tflite(model_obj: Any, inputs: Any, model_dir: pathlib.Path,
 
 
 def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
+                        iree_compile_path: pathlib.Path,
                         iree_ir_tool: Optional[pathlib.Path],
                         auto_upload: bool):
   model_dir = save_dir / model.name
@@ -240,10 +265,14 @@ def _generate_artifacts(model: def_types.Model, save_dir: pathlib.Path,
       os.unsetenv("XLA_FLAGS")
 
     if def_types.ModelArtifactType.STABLEHLO_MLIR in model.exported_model_types:
-      _generate_mlir(jit_function=jit_function,
-                     jit_inputs=jit_inputs,
-                     model_dir=model_dir,
-                     iree_ir_tool=iree_ir_tool)
+      stablehlo_mlir_path = _generate_mlir(jit_function=jit_function,
+                                           jit_inputs=jit_inputs,
+                                           model_dir=model_dir,
+                                           iree_ir_tool=iree_ir_tool)
+
+    if def_types.ModelArtifactType.LINALG_MLIR in model.exported_model_types:
+      _generate_linalg_mlir(stablehlo_mlir_path, iree_compile_path,
+                            iree_ir_tool)
 
     if def_types.ModelArtifactType.TFLITE_FP32 in model.exported_model_types:
       _generate_tflite(model_obj=model_obj,
@@ -279,6 +308,12 @@ def _parse_arguments() -> argparse.Namespace:
                       nargs="+",
                       default=[".*"],
                       help="The regex patterns to filter model names.")
+  parser.add_argument(
+      "--iree-compile-path",
+      "--iree_compile_path",
+      type=pathlib.Path,
+      default=None,
+      help="Path to `iree-compile`. Used to generate linalg mlir.")
   parser.add_argument("--iree-ir-tool",
                       "--iree_ir_tool",
                       type=pathlib.Path,
@@ -295,7 +330,8 @@ def _parse_arguments() -> argparse.Namespace:
 
 
 def main(output_dir: pathlib.Path, filters: List[str],
-         iree_ir_tool: pathlib.Path, auto_upload: bool):
+         iree_compile_path: pathlib.Path, iree_ir_tool: pathlib.Path,
+         auto_upload: bool):
   combined_filters = "|".join(f"({name_filter})" for name_filter in filters)
   name_pattern = re.compile(f"^{combined_filters}$")
   models = [
@@ -317,8 +353,8 @@ def main(output_dir: pathlib.Path, filters: List[str],
     # of HLO dumps here - otherwise multiple processes will dump to the same HLO
     # directory.
     p = multiprocessing.Process(target=_generate_artifacts,
-                                args=(model, output_dir, iree_ir_tool,
-                                      auto_upload))
+                                args=(model, output_dir, iree_compile_path,
+                                      iree_ir_tool, auto_upload))
     p.start()
     p.join()
 
